@@ -230,6 +230,19 @@
 - Issues noticed:
   - Validation was completed on current machine; operator should still run one clean-machine checklist pass for final packaging confidence.
 
+### Roadmap 19: In-App Quick Help / Status Hints
+- What was done:
+  - Added always-visible tool hint text in Tools panel with active tool behavior details.
+  - Added modifier and shortcut guidance in the same panel hint block.
+  - Added first-use workflow guidance directly in UI.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Change tool shape/mode and verify hint text updates accordingly.
+  - Confirm first-use flow text is visible in Tools panel without opening docs.
+  - Run: `pytest -q` (current: `61 passed`)
+- Issues noticed:
+  - Hint text currently uses compact multiline format; future UX pass may tune wording/visual hierarchy.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

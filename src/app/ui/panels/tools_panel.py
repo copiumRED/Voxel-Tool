@@ -88,6 +88,11 @@ class ToolsPanel(QWidget):
         z_row.addWidget(self.mirror_z_checkbox)
         z_row.addWidget(self.mirror_z_offset)
         layout.addLayout(z_row)
+
+        self.hints_label = QLabel(self)
+        self.hints_label.setWordWrap(True)
+        self.hints_label.setStyleSheet("color: #d8d8d8;")
+        layout.addWidget(self.hints_label)
         layout.addStretch(1)
 
     def set_context(self, context: AppContext) -> None:
@@ -133,6 +138,7 @@ class ToolsPanel(QWidget):
         self.mirror_x_offset.blockSignals(False)
         self.mirror_y_offset.blockSignals(False)
         self.mirror_z_offset.blockSignals(False)
+        self.hints_label.setText(self._build_hint_text())
 
     def _on_mode_toggled(self, checked: bool) -> None:
         if not checked or self._context is None:
@@ -186,3 +192,26 @@ class ToolsPanel(QWidget):
             return
         if mode == AppContext.TOOL_MODE_ERASE:
             self.erase_radio.setChecked(True)
+
+    def _build_hint_text(self) -> str:
+        if self._context is None:
+            return ""
+
+        shape = self._context.voxel_tool_shape
+        mode = self._context.voxel_tool_mode
+        tool_hint = ""
+        if shape == AppContext.TOOL_SHAPE_BRUSH:
+            tool_hint = "Brush: click-drag to paint continuously. Hold Shift for temporary erase."
+        elif shape == AppContext.TOOL_SHAPE_BOX:
+            tool_hint = "Box: click-drag to fill/erase a rectangle on the edit plane."
+        elif shape == AppContext.TOOL_SHAPE_LINE:
+            tool_hint = "Line: click-drag to draw a straight voxel line on the edit plane."
+        else:
+            tool_hint = "Fill: click a connected region. Large fills are safety-limited."
+
+        mode_hint = f"Current mode: {mode.upper()} | Shortcuts: B/X/L/F tools, P/E mode, Shift+F frame."
+        first_use = (
+            "First-use flow: 1) Debug -> Create Test Voxels (Cross) 2) View -> Frame Voxels "
+            "3) Paint/Edit 4) File -> Export OBJ/glTF/VOX."
+        )
+        return f"{tool_hint}\n{mode_hint}\n{first_use}"

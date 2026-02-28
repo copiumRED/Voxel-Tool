@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **97%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **99%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -36,6 +36,7 @@ Reasoning:
 - Correction 20: Save/Open now persists and restores core editor tool state with explicit invalid-file error messaging.
 - Correction 21: Performance baseline harness is now in tests with tracked baseline values and non-blocking regression thresholds.
 - Correction 22: Packaging pipeline path resolution and fail-fast behavior are hardened; packaged EXE launch smoke passed on current machine.
+- Correction 23: In-app quick help/status hints are now visible in Tools panel, including first-use workflow guidance.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -54,7 +55,7 @@ Reasoning:
 | Performance at scale | Handles practical production scenes | Perf baseline harness implemented for brush/fill/solidify | Remaining gap: broader scale matrix + targeted optimizations | P0 |
 | Crash resilience | Stable session behavior | Improved invalid-file error surfacing in Open flow | Need broader exception recovery paths | P0 |
 | Packaging/run consistency | “Works out of box” | Packaging build + packaged launch smoke validated with hardened scripts | Remaining gap: final clean-machine pass + installer docs | P0 |
-| UX discoverability | Low friction UI | Functional but utilitarian | Missing onboarding hints/tooltips/status guidance polish | P1 |
+| UX discoverability | Low friction UI | In-app hints + first-use guidance now visible | Remaining gap: visual polish and richer contextual tooltips | P1 |
 
 ## Top 10 Risks / Blockers (Ranked) + Mitigations
 1. Runtime viewport regressions on specific GPU/driver profiles

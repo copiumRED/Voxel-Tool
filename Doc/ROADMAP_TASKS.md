@@ -107,23 +107,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added non-blocking threshold assertions via configurable multiplier to flag major regressions without overfitting local variance.
 
 ### Task 18: Clean-Machine Packaging Validation
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `20c71cf`
 - Hardened packaging scripts/spec path resolution and fail-fast behavior for reproducible execution.
 - Validated packaging build completion and packaged EXE launch smoke in this environment.
 - Updated `Doc/PACKAGING_CHECKLIST.md` with concrete run notes and expectations.
 
-## Remaining Tasks
+### Task 19: In-App Quick Help / Status Hints
+- Commit: `COMMIT_HASH_PENDING`
+- Added in-panel tool behavior hints including modifier guidance for active tool mode/shape.
+- Added first-use workflow guidance directly in Tools panel (no external docs required).
+- Added shortcut reminder line in the same visible hint block for onboarding/discoverability.
 
-## Task 19: In-App Quick Help / Status Hints
-- Goal: improve discoverability for new users.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/app/ui/panels/tools_panel.py`
-- Acceptance criteria:
-  - Status hints explain selected tool behavior and modifiers.
-  - First-use workflow guidance visible without opening docs.
-- Tests required:
-  - Manual UX smoke.
+## Remaining Tasks
 
 ## Task 20: Phase 1 QA Gate + Bugfix Buffer
 - Goal: run full Phase 1 smoke suite and close top blockers before Phase 2 planning.
