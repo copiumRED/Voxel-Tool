@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
+
+from util.fs import get_app_temp_dir
 
 _LOG_NAME = "voxel_tool.log"
 
@@ -15,7 +16,7 @@ def get_logger(name: str = "voxel_tool") -> logging.Logger:
     logger.setLevel(logging.INFO)
     logger.propagate = False
 
-    log_dir = Path.cwd() / ".tmp"
+    log_dir = get_app_temp_dir("VoxelTool")
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / _LOG_NAME
 
