@@ -22,3 +22,19 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 python -m voxel_tool.app.main
 ```
+
+## Windows Packaging (PyInstaller)
+
+Build a standalone Windows artifact from repo root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1
+```
+
+Expected output executable:
+
+`dist\VoxelTool\VoxelTool.exe`
+
+For verification steps, use:
+
+`PACKAGING_CHECKLIST.md`
