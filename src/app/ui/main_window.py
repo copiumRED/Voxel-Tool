@@ -26,7 +26,9 @@ class MainWindow(QMainWindow):
         self.undo_action: QAction | None = None
         self.redo_action: QAction | None = None
 
-        self.setCentralWidget(GLViewportWidget(self))
+        self.viewport = GLViewportWidget(self)
+        self.viewport.set_context(self.context)
+        self.setCentralWidget(self.viewport)
         self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
         self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
         self._add_dock("Palette", PalettePanel(self), Qt.RightDockWidgetArea)
@@ -186,6 +188,7 @@ class MainWindow(QMainWindow):
     def _refresh_ui_state(self) -> None:
         self.setWindowTitle(f"Voxel Tool - Phase 0 - {self.context.current_project.name}")
         self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
+        self.viewport.update()
         if self.undo_action is not None:
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
         if self.redo_action is not None:
