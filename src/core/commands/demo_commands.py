@@ -50,6 +50,29 @@ class AddVoxelCommand(Command):
         ctx.current_project.voxels.remove(self.x, self.y, self.z)
 
 
+class RemoveVoxelCommand(Command):
+    def __init__(self, x: int, y: int, z: int) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
+        self._had_previous = False
+        self._previous_color: int | None = None
+
+    @property
+    def name(self) -> str:
+        return "Remove Voxel"
+
+    def do(self, ctx) -> None:
+        previous = ctx.current_project.voxels.get(self.x, self.y, self.z)
+        self._had_previous = previous is not None
+        self._previous_color = previous
+        ctx.current_project.voxels.remove(self.x, self.y, self.z)
+
+    def undo(self, ctx) -> None:
+        if self._had_previous and self._previous_color is not None:
+            ctx.current_project.voxels.set(self.x, self.y, self.z, self._previous_color)
+
+
 class ClearVoxelsCommand(Command):
     def __init__(self) -> None:
         self._snapshot: list[list[int]] = []

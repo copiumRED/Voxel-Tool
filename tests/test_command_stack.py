@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from app.app_context import AppContext
-from core.commands.demo_commands import AddVoxelCommand, ClearVoxelsCommand, RenameProjectCommand
+from core.commands.demo_commands import (
+    AddVoxelCommand,
+    ClearVoxelsCommand,
+    RemoveVoxelCommand,
+    RenameProjectCommand,
+)
 from core.project import Project
 
 
@@ -43,3 +48,25 @@ def test_voxel_commands_undo_redo_counts() -> None:
 
     ctx.command_stack.undo(ctx)
     assert ctx.current_project.voxels.count() == 1
+
+
+def test_add_voxel_overwrite_undo_restores_previous_color() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.current_project.voxels.set(1, 2, 0, 3)
+
+    ctx.command_stack.do(AddVoxelCommand(1, 2, 0, 7), ctx)
+    assert ctx.current_project.voxels.get(1, 2, 0) == 7
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.get(1, 2, 0) == 3
+
+
+def test_remove_voxel_undo_restores_if_present() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.current_project.voxels.set(2, -1, 0, 5)
+
+    ctx.command_stack.do(RemoveVoxelCommand(2, -1, 0), ctx)
+    assert ctx.current_project.voxels.get(2, -1, 0) is None
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.get(2, -1, 0) == 5

@@ -5,7 +5,7 @@ from ctypes import c_void_p
 from math import cos, radians, sin
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPointF, Qt, Signal
 from PySide6.QtGui import QColor, QMatrix4x4, QPainter, QVector3D
 from PySide6.QtOpenGL import QOpenGLBuffer, QOpenGLShader, QOpenGLShaderProgram
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class GLViewportWidget(QOpenGLWidget):
+    voxel_edit_applied = Signal(str)
+
     _GL_COLOR_BUFFER_BIT = 0x00004000
     _GL_DEPTH_BUFFER_BIT = 0x00000100
     _GL_POINTS = 0x0000
@@ -48,6 +50,8 @@ class GLViewportWidget(QOpenGLWidget):
         self.distance = self._DEFAULT_DISTANCE
         self.target = QVector3D(0.0, 0.0, 0.0)
         self._last_mouse_pos: tuple[float, float] | None = None
+        self._left_press_pos: QPointF | None = None
+        self._left_dragging = False
 
     def set_context(self, ctx: "AppContext") -> None:
         self._app_context = ctx
@@ -130,18 +134,7 @@ class GLViewportWidget(QOpenGLWidget):
         if self._app_context is None or self._program is None or self._buffer is None:
             return
 
-        width = max(1, self.width())
-        height = max(1, self.height())
-        mvp = QMatrix4x4()
-        mvp.perspective(45.0, width / height, 0.1, 200.0)
-        yaw = radians(self.yaw_deg)
-        pitch = radians(self.pitch_deg)
-        eye = QVector3D(
-            self.target.x() + self.distance * cos(pitch) * cos(yaw),
-            self.target.y() + self.distance * sin(pitch),
-            self.target.z() + self.distance * cos(pitch) * sin(yaw),
-        )
-        mvp.lookAt(eye, self.target, QVector3D(0.0, 1.0, 0.0))
+        mvp = self._build_view_projection_matrix()
 
         voxel_rows = self._app_context.current_project.voxels.to_list()
         if voxel_rows:
@@ -214,6 +207,9 @@ class GLViewportWidget(QOpenGLWidget):
         if event.button() in (Qt.LeftButton, Qt.RightButton):
             pos = event.position()
             self._last_mouse_pos = (pos.x(), pos.y())
+        if event.button() == Qt.LeftButton:
+            self._left_press_pos = event.position()
+            self._left_dragging = False
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
@@ -226,9 +222,15 @@ class GLViewportWidget(QOpenGLWidget):
         self._last_mouse_pos = (pos.x(), pos.y())
 
         if event.buttons() & Qt.LeftButton:
-            self.yaw_deg += dx * 0.4
-            self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
-            self.update()
+            if self._left_press_pos is not None and not self._left_dragging:
+                press_dx = pos.x() - self._left_press_pos.x()
+                press_dy = pos.y() - self._left_press_pos.y()
+                if (press_dx * press_dx + press_dy * press_dy) >= 9.0:
+                    self._left_dragging = True
+            if self._left_dragging:
+                self.yaw_deg += dx * 0.4
+                self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                self.update()
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -239,6 +241,11 @@ class GLViewportWidget(QOpenGLWidget):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            if not self._left_dragging:
+                self._handle_left_click(event.position(), event.modifiers())
+            self._left_press_pos = None
+            self._left_dragging = False
         if event.button() in (Qt.LeftButton, Qt.RightButton):
             self._last_mouse_pos = None
         super().mouseReleaseEvent(event)
@@ -267,3 +274,57 @@ class GLViewportWidget(QOpenGLWidget):
         right = QVector3D.crossProduct(forward, world_up).normalized()
         up = QVector3D.crossProduct(right, forward).normalized()
         return eye, forward, right, up
+
+    def _build_view_projection_matrix(self) -> QMatrix4x4:
+        width = max(1, self.width())
+        height = max(1, self.height())
+        mvp = QMatrix4x4()
+        mvp.perspective(45.0, width / height, 0.1, 200.0)
+        eye, _, _, _ = self._camera_vectors()
+        mvp.lookAt(eye, self.target, QVector3D(0.0, 1.0, 0.0))
+        return mvp
+
+    def _handle_left_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
+        if self._app_context is None:
+            return
+        ray = self._screen_to_world_ray(pos.x(), pos.y())
+        if ray is None:
+            return
+        origin, direction = ray
+        if abs(direction.z()) < 1e-6:
+            return
+
+        t = -origin.z() / direction.z()
+        if t <= 0.0:
+            return
+
+        hit = origin + (direction * t)
+        x = int(round(hit.x()))
+        y = int(round(hit.y()))
+        z = 0
+
+        if modifiers & Qt.ShiftModifier:
+            from core.commands.demo_commands import RemoveVoxelCommand
+
+            self._app_context.command_stack.do(RemoveVoxelCommand(x, y, z), self._app_context)
+            self.voxel_edit_applied.emit(f"Remove: ({x}, {y}, {z})")
+        else:
+            from core.commands.demo_commands import AddVoxelCommand
+
+            color_index = self._app_context.active_color_index
+            self._app_context.command_stack.do(AddVoxelCommand(x, y, z, color_index), self._app_context)
+            self.voxel_edit_applied.emit(f"Paint: ({x}, {y}, {z}) color {color_index}")
+        self.update()
+
+    def _screen_to_world_ray(self, x: float, y: float) -> tuple[QVector3D, QVector3D] | None:
+        width = max(1, self.width())
+        height = max(1, self.height())
+        ndc_x = (2.0 * x / width) - 1.0
+        ndc_y = 1.0 - (2.0 * y / height)
+        aspect = width / height
+        tan_half_fov = 0.41421356237  # tan(45deg / 2)
+        eye, forward, right, up = self._camera_vectors()
+        direction = (
+            forward + (right * (ndc_x * aspect * tan_half_fov)) + (up * (ndc_y * tan_half_fov))
+        ).normalized()
+        return eye, direction

@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
+        self.viewport.voxel_edit_applied.connect(self._on_viewport_voxel_edit_applied)
         self.setCentralWidget(self.viewport)
         self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
         self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
@@ -239,6 +240,10 @@ class MainWindow(QMainWindow):
 
     def _on_frame_voxels(self) -> None:
         self.viewport.frame_to_voxels()
+
+    def _on_viewport_voxel_edit_applied(self, message: str) -> None:
+        self._show_voxel_status(message)
+        self._refresh_ui_state()
 
     def _restore_layout_settings(self) -> None:
         settings = get_settings()
