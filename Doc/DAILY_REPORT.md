@@ -59,6 +59,19 @@
 - Issues noticed:
   - `git pull` remained blocked by restricted network access; execution continued against local `main`.
 
+### Roadmap 05 (Next Workday): Part Reorder in Inspector + Persistence
+- What was done:
+  - Added explicit part ordering support in `Scene` (`part_order`) and reordering API (`move_part`).
+  - Added Inspector `Move Up` / `Move Down` controls for ordered part list management.
+  - Updated project save/load to preserve and restore part order deterministically.
+  - Added tests for scene reorder behavior and project IO order roundtrip persistence.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create 3 parts, reorder using Move Up/Down, save project, reopen, and verify order is preserved.
+  - Run: `pytest -q` (current: `69 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by network restrictions; task executed from local `main` baseline.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

@@ -95,6 +95,18 @@ def test_scene_iter_visible_parts_hides_non_visible_entries() -> None:
     assert second.part_id not in visible_part_ids
 
 
+def test_scene_move_part_updates_order() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    third = scene.add_part("Part 3")
+
+    assert [part_id for part_id, _ in scene.iter_parts_ordered()] == [first.part_id, second.part_id, third.part_id]
+    moved = scene.move_part(third.part_id, -1)
+    assert moved is True
+    assert [part_id for part_id, _ in scene.iter_parts_ordered()] == [first.part_id, third.part_id, second.part_id]
+
+
 def test_part_lock_flag_blocks_edit_intent_in_context() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     active = ctx.active_part

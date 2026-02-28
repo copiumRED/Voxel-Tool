@@ -24,7 +24,10 @@ def test_project_save_load_roundtrip() -> None:
         "voxel_tool_mode": "erase",
         "mirror_x_enabled": True,
     }
+    first_part_id = project.active_part_id
     second_part = project.scene.add_part("Part 2")
+    third_part = project.scene.add_part("Part 3")
+    project.scene.move_part(third_part.part_id, -1)
     project.scene.set_active_part(second_part.part_id)
     second_part.voxels.set(5, 0, -1, 6)
     second_part.position = (2.5, -1.0, 3.0)
@@ -41,7 +44,7 @@ def test_project_save_load_roundtrip() -> None:
         assert loaded.modified_utc == project.modified_utc
         assert loaded.version == project.version
         assert loaded.editor_state == project.editor_state
-        assert len(loaded.scene.parts) == 2
+        assert len(loaded.scene.parts) == 3
         assert loaded.scene.active_part_id == second_part.part_id
         assert loaded.scene.parts[project.active_part_id].voxels.to_list() == second_part.voxels.to_list()
         assert loaded.scene.parts[project.active_part_id].position == (2.5, -1.0, 3.0)
@@ -49,11 +52,11 @@ def test_project_save_load_roundtrip() -> None:
         assert loaded.scene.parts[project.active_part_id].scale == (1.0, 2.0, 1.0)
         assert loaded.scene.parts[project.active_part_id].visible is False
         assert loaded.scene.parts[project.active_part_id].locked is True
-        first_part_id = next(part_id for part_id in loaded.scene.parts if part_id != second_part.part_id)
         assert loaded.scene.parts[first_part_id].voxels.get(1, 1, 1) == 3
         assert loaded.scene.parts[first_part_id].voxels.get(-2, 4, 0) == 7
         assert loaded.scene.parts[first_part_id].visible is True
         assert loaded.scene.parts[first_part_id].locked is False
+        assert loaded.scene.part_order == project.scene.part_order
     finally:
         path.unlink(missing_ok=True)
 

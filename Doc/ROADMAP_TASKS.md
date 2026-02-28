@@ -31,21 +31,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added Inspector transform controls (Pos/Rot/Scale) with immediate active-part updates and status messaging.
 - Updated viewport rendering/frame logic to apply per-part transforms so transform edits are visible immediately.
 
-## Remaining Tasks
-
 ### Task 05: Part Reorder in Inspector + Persistence
-- Goal:
-  - Allow part list reordering and persist stable order.
-- Files/modules likely touched:
-  - `src/core/scene.py`
-  - `src/app/ui/panels/inspector_panel.py`
-  - `src/core/io/project_io.py`
-- Acceptance criteria (human-testable):
-  - User can move selected part up/down.
-  - Reordered list persists after save/open.
-- Tests required:
-  - Scene ordering tests.
-  - Project IO order roundtrip tests.
+- Commit: `COMMIT_PENDING`
+- Added explicit `Scene.part_order` with move-up/move-down support and ordered iteration helpers.
+- Added Inspector `Move Up`/`Move Down` actions for part list reordering with immediate list refresh.
+- Updated project IO to persist/load part order and added tests for scene reorder behavior and IO roundtrip order stability.
+
+## Remaining Tasks
 
 ### Task 06: Grouping v1 (Create Group, Add/Remove Parts, Group Visibility/Lock)
 - Goal:

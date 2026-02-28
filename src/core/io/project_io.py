@@ -15,7 +15,7 @@ _EDITOR_STATE_KEY = "editor_state"
 
 def save_project(project: Project, path: str) -> None:
     parts_payload = []
-    for part in project.scene.parts.values():
+    for _, part in project.scene.iter_parts_ordered():
         parts_payload.append(
             {
                 "part_id": part.part_id,
@@ -106,6 +106,7 @@ def load_project(path: str) -> Project:
                 visible=visible,
                 locked=locked,
             )
+            scene.part_order.append(part_id)
 
         if not scene.parts:
             raise ValueError("Invalid project schema (scene must contain at least one part).")
@@ -114,7 +115,7 @@ def load_project(path: str) -> Project:
         if requested_active_part_id in scene.parts:
             scene.active_part_id = requested_active_part_id
         else:
-            scene.active_part_id = next(iter(scene.parts.keys()))
+            scene.active_part_id = scene.part_order[0]
 
         project.scene = scene
     else:

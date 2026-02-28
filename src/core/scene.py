@@ -17,6 +17,7 @@ def _next_part_id() -> str:
 class Scene:
     parts: dict[str, Part] = field(default_factory=dict)
     active_part_id: str | None = None
+    part_order: list[str] = field(default_factory=list)
 
     @classmethod
     def with_default_part(cls) -> "Scene":
@@ -27,6 +28,7 @@ class Scene:
     def add_part(self, name: str) -> Part:
         part = Part(part_id=_next_part_id(), name=name)
         self.parts[part.part_id] = part
+        self.part_order.append(part.part_id)
         if self.active_part_id is None:
             self.active_part_id = part.part_id
         return part
@@ -72,6 +74,7 @@ class Scene:
             locked=source.locked,
         )
         self.parts[duplicate.part_id] = duplicate
+        self.part_order.append(duplicate.part_id)
         self.active_part_id = duplicate.part_id
         return duplicate
 
@@ -83,9 +86,27 @@ class Scene:
 
         was_active = self.active_part_id == part_id
         del self.parts[part_id]
+        self.part_order = [pid for pid in self.part_order if pid != part_id]
         if was_active:
-            self.active_part_id = next(iter(self.parts.keys()))
+            self.active_part_id = self.part_order[0]
         return self.active_part_id or ""
 
     def iter_visible_parts(self) -> list[Part]:
-        return [part for part in self.parts.values() if part.visible]
+        return [part for _, part in self.iter_parts_ordered() if part.visible]
+
+    def iter_parts_ordered(self) -> list[tuple[str, Part]]:
+        if not self.part_order:
+            self.part_order = list(self.parts.keys())
+        return [(part_id, self.parts[part_id]) for part_id in self.part_order if part_id in self.parts]
+
+    def move_part(self, part_id: str, direction: int) -> bool:
+        if part_id not in self.parts or direction not in (-1, 1):
+            return False
+        if part_id not in self.part_order:
+            self.part_order = list(self.parts.keys())
+        index = self.part_order.index(part_id)
+        target = index + direction
+        if target < 0 or target >= len(self.part_order):
+            return False
+        self.part_order[index], self.part_order[target] = self.part_order[target], self.part_order[index]
+        return True

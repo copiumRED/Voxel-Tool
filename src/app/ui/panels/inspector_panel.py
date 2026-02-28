@@ -50,6 +50,12 @@ class InspectorPanel(QWidget):
         self.delete_part_button = QPushButton("Delete Part", self)
         self.delete_part_button.clicked.connect(self._on_delete_part)
         buttons_layout.addWidget(self.delete_part_button)
+        self.move_up_button = QPushButton("Move Up", self)
+        self.move_up_button.clicked.connect(lambda: self._on_move_part(-1))
+        buttons_layout.addWidget(self.move_up_button)
+        self.move_down_button = QPushButton("Move Down", self)
+        self.move_down_button.clicked.connect(lambda: self._on_move_part(1))
+        buttons_layout.addWidget(self.move_down_button)
 
         layout.addLayout(buttons_layout)
 
@@ -106,7 +112,7 @@ class InspectorPanel(QWidget):
         active_part = self._context.active_part
         self.part_list.blockSignals(True)
         self.part_list.clear()
-        for part_id, part in self._context.current_project.scene.parts.items():
+        for part_id, part in self._context.current_project.scene.iter_parts_ordered():
             item = QListWidgetItem(part.name)
             item.setData(Qt.UserRole, part_id)
             self.part_list.addItem(item)
@@ -254,6 +260,28 @@ class InspectorPanel(QWidget):
             "Part transform updated: "
             f"pos={part.position} rot={part.rotation} scale={part.scale} ({part.name})"
         )
+
+    def _on_move_part(self, direction: int) -> None:
+        if self._context is None:
+            return
+        current_item = self.part_list.currentItem()
+        if current_item is None:
+            return
+        part_id = current_item.data(Qt.UserRole)
+        if not isinstance(part_id, str):
+            return
+        moved = self._context.current_project.scene.move_part(part_id, direction)
+        if not moved:
+            return
+        self.refresh()
+        self.part_list.setCurrentRow(
+            next(
+                i
+                for i in range(self.part_list.count())
+                if self.part_list.item(i).data(Qt.UserRole) == part_id
+            )
+        )
+        self.part_status_message.emit(f"Part order updated: {self._context.active_part.name}")
 
     @staticmethod
     def _create_transform_spin(
