@@ -63,6 +63,8 @@ class GLViewportWidget(QOpenGLWidget):
         self._logger = logging.getLogger("voxel_tool")
         self.last_gl_info = "unknown"
         self._shader_profile = "unknown"
+        self._init_error_text: str | None = None
+        self._logged_pipeline_missing = False
         self.debug_overlay_enabled = True
         self.yaw_deg = self._DEFAULT_YAW_DEG
         self.pitch_deg = self._DEFAULT_PITCH_DEG
@@ -111,6 +113,7 @@ class GLViewportWidget(QOpenGLWidget):
 
     def initializeGL(self) -> None:
         try:
+            self._logger.info("initializeGL called.")
             funcs = self.context().functions()
             funcs.glClearColor(0.18, 0.22, 0.27, 1.0)
             funcs.glEnable(self._GL_DEPTH_TEST)
@@ -134,7 +137,11 @@ class GLViewportWidget(QOpenGLWidget):
             vao = QOpenGLVertexArrayObject(self)
             vao.create()
             self._vao = vao
+            self._init_error_text = None
+            self._logged_pipeline_missing = False
+            self._logger.info("Viewport GL pipeline initialized (shader=%s).", self._shader_profile)
         except Exception as exc:  # pragma: no cover
+            self._init_error_text = str(exc)
             self.viewport_error.emit(str(exc))
             self._logger.exception("OpenGL initialization failed")
 
@@ -145,10 +152,18 @@ class GLViewportWidget(QOpenGLWidget):
             return
         voxel_rows = self._app_context.current_project.voxels.to_list()
         if self._program is None or self._buffer is None or self._vao is None:
+            if not self._logged_pipeline_missing:
+                self._logger.error(
+                    "Viewport render pipeline missing (program=%s buffer=%s vao=%s).",
+                    self._program is not None,
+                    self._buffer is not None,
+                    self._vao is not None,
+                )
+                self._logged_pipeline_missing = True
             if self.debug_overlay_enabled:
                 self._draw_overlay_text(
                     len(voxel_rows),
-                    error_text="Viewport render pipeline not initialized.",
+                    error_text=self._init_error_text or "Viewport render pipeline not initialized.",
                 )
             return
 
@@ -208,8 +223,8 @@ class GLViewportWidget(QOpenGLWidget):
             return 0
         self._program.enableAttributeArray(position_location)
         self._program.enableAttributeArray(color_location)
-        funcs.glVertexAttribPointer(position_location, 3, self._GL_FLOAT, False, stride, c_void_p(0))
-        funcs.glVertexAttribPointer(color_location, 3, self._GL_FLOAT, False, stride, c_void_p(3 * 4))
+        self._program.setAttributeBuffer(position_location, self._GL_FLOAT, 0, 3, stride)
+        self._program.setAttributeBuffer(color_location, self._GL_FLOAT, 3 * 4, 3, stride)
         count = len(vertex_data) // 6
         funcs.glDrawArrays(mode, 0, count)
         self._program.disableAttributeArray(position_location)
@@ -277,6 +292,31 @@ class GLViewportWidget(QOpenGLWidget):
                 """,
                 """
                 #version 330 core
+                in vec3 v_color;
+                out vec4 frag_color;
+                void main() {
+                    frag_color = vec4(v_color, 1.0);
+                }
+                """,
+            ),
+            (
+                "glsl-300-es",
+                """
+                #version 300 es
+                precision highp float;
+                in vec3 position;
+                in vec3 color;
+                out vec3 v_color;
+                uniform mat4 u_mvp;
+                void main() {
+                    v_color = color;
+                    gl_Position = u_mvp * vec4(position, 1.0);
+                    gl_PointSize = 12.0;
+                }
+                """,
+                """
+                #version 300 es
+                precision highp float;
                 in vec3 v_color;
                 out vec4 frag_color;
                 void main() {
