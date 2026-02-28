@@ -31,7 +31,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.viewport)
         self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
         self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
-        self._add_dock("Palette", PalettePanel(self), Qt.RightDockWidgetArea)
+        self.palette_panel = PalettePanel(self)
+        self.palette_panel.set_context(self.context)
+        self.palette_panel.active_color_changed.connect(self._on_active_color_changed)
+        self._add_dock("Palette", self.palette_panel, Qt.RightDockWidgetArea)
         self.stats_panel = StatsPanel(self)
         self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
         self._build_file_menu()
@@ -197,7 +200,7 @@ class MainWindow(QMainWindow):
         x = random.randint(-5, 5)
         y = random.randint(-5, 5)
         z = random.randint(-5, 5)
-        color_index = random.randint(0, 7)
+        color_index = self.context.active_color_index
         self.context.command_stack.do(AddVoxelCommand(x, y, z, color_index), self.context)
         self._show_voxel_status(f"Added voxel: ({x}, {y}, {z}) color {color_index}")
         self._refresh_ui_state()
@@ -211,6 +214,7 @@ class MainWindow(QMainWindow):
     def _refresh_ui_state(self) -> None:
         self.setWindowTitle(f"Voxel Tool - Phase 0 - {self.context.current_project.name}")
         self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
+        self.palette_panel.refresh()
         self.viewport.update()
         if self.undo_action is not None:
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
@@ -219,7 +223,12 @@ class MainWindow(QMainWindow):
 
     def _show_voxel_status(self, message: str) -> None:
         count = self.context.current_project.voxels.count()
-        self.statusBar().showMessage(f"{message} | Voxels: {count}", 5000)
+        active = self.context.active_color_index
+        self.statusBar().showMessage(f"{message} | Voxels: {count} | Active Color: {active}", 5000)
+
+    def _on_active_color_changed(self, index: int) -> None:
+        self._show_voxel_status(f"Active Color: {index}")
+        self._refresh_ui_state()
 
     def _on_toggle_debug_overlay(self, enabled: bool) -> None:
         self.viewport.debug_overlay_enabled = enabled
