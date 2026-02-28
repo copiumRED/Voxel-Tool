@@ -15,6 +15,7 @@ from core.commands.demo_commands import (
     PaintVoxelCommand,
     RenameProjectCommand,
 )
+from core.analysis.stats import compute_scene_stats
 from core.export.obj_exporter import export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.io.project_io import load_project, save_project
@@ -291,7 +292,12 @@ class MainWindow(QMainWindow):
 
     def _refresh_ui_state(self) -> None:
         self.setWindowTitle(f"Voxel Tool - Phase 0 - {self.context.current_project.name}")
-        self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
+        scene_stats = compute_scene_stats(self.context.current_project)
+        self.stats_panel.set_scene_stats(
+            scene_stats,
+            active_part_id=self.context.active_part_id,
+            active_voxel_count=self.context.current_project.voxels.count(),
+        )
         self.palette_panel.refresh()
         self.inspector_panel.refresh()
         self.tools_panel.refresh()
