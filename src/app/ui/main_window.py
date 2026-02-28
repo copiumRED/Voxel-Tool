@@ -16,6 +16,7 @@ from core.commands.demo_commands import (
     RenameProjectCommand,
 )
 from core.export.obj_exporter import export_voxels_to_obj
+from core.export.gltf_exporter import export_voxels_to_gltf
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -95,6 +96,10 @@ class MainWindow(QMainWindow):
         export_obj_action = QAction("Export OBJ", self)
         export_obj_action.triggered.connect(self._on_export_obj)
         file_menu.addAction(export_obj_action)
+
+        export_gltf_action = QAction("Export glTF", self)
+        export_gltf_action.triggered.connect(self._on_export_gltf)
+        file_menu.addAction(export_gltf_action)
 
         file_menu.addSeparator()
 
@@ -225,6 +230,24 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"No voxels to export | Exported OBJ: {path}", 5000)
             return
         self.statusBar().showMessage(f"Exported OBJ: {path} | Voxels: {voxel_count}", 5000)
+
+    def _on_export_gltf(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export glTF",
+            "",
+            "glTF (*.gltf);;All Files (*)",
+        )
+        if not path:
+            return
+        stats = export_voxels_to_gltf(self.context.current_project.voxels, path)
+        if stats.triangle_count == 0:
+            self.statusBar().showMessage(f"No voxels to export | Exported glTF: {path}", 5000)
+            return
+        self.statusBar().showMessage(
+            f"Exported glTF: {path} | Vertices: {stats.vertex_count} | Triangles: {stats.triangle_count}",
+            5000,
+        )
 
     def _on_demo_rename_project(self) -> None:
         text, ok = QInputDialog.getText(
