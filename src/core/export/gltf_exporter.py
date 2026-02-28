@@ -5,6 +5,7 @@ import json
 import struct
 from dataclasses import dataclass
 
+from core.meshing.mesh import SurfaceMesh
 from core.meshing.solidify import build_solid_mesh
 from core.voxels.voxel_grid import VoxelGrid
 
@@ -15,9 +16,9 @@ class GltfExportStats:
     triangle_count: int
 
 
-def export_voxels_to_gltf(voxels: VoxelGrid, path: str) -> GltfExportStats:
-    mesh = build_solid_mesh(voxels, greedy=True)
-    if mesh.face_count == 0:
+def export_voxels_to_gltf(voxels: VoxelGrid, path: str, mesh: SurfaceMesh | None = None) -> GltfExportStats:
+    export_mesh = mesh or build_solid_mesh(voxels, greedy=True)
+    if export_mesh.face_count == 0:
         payload = {
             "asset": {"version": "2.0", "generator": "VoxelTool"},
             "scenes": [{"nodes": []}],
@@ -29,9 +30,9 @@ def export_voxels_to_gltf(voxels: VoxelGrid, path: str) -> GltfExportStats:
             json.dump(payload, file_obj, indent=2)
         return GltfExportStats(vertex_count=0, triangle_count=0)
 
-    positions = mesh.vertices
+    positions = export_mesh.vertices
     indices: list[int] = []
-    for a, b, c, d in mesh.quads:
+    for a, b, c, d in export_mesh.quads:
         indices.extend((a, b, c, a, c, d))
 
     vertex_bytes = b"".join(struct.pack("<3f", x, y, z) for x, y, z in positions)

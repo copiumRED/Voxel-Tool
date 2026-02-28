@@ -77,24 +77,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added command tests for stroke segment rasterization and single-step undo behavior.
 
 ### Task 13: Fill Tool Constraints + Safety Guards
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `8c7d5f8`
 - Added bounded fill threshold (`fill_max_cells`) to prevent oversized fill operations from freezing interaction.
 - Added explicit fill abort signaling and user-visible status feedback when threshold is exceeded.
 - Added unit test coverage for threshold-blocked fill behavior.
 
-## Remaining Tasks
+### Task 14: Solidify UI Action + Mesh Cache Refresh
+- Commit: `COMMIT_HASH_PENDING`
+- Added explicit `Voxels -> Solidify/Rebuild Mesh` action that rebuilds and caches the active part mesh.
+- Added per-part mesh cache plumbing and cache invalidation on voxel edits.
+- Updated stats/export paths to consume refreshed mesh buffers consistently when cache is present.
 
-## Task 14: Solidify UI Action + Mesh Cache Refresh
-- Goal: expose explicit “Solidify/Rebuild Mesh” control.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/core/meshing/solidify.py`
-  - `src/core/part.py`
-- Acceptance criteria:
-  - User can trigger mesh rebuild from active part.
-  - Stats/export consume refreshed mesh buffers consistently.
-- Tests required:
-  - Core integration tests for rebuild-triggered mesh updates.
+## Remaining Tasks
 
 ## Task 15: Bounds + Unit-Aware Stats Display
 - Goal: improve scene/object analysis usefulness for production constraints.

@@ -170,6 +170,18 @@
 - Issues noticed:
   - Current threshold is static (`5000`) and not yet exposed as a user setting.
 
+### Roadmap 14: Solidify UI Action + Mesh Cache Refresh
+- What was done:
+  - Added `Voxels -> Solidify/Rebuild Mesh` action to rebuild active-part mesh cache on demand.
+  - Added part mesh cache support and edit-time cache invalidation for consistency.
+  - Updated stats and export paths to consume refreshed cached mesh buffers when available.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Add voxels, trigger `Voxels -> Solidify/Rebuild Mesh`, then check stats/export behavior.
+  - Run: `pytest -q` (current: `59 passed`)
+- Issues noticed:
+  - Mesh cache is runtime-only and intentionally not persisted in project files yet.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

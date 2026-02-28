@@ -39,6 +39,7 @@ class PaintVoxelCommand(Command):
         return "Paint Voxel"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
         cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
         self._deltas = _apply_voxel_mode(voxels, cells, mode="paint", color_index=self.color_index)
@@ -64,6 +65,7 @@ class RemoveVoxelCommand(Command):
         return "Erase Voxel"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
         cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
         self._deltas = _apply_voxel_mode(voxels, cells, mode="erase", color_index=None)
@@ -86,6 +88,7 @@ class ClearVoxelsCommand(Command):
         return "Clear Voxels"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         self._snapshot = ctx.current_project.voxels.to_list()
         ctx.current_project.voxels.clear()
 
@@ -104,6 +107,7 @@ class CreateTestVoxelsCommand(Command):
         return "Create Test Voxels"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         self._snapshot = ctx.current_project.voxels.to_list()
         voxels = ctx.current_project.voxels
         voxels.clear()
@@ -156,6 +160,7 @@ class BoxVoxelCommand(Command):
         return "Box Fill" if self.mode == "paint" else "Box Erase"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
         base_cells: set[tuple[int, int, int]] = set()
         min_x, max_x = sorted((self.start_x, self.end_x))
@@ -202,6 +207,7 @@ class LineVoxelCommand(Command):
         return "Line Paint" if self.mode == "paint" else "Line Erase"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
         base_cells: set[tuple[int, int, int]] = set()
         for x, y in _rasterize_line(self.start_x, self.start_y, self.end_x, self.end_y):
@@ -234,6 +240,7 @@ class FillVoxelCommand(Command):
         return "Flood Fill" if self.mode == "paint" else "Flood Erase"
 
     def do(self, ctx) -> None:
+        _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
         self.aborted_by_threshold = False
         self.aborted_threshold_limit = 0
@@ -358,6 +365,12 @@ def _apply_voxel_mode(
         else:
             voxels.set(x, y, z, color_index)  # type: ignore[arg-type]
     return deltas
+
+
+def _invalidate_active_mesh_cache(ctx) -> None:
+    active_part = getattr(ctx, "active_part", None)
+    if active_part is not None and hasattr(active_part, "mesh_cache"):
+        active_part.mesh_cache = None
 
 
 def _flood_plane_region(

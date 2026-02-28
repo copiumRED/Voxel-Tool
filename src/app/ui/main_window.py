@@ -32,6 +32,7 @@ from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
+from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
 from app.ui.panels.palette_panel import PalettePanel
@@ -224,6 +225,11 @@ class MainWindow(QMainWindow):
     def _build_voxels_menu(self) -> None:
         voxels_menu = self.menuBar().addMenu("&Voxels")
 
+        solidify_action = QAction("Solidify/Rebuild Mesh", self)
+        solidify_action.triggered.connect(self._on_solidify_rebuild_mesh)
+        voxels_menu.addAction(solidify_action)
+        voxels_menu.addSeparator()
+
         add_voxel_action = QAction("Demo: Add Random Voxel", self)
         add_voxel_action.triggered.connect(self._on_demo_add_random_voxel)
         voxels_menu.addAction(add_voxel_action)
@@ -328,6 +334,7 @@ class MainWindow(QMainWindow):
                 use_greedy_mesh=export_options.obj_use_greedy_mesh,
                 triangulate=export_options.obj_triangulate,
             ),
+            mesh=self.context.active_part.mesh_cache,
         )
         voxel_count = self.context.current_project.voxels.count()
         if voxel_count == 0:
@@ -357,7 +364,11 @@ class MainWindow(QMainWindow):
         )
         if not path:
             return
-        stats = export_voxels_to_gltf(self.context.current_project.voxels, path)
+        stats = export_voxels_to_gltf(
+            self.context.current_project.voxels,
+            path,
+            mesh=self.context.active_part.mesh_cache,
+        )
         if stats.triangle_count == 0:
             self.statusBar().showMessage(
                 f"No voxels to export | Exported glTF: {path} | Scale: {export_options.scale_preset}",
@@ -420,6 +431,14 @@ class MainWindow(QMainWindow):
 
         self.context.command_stack.do(RenameProjectCommand(new_name), self.context)
         self._show_voxel_status(f"Renamed project: {new_name}")
+        self._refresh_ui_state()
+
+    def _on_solidify_rebuild_mesh(self) -> None:
+        part = self.context.active_part
+        mesh = rebuild_part_mesh(part, greedy=True)
+        self._show_voxel_status(
+            f"Solidified part: {part.name} | Faces: {mesh.face_count} | Vertices: {len(mesh.vertices)}"
+        )
         self._refresh_ui_state()
 
     def _on_undo(self) -> None:

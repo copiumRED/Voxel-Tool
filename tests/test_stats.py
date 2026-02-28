@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from core.analysis.stats import compute_scene_stats
+from core.meshing.mesh import SurfaceMesh
+from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project
 
 
@@ -26,3 +28,21 @@ def test_compute_scene_stats_part_and_scene_totals() -> None:
     second = next(part for part in stats.parts if part.part_id == part_b.part_id)
     assert first.bounds_size == (2, 1, 1)
     assert second.bounds_size == (1, 2, 1)
+
+
+def test_rebuild_mesh_refreshes_stats_from_cache() -> None:
+    project = Project(name="Stats Cache")
+    part = project.scene.get_active_part()
+    part.voxels.set(0, 0, 0, 1)
+
+    rebuild_part_mesh(part, greedy=True)
+    baseline = compute_scene_stats(project)
+    assert baseline.faces > 0
+
+    part.mesh_cache = SurfaceMesh(vertices=[], quads=[])
+    stale = compute_scene_stats(project)
+    assert stale.faces == 0
+
+    rebuild_part_mesh(part, greedy=True)
+    refreshed = compute_scene_stats(project)
+    assert refreshed.faces == baseline.faces

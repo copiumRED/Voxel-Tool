@@ -45,7 +45,7 @@ def compute_scene_stats(project: Project) -> SceneStats:
 
 
 def _compute_part_stats(part: Part) -> PartStats:
-    mesh = build_solid_mesh(part.voxels, greedy=True)
+    mesh = part.mesh_cache if part.mesh_cache is not None else build_solid_mesh(part.voxels, greedy=True)
     unique_vertices = set(mesh.vertices)
     unique_edges: set[tuple[int, int]] = set()
     for a, b, c, d in mesh.quads:

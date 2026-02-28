@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **87%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **89%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -31,6 +31,7 @@ Reasoning:
 - Correction 15: Palette preset save/load flow is implemented with active-color validity protection.
 - Correction 16: Continuous brush drag painting is implemented with one-step stroke undo transactions.
 - Correction 17: Fill safety threshold is implemented with explicit user feedback for blocked oversized fills.
+- Correction 18: Explicit solidify/rebuild action now refreshes active-part mesh cache used by stats/export paths.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -43,7 +44,7 @@ Reasoning:
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Save/load presets implemented with active color safety | Remaining gap: palette swap/hotkeys/preset metadata polish | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
-| Import/export breadth | Robust interop | OBJ + glTF + VOX export + options panel v1 + VOX Qubicle validation implemented | Remaining gap: deeper format parity + VOX import | P0 |
+| Import/export breadth | Robust interop | Export paths consume refreshed mesh cache + options panel v1 + VOX Qubicle validation | Remaining gap: deeper format parity + VOX import | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Unknown at larger voxel counts | Need perf benchmarks and optimization passes | P0 |

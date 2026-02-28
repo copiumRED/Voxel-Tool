@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 
+from core.meshing.mesh import SurfaceMesh
 from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.palette import DEFAULT_PALETTE
 from core.voxels.voxel_grid import VoxelGrid
@@ -70,5 +71,24 @@ def test_export_obj_greedy_reduces_adjacent_faces() -> None:
         export_voxels_to_obj(voxels, list(DEFAULT_PALETTE), str(path), options=ObjExportOptions(use_greedy_mesh=True))
         assert path.exists()
         assert _count_prefixed_lines(path, "f ") == 6
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_export_obj_uses_provided_mesh_buffer() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 0)
+    mesh = SurfaceMesh(vertices=[(0.0, 0.0, 0.0)], quads=[])
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-mesh-buffer-{uuid.uuid4().hex}.obj"
+    try:
+        export_voxels_to_obj(
+            voxels,
+            list(DEFAULT_PALETTE),
+            str(path),
+            options=ObjExportOptions(use_greedy_mesh=True),
+            mesh=mesh,
+        )
+        content = path.read_text(encoding="utf-8")
+        assert "# No voxels to export" in content
     finally:
         path.unlink(missing_ok=True)
