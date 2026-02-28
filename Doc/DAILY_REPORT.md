@@ -68,6 +68,20 @@
 - Issues noticed:
   - No automated regressions observed.
 
+### Roadmap 06: Undo Transaction Grouping for Drag Tools
+- What was done:
+  - Added transaction grouping support to `CommandStack` for future drag-stroke batching.
+  - Added grouped-operation tests proving multiple commands can be undone/redone as a single step.
+  - Added mirror-enabled drag-tool regression tests confirming Box/Line/Fill remain single-step undo entries.
+- How to test quickly:
+  - Run: `pytest -q` (current: `47 passed`)
+  - Manual smoke:
+    - Enable mirror X/Y, perform Box then Undo (single undo should revert whole op).
+    - Perform Line then Undo.
+    - Perform Fill then Undo.
+- Issues noticed:
+  - No regressions observed in command stack behavior.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

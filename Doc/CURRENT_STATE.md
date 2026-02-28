@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **71%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **73%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -22,6 +22,7 @@ Reasoning:
 - Correction 6: Part duplicate/delete actions are now available in Inspector with active-part-safe behavior and last-part delete guard.
 - Correction 7: Part visibility/lock controls are now active and persisted; viewport now renders visible parts only and blocks edits on locked active parts.
 - Correction 8: Shortcut map v1 is active for core tool/mode switching and camera frame/reset controls.
+- Correction 9: Command stack now supports explicit transaction grouping; drag-tool undo behavior is covered with mirror-enabled regression tests.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -36,7 +37,7 @@ Reasoning:
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
 | Import/export breadth | Robust interop | OBJ + glTF + VOX export implemented | Missing VOX import and stronger export option set | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
-| Undo/redo confidence | Stable and predictable | Command stack present | Need grouped transactions and stress tests | P1 |
+| Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Unknown at larger voxel counts | Need perf benchmarks and optimization passes | P0 |
 | Crash resilience | Stable session behavior | Better logs + error signaling | Need broader exception surfacing and recovery paths | P0 |
 | Packaging/run consistency | “Works out of box” | Packaging scripts/spec present | Needs clean-machine validation and installer docs | P0 |
@@ -59,7 +60,7 @@ Reasoning:
 - Mitigation: validate OBJ/glTF/VOX in target tools; add import smoke tests and option parity tasks.
 
 6. Undo/redo edge-case breakage in compound/mirrored operations
-- Mitigation: add transaction grouping and targeted regression tests for multi-cell mirrored commands.
+- Mitigation: transaction grouping and mirrored drag regression tests are now in place; next is stress/perf-oriented undo torture coverage.
 
 7. Duplicate code tree (`src/app` vs `src/voxel_tool`) remains a confusion hazard
 - Mitigation: document canonical runtime path and plan deprecation/removal of placeholder tree.

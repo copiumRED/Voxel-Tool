@@ -164,3 +164,47 @@ def test_fill_erase_clears_connected_region_only() -> None:
     assert voxels.get(0, 0, 0) is None
     assert voxels.get(1, 0, 0) is None
     assert voxels.get(2, 2, 0) == 4
+
+
+def test_command_stack_transaction_groups_commands_into_one_undo_step() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    stack = ctx.command_stack
+
+    stack.begin_transaction("Drag Stroke")
+    stack.do(PaintVoxelCommand(0, 0, 0, 2), ctx)
+    stack.do(PaintVoxelCommand(1, 0, 0, 2), ctx)
+    stack.end_transaction()
+
+    assert len(stack.undo_stack) == 1
+    assert ctx.current_project.voxels.count() == 2
+
+    stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0
+
+    stack.redo(ctx)
+    assert ctx.current_project.voxels.count() == 2
+
+
+def test_drag_style_commands_remain_single_undo_with_mirrors_enabled() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_mirror_axis("x", True)
+    ctx.set_mirror_axis("y", True)
+
+    stack = ctx.command_stack
+    stack.do(BoxVoxelCommand(0, 0, 1, 1, z=0, mode="paint", color_index=5), ctx)
+    assert len(stack.undo_stack) == 1
+    stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0
+
+    stack.do(LineVoxelCommand(0, 0, 2, 1, z=0, mode="paint", color_index=6), ctx)
+    assert len(stack.undo_stack) == 1
+    stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0
+
+    ctx.current_project.voxels.set(0, 0, 0, 1)
+    ctx.current_project.voxels.set(1, 0, 0, 1)
+    ctx.current_project.voxels.set(0, 1, 0, 1)
+    stack.do(FillVoxelCommand(0, 0, 0, mode="erase"), ctx)
+    assert len(stack.undo_stack) == 1
+    stack.undo(ctx)
+    assert ctx.current_project.voxels.get(0, 0, 0) == 1

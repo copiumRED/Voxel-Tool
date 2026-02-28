@@ -29,22 +29,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Updated viewport drawing/camera framing to use only visible parts and added tests for visibility filtering and flag persistence.
 
 ### Task 05: Shortcut Map v1
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `eb5941c`
 - Added keyboard hotkeys for tool shape switching (Brush/Box/Line/Fill) and mode switching (Paint/Erase).
 - Added camera hotkeys for frame/reset (`Shift+F` / `Shift+R`) with matching View menu shortcuts.
 - Wired shortcuts through tools panel state setters to keep UI and context behavior synchronized.
 
-## Remaining Tasks
+### Task 06: Undo Transaction Grouping for Drag Tools
+- Commit: `COMMIT_HASH_PENDING`
+- Added command-stack transaction support (`begin_transaction` / `end_transaction`) with compound undo/redo behavior.
+- Added tests verifying multi-command transactions collapse to one undo step.
+- Added mirror-enabled drag-tool tests asserting Box/Line/Fill remain single-step undo operations.
 
-## Task 06: Undo Transaction Grouping for Drag Tools
-- Goal: ensure all drag operations remain one undo step under all conditions.
-- Files/modules likely touched:
-  - `src/core/commands/command_stack.py`
-  - `src/core/commands/demo_commands.py`
-- Acceptance criteria:
-  - Box/Line/Fill remain single-step undo with mirrors enabled.
-- Tests required:
-  - Unit tests covering grouped operations and mirror combinations.
+## Remaining Tasks
 
 ## Task 07: Mirror Plane Visual Gizmos
 - Goal: improve mirror discoverability and confidence.
