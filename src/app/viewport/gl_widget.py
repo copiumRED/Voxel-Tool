@@ -8,7 +8,12 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QPointF, Qt, Signal
 from PySide6.QtGui import QColor, QMatrix4x4, QPainter, QVector3D
-from PySide6.QtOpenGL import QOpenGLBuffer, QOpenGLShader, QOpenGLShaderProgram
+from PySide6.QtOpenGL import (
+    QOpenGLBuffer,
+    QOpenGLShader,
+    QOpenGLShaderProgram,
+    QOpenGLVertexArrayObject,
+)
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from core.voxels.raycast import raycast_voxel_surface
 
@@ -31,6 +36,7 @@ class GLViewportWidget(QOpenGLWidget):
     _GL_VENDOR = 0x1F00
     _GL_RENDERER = 0x1F01
     _GL_VERSION = 0x1F02
+    _GL_NO_ERROR = 0
     _DEFAULT_YAW_DEG = 45.0
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
@@ -53,8 +59,10 @@ class GLViewportWidget(QOpenGLWidget):
         self._app_context: AppContext | None = None
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
+        self._vao: QOpenGLVertexArrayObject | None = None
         self._logger = logging.getLogger("voxel_tool")
         self.last_gl_info = "unknown"
+        self._shader_profile = "unknown"
         self.debug_overlay_enabled = True
         self.yaw_deg = self._DEFAULT_YAW_DEG
         self.pitch_deg = self._DEFAULT_PITCH_DEG
@@ -113,38 +121,19 @@ class GLViewportWidget(QOpenGLWidget):
             self.last_gl_info = f"{version} | {vendor} | {renderer}"
             self.viewport_ready.emit(self.last_gl_info)
 
-            program = QOpenGLShaderProgram(self)
-            program.addShaderFromSourceCode(
-                QOpenGLShader.Vertex,
-                """
-                #version 120
-                attribute vec3 position;
-                attribute vec3 color;
-                varying vec3 v_color;
-                uniform mat4 u_mvp;
-                void main() {
-                    v_color = color;
-                    gl_Position = u_mvp * vec4(position, 1.0);
-                    gl_PointSize = 12.0;
-                }
-                """,
-            )
-            program.addShaderFromSourceCode(
-                QOpenGLShader.Fragment,
-                """
-                #version 120
-                varying vec3 v_color;
-                void main() {
-                    gl_FragColor = vec4(v_color, 1.0);
-                }
-                """,
-            )
-            program.link()
+            program, shader_profile = self._create_shader_program()
+            if program is None:
+                raise RuntimeError("Viewport shader compilation/link failed. Check logs for details.")
             self._program = program
+            self._shader_profile = shader_profile
 
             buffer = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
             buffer.create()
             self._buffer = buffer
+
+            vao = QOpenGLVertexArrayObject(self)
+            vao.create()
+            self._vao = vao
         except Exception as exc:  # pragma: no cover
             self.viewport_error.emit(str(exc))
             self._logger.exception("OpenGL initialization failed")
@@ -152,11 +141,18 @@ class GLViewportWidget(QOpenGLWidget):
     def paintGL(self) -> None:
         funcs = self.context().functions()
         funcs.glClear(self._GL_COLOR_BUFFER_BIT | self._GL_DEPTH_BUFFER_BIT)
-        if self._app_context is None or self._program is None or self._buffer is None:
+        if self._app_context is None:
+            return
+        voxel_rows = self._app_context.current_project.voxels.to_list()
+        if self._program is None or self._buffer is None or self._vao is None:
+            if self.debug_overlay_enabled:
+                self._draw_overlay_text(
+                    len(voxel_rows),
+                    error_text="Viewport render pipeline not initialized.",
+                )
             return
 
         mvp = self._build_view_projection_matrix()
-        voxel_rows = self._app_context.current_project.voxels.to_list()
         self._draw_world_grid(funcs, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
@@ -179,11 +175,14 @@ class GLViewportWidget(QOpenGLWidget):
                 self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
 
         if self.debug_overlay_enabled:
-            self._draw_overlay_text(len(voxel_rows))
+            self._draw_overlay_text(len(voxel_rows), error_text=None)
 
     def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> int:
         if self._program is None or self._buffer is None or len(vertex_data) == 0:
             return 0
+
+        if self._vao is not None:
+            self._vao.bind()
 
         self._buffer.bind()
         self._buffer.allocate(vertex_data.tobytes(), len(vertex_data) * 4)
@@ -195,6 +194,18 @@ class GLViewportWidget(QOpenGLWidget):
         stride = 6 * 4
         position_location = self._program.attributeLocation("position")
         color_location = self._program.attributeLocation("color")
+        if position_location < 0 or color_location < 0:
+            self._logger.error(
+                "Shader attributes missing (position=%s color=%s, profile=%s).",
+                position_location,
+                color_location,
+                self._shader_profile,
+            )
+            self._program.release()
+            self._buffer.release()
+            if self._vao is not None:
+                self._vao.release()
+            return 0
         self._program.enableAttributeArray(position_location)
         self._program.enableAttributeArray(color_location)
         funcs.glVertexAttribPointer(position_location, 3, self._GL_FLOAT, False, stride, c_void_p(0))
@@ -205,6 +216,13 @@ class GLViewportWidget(QOpenGLWidget):
         self._program.disableAttributeArray(color_location)
         self._program.release()
         self._buffer.release()
+        if self._vao is not None:
+            self._vao.release()
+
+        if hasattr(funcs, "glGetError"):
+            gl_error = funcs.glGetError()
+            if gl_error != self._GL_NO_ERROR:
+                self._logger.error("OpenGL draw error: 0x%X", gl_error)
         return count
 
     def _draw_world_grid(self, funcs, mvp: QMatrix4x4) -> None:
@@ -226,7 +244,7 @@ class GLViewportWidget(QOpenGLWidget):
 
         self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
 
-    def _draw_overlay_text(self, voxel_count: int) -> None:
+    def _draw_overlay_text(self, voxel_count: int, error_text: str | None) -> None:
         painter = QPainter(self)
         painter.setPen(QColor(230, 230, 230))
         painter.drawText(12, 20, f"Voxels: {voxel_count}")
@@ -236,7 +254,77 @@ class GLViewportWidget(QOpenGLWidget):
             56,
             f"Target: {self.target.x():.2f} {self.target.y():.2f} {self.target.z():.2f}",
         )
+        if error_text:
+            painter.setPen(QColor(255, 180, 90))
+            painter.drawText(12, 74, error_text)
         painter.end()
+
+    def _create_shader_program(self) -> tuple[QOpenGLShaderProgram | None, str]:
+        candidates = (
+            (
+                "glsl-330-core",
+                """
+                #version 330 core
+                in vec3 position;
+                in vec3 color;
+                out vec3 v_color;
+                uniform mat4 u_mvp;
+                void main() {
+                    v_color = color;
+                    gl_Position = u_mvp * vec4(position, 1.0);
+                    gl_PointSize = 12.0;
+                }
+                """,
+                """
+                #version 330 core
+                in vec3 v_color;
+                out vec4 frag_color;
+                void main() {
+                    frag_color = vec4(v_color, 1.0);
+                }
+                """,
+            ),
+            (
+                "glsl-120-compat",
+                """
+                #version 120
+                attribute vec3 position;
+                attribute vec3 color;
+                varying vec3 v_color;
+                uniform mat4 u_mvp;
+                void main() {
+                    v_color = color;
+                    gl_Position = u_mvp * vec4(position, 1.0);
+                    gl_PointSize = 12.0;
+                }
+                """,
+                """
+                #version 120
+                varying vec3 v_color;
+                void main() {
+                    gl_FragColor = vec4(v_color, 1.0);
+                }
+                """,
+            ),
+        )
+        errors: list[str] = []
+        for profile, vertex_src, fragment_src in candidates:
+            program = QOpenGLShaderProgram(self)
+            vertex_ok = program.addShaderFromSourceCode(QOpenGLShader.Vertex, vertex_src)
+            if not vertex_ok:
+                errors.append(f"{profile} vertex compile failed: {program.log().strip()}")
+                continue
+            fragment_ok = program.addShaderFromSourceCode(QOpenGLShader.Fragment, fragment_src)
+            if not fragment_ok:
+                errors.append(f"{profile} fragment compile failed: {program.log().strip()}")
+                continue
+            link_ok = program.link()
+            if link_ok:
+                self._logger.info("Viewport shader profile selected: %s", profile)
+                return program, profile
+            errors.append(f"{profile} link failed: {program.log().strip()}")
+        self._logger.error("Failed to compile/link viewport shaders: %s", " | ".join(errors))
+        return None, "none"
 
     def _build_voxel_line_vertices(self, voxel_rows: list[list[int]]) -> array:
         half = self._VOXEL_HALF_EXTENT
