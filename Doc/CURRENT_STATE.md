@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **66%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **69%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -20,6 +20,7 @@ Reasoning:
 - Correction 4: Startup diagnostics now report explicit viewport readiness + shader profile in status bar; pipeline-unavailable state now renders clear in-viewport error text.
 - Correction 5: Brush hover target preview now renders in viewport, including empty-scene plane fallback targeting.
 - Correction 6: Part duplicate/delete actions are now available in Inspector with active-part-safe behavior and last-part delete guard.
+- Correction 7: Part visibility/lock controls are now active and persisted; viewport now renders visible parts only and blocks edits on locked active parts.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -29,7 +30,7 @@ Reasoning:
 | Brush/erase usability | Fast, predictable | Implemented | Missing stroke smoothing + advanced brush options | P1 |
 | Box/line/fill tools | Core productivity tools | Implemented | Needs better preview/selection affordance and edge-case polish | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ implemented (origin reflection) | Missing custom mirror planes and visual mirror gizmos | P1 |
-| Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete implemented | Remaining gap: reorder + visibility/lock controls | P0 |
+| Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Basic palette + active color implemented | Missing richer palette mgmt (save/load/swap/hotkeys) | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
 | Import/export breadth | Robust interop | OBJ + glTF + VOX export implemented | Missing VOX import and stronger export option set | P0 |
@@ -48,7 +49,7 @@ Reasoning:
 - Mitigation: brush hover preview is in place; next is operation ghosting parity for box/line/fill.
 
 3. Part workflow incompleteness (missing delete/duplicate/visibility/lock)
-- Mitigation: duplicate/delete shipped with tests; next is visibility/lock controls and optional reorder.
+- Mitigation: duplicate/delete/visibility/lock shipped with tests; optional reorder remains non-blocking.
 
 4. Sparse data model may degrade at larger scenes
 - Mitigation: add perf tests; profile hot paths; consider chunked/hybrid representation if thresholds fail.

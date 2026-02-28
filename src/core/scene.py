@@ -61,7 +61,13 @@ class Scene:
             raise ValueError("Part name cannot be empty.")
 
         duplicated_voxels = VoxelGrid.from_list(source.voxels.to_list())
-        duplicate = Part(part_id=_next_part_id(), name=duplicate_name, voxels=duplicated_voxels)
+        duplicate = Part(
+            part_id=_next_part_id(),
+            name=duplicate_name,
+            voxels=duplicated_voxels,
+            visible=source.visible,
+            locked=source.locked,
+        )
         self.parts[duplicate.part_id] = duplicate
         self.active_part_id = duplicate.part_id
         return duplicate
@@ -77,3 +83,6 @@ class Scene:
         if was_active:
             self.active_part_id = next(iter(self.parts.keys()))
         return self.active_part_id or ""
+
+    def iter_visible_parts(self) -> list[Part]:
+        return [part for part in self.parts.values() if part.visible]

@@ -40,6 +40,19 @@
 - Issues noticed:
   - No functional regressions observed in automated tests.
 
+### Roadmap 04: Part Visibility/Lock Flags
+- What was done:
+  - Added `visible`/`locked` flags to parts and persisted both flags in project IO.
+  - Added Inspector toggles for visibility and lock state.
+  - Updated viewport rendering to include only visible parts and block voxel edits when active part is locked.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Add two parts; hide one and verify it disappears from viewport.
+  - Lock the active part and verify brush/box/line/fill edits do not apply.
+  - Run: `pytest -q` (current: `45 passed`)
+- Issues noticed:
+  - No automated regressions; manual viewport lock/visibility behavior should be validated in operator smoke.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

@@ -10,3 +10,5 @@ class Part:
     part_id: str
     name: str
     voxels: VoxelGrid = field(default_factory=VoxelGrid)
+    visible: bool = True
+    locked: bool = False

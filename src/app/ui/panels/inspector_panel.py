@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
+    QCheckBox,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -49,6 +50,16 @@ class InspectorPanel(QWidget):
         buttons_layout.addWidget(self.delete_part_button)
 
         layout.addLayout(buttons_layout)
+
+        flags_layout = QHBoxLayout()
+        self.visible_checkbox = QCheckBox("Visible", self)
+        self.visible_checkbox.stateChanged.connect(self._on_visible_toggled)
+        flags_layout.addWidget(self.visible_checkbox)
+
+        self.locked_checkbox = QCheckBox("Locked", self)
+        self.locked_checkbox.stateChanged.connect(self._on_locked_toggled)
+        flags_layout.addWidget(self.locked_checkbox)
+        layout.addLayout(flags_layout)
         layout.addStretch(1)
 
     def set_context(self, context: AppContext) -> None:
@@ -60,6 +71,7 @@ class InspectorPanel(QWidget):
             return
 
         active_part_id = self._context.active_part_id
+        active_part = self._context.active_part
         self.part_list.blockSignals(True)
         self.part_list.clear()
         for part_id, part in self._context.current_project.scene.parts.items():
@@ -69,6 +81,13 @@ class InspectorPanel(QWidget):
             if part_id == active_part_id:
                 self.part_list.setCurrentItem(item)
         self.part_list.blockSignals(False)
+
+        self.visible_checkbox.blockSignals(True)
+        self.locked_checkbox.blockSignals(True)
+        self.visible_checkbox.setChecked(active_part.visible)
+        self.locked_checkbox.setChecked(active_part.locked)
+        self.visible_checkbox.blockSignals(False)
+        self.locked_checkbox.blockSignals(False)
 
     def _on_add_part(self) -> None:
         if self._context is None:
@@ -162,3 +181,21 @@ class InspectorPanel(QWidget):
         self.refresh()
         self.part_selection_changed.emit(next_active_part_id)
         self.part_status_message.emit(f"Deleted part: {part_name}")
+
+    def _on_visible_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        part = self._context.active_part
+        part.visible = state == Qt.Checked
+        self.part_status_message.emit(
+            f"Part visibility: {'on' if part.visible else 'off'} ({part.name})"
+        )
+        self.refresh()
+
+    def _on_locked_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        part = self._context.active_part
+        part.locked = state == Qt.Checked
+        self.part_status_message.emit(f"Part lock: {'on' if part.locked else 'off'} ({part.name})")
+        self.refresh()

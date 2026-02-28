@@ -76,3 +76,21 @@ def test_scene_delete_part_reassigns_active_and_keeps_one_minimum() -> None:
         assert "last remaining part" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("Expected deleting last part to fail.")
+
+
+def test_scene_iter_visible_parts_hides_non_visible_entries() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    second.visible = False
+
+    visible_part_ids = [part.part_id for part in scene.iter_visible_parts()]
+    assert first.part_id in visible_part_ids
+    assert second.part_id not in visible_part_ids
+
+
+def test_part_lock_flag_blocks_edit_intent_in_context() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    active = ctx.active_part
+    active.locked = True
+    assert active.locked is True

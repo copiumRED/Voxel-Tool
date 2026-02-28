@@ -94,7 +94,7 @@ class GLViewportWidget(QOpenGLWidget):
         if self._app_context is None:
             return
 
-        voxel_rows = self._app_context.current_project.voxels.to_list()
+        voxel_rows = self._visible_voxel_rows()
         if not voxel_rows:
             self.reset_camera()
             return
@@ -156,7 +156,7 @@ class GLViewportWidget(QOpenGLWidget):
         funcs.glClear(self._GL_COLOR_BUFFER_BIT | self._GL_DEPTH_BUFFER_BIT)
         if self._app_context is None:
             return
-        voxel_rows = self._app_context.current_project.voxels.to_list()
+        voxel_rows = self._visible_voxel_rows()
         if self._program is None or self._buffer is None or self._vao is None:
             if not self._logged_pipeline_missing:
                 self._logger.error(
@@ -585,7 +585,7 @@ class GLViewportWidget(QOpenGLWidget):
         return mvp
 
     def _handle_left_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
-        if self._app_context is None:
+        if self._app_context is None or self._active_part_is_locked():
             return
         temporary_erase = modifiers & Qt.ShiftModifier
         mode = self._app_context.voxel_tool_mode
@@ -658,7 +658,7 @@ class GLViewportWidget(QOpenGLWidget):
             self.update()
 
     def _handle_box_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
-        if self._app_context is None:
+        if self._app_context is None or self._active_part_is_locked():
             return
         start_cell = self._screen_to_plane_cell(start_pos)
         end_cell = self._screen_to_plane_cell(end_pos)
@@ -690,7 +690,7 @@ class GLViewportWidget(QOpenGLWidget):
         self.update()
 
     def _handle_line_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
-        if self._app_context is None:
+        if self._app_context is None or self._active_part_is_locked():
             return
         start_cell = self._screen_to_plane_cell(start_pos)
         end_cell = self._screen_to_plane_cell(end_pos)
@@ -722,7 +722,7 @@ class GLViewportWidget(QOpenGLWidget):
         self.update()
 
     def _handle_fill_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
-        if self._app_context is None:
+        if self._app_context is None or self._active_part_is_locked():
             return
         hit_cell = self._screen_to_plane_cell(pos)
         if hit_cell is None:
@@ -776,3 +776,20 @@ class GLViewportWidget(QOpenGLWidget):
         if isinstance(value, (bytes, bytearray)):
             return value.decode(errors="replace")
         return str(value) if value is not None else "unknown"
+
+    def _visible_voxel_rows(self) -> list[list[int]]:
+        if self._app_context is None:
+            return []
+        rows: list[list[int]] = []
+        for part in self._app_context.current_project.scene.iter_visible_parts():
+            rows.extend(part.voxels.to_list())
+        return rows
+
+    def _active_part_is_locked(self) -> bool:
+        if self._app_context is None:
+            return False
+        active_part = self._app_context.active_part
+        if not active_part.locked:
+            return False
+        self.voxel_edit_applied.emit(f"Part locked: {active_part.name}")
+        return True

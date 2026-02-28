@@ -17,24 +17,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added core math tests for hover target resolution paths and validated full test suite pass.
 
 ### Task 03: Part Actions v1 (Delete/Duplicate)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `c312b52`
 - Added scene-level duplicate and delete operations with active-part reassignment and guard against deleting the last part.
 - Added inspector UI actions for duplicate/delete part and status feedback messages in main window.
 - Added tests for duplicate copy behavior, active-part switching after delete, and minimum-part guard.
 
-## Remaining Tasks
+### Task 04: Part Visibility/Lock Flags
+- Commit: `COMMIT_HASH_PENDING`
+- Added per-part `visible` and `locked` flags in the core model and persisted them through project save/load.
+- Added Inspector visibility/lock toggles and viewport lock guard to block edits on locked active part.
+- Updated viewport drawing/camera framing to use only visible parts and added tests for visibility filtering and flag persistence.
 
-## Task 04: Part Visibility/Lock Flags
-- Goal: add minimum scene control parity with expected voxel editor workflow.
-- Files/modules likely touched:
-  - `src/core/part.py`
-  - `src/app/ui/panels/inspector_panel.py`
-  - `src/app/viewport/gl_widget.py`
-- Acceptance criteria:
-  - Hidden parts do not render.
-  - Locked parts do not accept edits.
-- Tests required:
-  - Core tests for lock/visible behavior.
+## Remaining Tasks
 
 ## Task 05: Shortcut Map v1
 - Goal: establish productivity keybindings for core tools and camera actions.

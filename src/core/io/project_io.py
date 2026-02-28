@@ -20,6 +20,8 @@ def save_project(project: Project, path: str) -> None:
                 "part_id": part.part_id,
                 "name": part.name,
                 "voxels": part.voxels.to_list(),
+                "visible": part.visible,
+                "locked": part.locked,
             }
         )
 
@@ -80,7 +82,15 @@ def load_project(path: str) -> Project:
             if not part_id or not name:
                 raise ValueError("Invalid project schema (part_id and name are required for each part).")
             voxels = VoxelGrid.from_list(raw_part.get("voxels", []))
-            scene.parts[part_id] = Part(part_id=part_id, name=name, voxels=voxels)
+            visible = bool(raw_part.get("visible", True))
+            locked = bool(raw_part.get("locked", False))
+            scene.parts[part_id] = Part(
+                part_id=part_id,
+                name=name,
+                voxels=voxels,
+                visible=visible,
+                locked=locked,
+            )
 
         if not scene.parts:
             raise ValueError("Invalid project schema (scene must contain at least one part).")
