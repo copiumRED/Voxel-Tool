@@ -41,26 +41,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added mirror-enabled drag-tool tests asserting Box/Line/Fill remain single-step undo operations.
 
 ### Task 07: Mirror Plane Visual Gizmos
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `8cb5943`
 - Added viewport-rendered mirror plane guide gizmos for active X/Y/Z mirror toggles.
 - Added color-coded guide planes so mirror axes are visible and distinguishable during editing.
 - Updated tools panel mirror toggle labels to `Mirror X/Y/Z` for clearer control-to-guide mapping.
 
-## Remaining Tasks
+### Task 08: Custom Mirror Plane Offsets
+- Commit: `COMMIT_HASH_PENDING`
+- Added per-axis mirror offset configuration in app context (`mirror_x/y/z_offset`) and offset-aware mirrored coordinate expansion.
+- Added Tools panel per-axis offset controls and status messaging when offsets change.
+- Added tests verifying mirrored coordinate generation and paint commands honor configured mirror plane offsets.
 
-## Task 08: Custom Mirror Plane Offsets
-- Goal: move beyond origin-only symmetry.
-- Files/modules likely touched:
-  - `src/app/app_context.py`
-  - `src/core/commands/demo_commands.py`
-  - `src/app/ui/panels/tools_panel.py`
-- Acceptance criteria:
-  - User can set per-axis mirror offset.
-  - Mirrored edits honor configured planes.
-- Tests required:
-  - Unit tests for mirrored coordinate generation with offsets.
-- Stop if risky:
-  - Stop if offset logic destabilizes existing mirror behavior.
+## Remaining Tasks
 
 ## Task 09: Export Options Panel v1 (OBJ/glTF/VOX)
 - Goal: expose practical export controls in UI.

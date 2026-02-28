@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QButtonGroup, QCheckBox, QLabel, QRadioButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QButtonGroup,
+    QCheckBox,
+    QHBoxLayout,
+    QLabel,
+    QRadioButton,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from app.app_context import AppContext
 
@@ -10,6 +19,7 @@ class ToolsPanel(QWidget):
     tool_mode_changed = Signal(str)
     tool_shape_changed = Signal(str)
     mirror_changed = Signal(str, bool)
+    mirror_offset_changed = Signal(str, int)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -51,12 +61,33 @@ class ToolsPanel(QWidget):
         self.mirror_x_checkbox = QCheckBox("Mirror X", self)
         self.mirror_y_checkbox = QCheckBox("Mirror Y", self)
         self.mirror_z_checkbox = QCheckBox("Mirror Z", self)
+        self.mirror_x_offset = QSpinBox(self)
+        self.mirror_y_offset = QSpinBox(self)
+        self.mirror_z_offset = QSpinBox(self)
+        for spin in (self.mirror_x_offset, self.mirror_y_offset, self.mirror_z_offset):
+            spin.setRange(-128, 128)
+            spin.setPrefix("offset ")
         self.mirror_x_checkbox.toggled.connect(lambda checked: self._on_mirror_toggled("x", checked))
         self.mirror_y_checkbox.toggled.connect(lambda checked: self._on_mirror_toggled("y", checked))
         self.mirror_z_checkbox.toggled.connect(lambda checked: self._on_mirror_toggled("z", checked))
-        layout.addWidget(self.mirror_x_checkbox)
-        layout.addWidget(self.mirror_y_checkbox)
-        layout.addWidget(self.mirror_z_checkbox)
+        self.mirror_x_offset.valueChanged.connect(lambda value: self._on_mirror_offset_changed("x", value))
+        self.mirror_y_offset.valueChanged.connect(lambda value: self._on_mirror_offset_changed("y", value))
+        self.mirror_z_offset.valueChanged.connect(lambda value: self._on_mirror_offset_changed("z", value))
+
+        x_row = QHBoxLayout()
+        x_row.addWidget(self.mirror_x_checkbox)
+        x_row.addWidget(self.mirror_x_offset)
+        layout.addLayout(x_row)
+
+        y_row = QHBoxLayout()
+        y_row.addWidget(self.mirror_y_checkbox)
+        y_row.addWidget(self.mirror_y_offset)
+        layout.addLayout(y_row)
+
+        z_row = QHBoxLayout()
+        z_row.addWidget(self.mirror_z_checkbox)
+        z_row.addWidget(self.mirror_z_offset)
+        layout.addLayout(z_row)
         layout.addStretch(1)
 
     def set_context(self, context: AppContext) -> None:
@@ -75,6 +106,9 @@ class ToolsPanel(QWidget):
         self.mirror_x_checkbox.blockSignals(True)
         self.mirror_y_checkbox.blockSignals(True)
         self.mirror_z_checkbox.blockSignals(True)
+        self.mirror_x_offset.blockSignals(True)
+        self.mirror_y_offset.blockSignals(True)
+        self.mirror_z_offset.blockSignals(True)
         self.paint_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_PAINT)
         self.erase_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_ERASE)
         self.brush_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH)
@@ -84,6 +118,9 @@ class ToolsPanel(QWidget):
         self.mirror_x_checkbox.setChecked(self._context.mirror_x_enabled)
         self.mirror_y_checkbox.setChecked(self._context.mirror_y_enabled)
         self.mirror_z_checkbox.setChecked(self._context.mirror_z_enabled)
+        self.mirror_x_offset.setValue(self._context.mirror_x_offset)
+        self.mirror_y_offset.setValue(self._context.mirror_y_offset)
+        self.mirror_z_offset.setValue(self._context.mirror_z_offset)
         self.paint_radio.blockSignals(False)
         self.erase_radio.blockSignals(False)
         self.brush_shape_radio.blockSignals(False)
@@ -93,6 +130,9 @@ class ToolsPanel(QWidget):
         self.mirror_x_checkbox.blockSignals(False)
         self.mirror_y_checkbox.blockSignals(False)
         self.mirror_z_checkbox.blockSignals(False)
+        self.mirror_x_offset.blockSignals(False)
+        self.mirror_y_offset.blockSignals(False)
+        self.mirror_z_offset.blockSignals(False)
 
     def _on_mode_toggled(self, checked: bool) -> None:
         if not checked or self._context is None:
@@ -120,6 +160,12 @@ class ToolsPanel(QWidget):
             return
         self._context.set_mirror_axis(axis, checked)
         self.mirror_changed.emit(axis, checked)
+
+    def _on_mirror_offset_changed(self, axis: str, value: int) -> None:
+        if self._context is None:
+            return
+        self._context.set_mirror_offset(axis, value)
+        self.mirror_offset_changed.emit(axis, value)
 
     def set_tool_shape(self, shape: str) -> None:
         if shape == AppContext.TOOL_SHAPE_BRUSH:

@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.tool_mode_changed.connect(self._on_tool_mode_changed)
         self.tools_panel.tool_shape_changed.connect(self._on_tool_shape_changed)
         self.tools_panel.mirror_changed.connect(self._on_mirror_changed)
+        self.tools_panel.mirror_offset_changed.connect(self._on_mirror_offset_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -416,6 +417,10 @@ class MainWindow(QMainWindow):
     def _on_mirror_changed(self, axis: str, enabled: bool) -> None:
         state = "on" if enabled else "off"
         self._show_voxel_status(f"Mirror {axis.upper()}: {state}")
+        self._refresh_ui_state()
+
+    def _on_mirror_offset_changed(self, axis: str, offset: int) -> None:
+        self._show_voxel_status(f"Mirror {axis.upper()} offset: {offset}")
         self._refresh_ui_state()
 
     def _on_create_test_voxels(self) -> None:

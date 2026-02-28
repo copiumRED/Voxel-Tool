@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **75%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **77%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -24,6 +24,7 @@ Reasoning:
 - Correction 8: Shortcut map v1 is active for core tool/mode switching and camera frame/reset controls.
 - Correction 9: Command stack now supports explicit transaction grouping; drag-tool undo behavior is covered with mirror-enabled regression tests.
 - Correction 10: Mirror plane visual guides are now rendered in viewport and mapped clearly to `Mirror X/Y/Z` controls.
+- Correction 11: Custom mirror plane offsets are implemented and mirrored edits now honor per-axis configured planes.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -32,7 +33,7 @@ Reasoning:
 | First-voxel workflow | Immediate paint in empty scene | Plane fallback + brush hover preview implemented | Remaining gap is richer ghosting for box/line/fill tools | P0 |
 | Brush/erase usability | Fast, predictable | Implemented | Missing stroke smoothing + advanced brush options | P1 |
 | Box/line/fill tools | Core productivity tools | Implemented | Needs better preview/selection affordance and edge-case polish | P1 |
-| Mirror editing | Easy symmetry toggles | XYZ toggles + visual guide gizmos implemented | Remaining gap: custom mirror plane offsets | P1 |
+| Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Basic palette + active color implemented | Missing richer palette mgmt (save/load/swap/hotkeys) | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |

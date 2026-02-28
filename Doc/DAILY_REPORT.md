@@ -94,6 +94,19 @@
 - Issues noticed:
   - Visual tuning may still be adjusted later for density/brightness after broader manual feedback.
 
+### Roadmap 08: Custom Mirror Plane Offsets
+- What was done:
+  - Added integer mirror offsets per axis in `AppContext`.
+  - Updated mirrored cell expansion to reflect around configured per-axis planes instead of origin-only symmetry.
+  - Added tools panel offset controls (X/Y/Z) and status updates on changes.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Enable mirror X and set X offset to `2`; paint at `x=3` and verify mirrored paint lands at `x=1`.
+  - Repeat for Y/Z offsets and verify guide planes move with configured offsets.
+  - Run: `pytest -q` (current: `49 passed`)
+- Issues noticed:
+  - No mirror regression detected in unit tests; manual UX tuning for offset spinbox ranges can be adjusted later if needed.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

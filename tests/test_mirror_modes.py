@@ -51,3 +51,35 @@ def test_fill_applies_mirror_y() -> None:
     assert voxels.get(2, 1, 0) == 6
     assert voxels.get(1, -1, 0) == 6
     assert voxels.get(2, -1, 0) == 6
+
+
+def test_expand_mirrored_cells_respects_axis_offsets() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_mirror_axis("x", True)
+    ctx.set_mirror_axis("y", True)
+    ctx.set_mirror_axis("z", True)
+    ctx.set_mirror_offset("x", 2)
+    ctx.set_mirror_offset("y", -1)
+    ctx.set_mirror_offset("z", 3)
+
+    expanded = ctx.expand_mirrored_cells({(5, 4, 1)})
+    assert expanded == {
+        (5, 4, 1),
+        (-1, 4, 1),
+        (5, -6, 1),
+        (-1, -6, 1),
+        (5, 4, 5),
+        (-1, 4, 5),
+        (5, -6, 5),
+        (-1, -6, 5),
+    }
+
+
+def test_paint_uses_configured_mirror_plane_offset() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_mirror_axis("x", True)
+    ctx.set_mirror_offset("x", 2)
+
+    ctx.command_stack.do(PaintVoxelCommand(3, 0, 0, 4), ctx)
+    assert ctx.current_project.voxels.get(3, 0, 0) == 4
+    assert ctx.current_project.voxels.get(1, 0, 0) == 4

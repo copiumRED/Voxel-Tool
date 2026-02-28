@@ -275,27 +275,30 @@ class GLViewportWidget(QOpenGLWidget):
 
         if self._app_context.mirror_x_enabled:
             color = (0.95, 0.35, 0.35)
+            offset = float(self._app_context.mirror_x_offset)
             for i in range(-20, 21, 2):
-                vertices.extend((0.0, float(i), -guide_extent, color[0], color[1], color[2]))
-                vertices.extend((0.0, float(i), guide_extent, color[0], color[1], color[2]))
-                vertices.extend((0.0, -guide_extent, float(i), color[0], color[1], color[2]))
-                vertices.extend((0.0, guide_extent, float(i), color[0], color[1], color[2]))
+                vertices.extend((offset, float(i), -guide_extent, color[0], color[1], color[2]))
+                vertices.extend((offset, float(i), guide_extent, color[0], color[1], color[2]))
+                vertices.extend((offset, -guide_extent, float(i), color[0], color[1], color[2]))
+                vertices.extend((offset, guide_extent, float(i), color[0], color[1], color[2]))
 
         if self._app_context.mirror_y_enabled:
             color = (0.35, 0.95, 0.35)
+            offset = float(self._app_context.mirror_y_offset)
             for i in range(-20, 21, 2):
-                vertices.extend((float(i), 0.0, -guide_extent, color[0], color[1], color[2]))
-                vertices.extend((float(i), 0.0, guide_extent, color[0], color[1], color[2]))
-                vertices.extend((-guide_extent, 0.0, float(i), color[0], color[1], color[2]))
-                vertices.extend((guide_extent, 0.0, float(i), color[0], color[1], color[2]))
+                vertices.extend((float(i), offset, -guide_extent, color[0], color[1], color[2]))
+                vertices.extend((float(i), offset, guide_extent, color[0], color[1], color[2]))
+                vertices.extend((-guide_extent, offset, float(i), color[0], color[1], color[2]))
+                vertices.extend((guide_extent, offset, float(i), color[0], color[1], color[2]))
 
         if self._app_context.mirror_z_enabled:
             color = (0.35, 0.6, 0.95)
+            offset = float(self._app_context.mirror_z_offset)
             for i in range(-20, 21, 2):
-                vertices.extend((float(i), -guide_extent, 0.0, color[0], color[1], color[2]))
-                vertices.extend((float(i), guide_extent, 0.0, color[0], color[1], color[2]))
-                vertices.extend((-guide_extent, float(i), 0.0, color[0], color[1], color[2]))
-                vertices.extend((guide_extent, float(i), 0.0, color[0], color[1], color[2]))
+                vertices.extend((float(i), -guide_extent, offset, color[0], color[1], color[2]))
+                vertices.extend((float(i), guide_extent, offset, color[0], color[1], color[2]))
+                vertices.extend((-guide_extent, float(i), offset, color[0], color[1], color[2]))
+                vertices.extend((guide_extent, float(i), offset, color[0], color[1], color[2]))
 
         if vertices:
             self._draw_colored_vertices(funcs, vertices, self._GL_LINES, mvp)

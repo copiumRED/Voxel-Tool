@@ -28,6 +28,9 @@ class AppContext:
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
+    mirror_x_offset: int = 0
+    mirror_y_offset: int = 0
+    mirror_z_offset: int = 0
 
     @property
     def active_part(self) -> Part:
@@ -62,12 +65,27 @@ class AppContext:
             return
         raise ValueError(f"Unsupported mirror axis: {axis}")
 
+    def set_mirror_offset(self, axis: str, offset: int) -> None:
+        if axis == "x":
+            self.mirror_x_offset = int(offset)
+            return
+        if axis == "y":
+            self.mirror_y_offset = int(offset)
+            return
+        if axis == "z":
+            self.mirror_z_offset = int(offset)
+            return
+        raise ValueError(f"Unsupported mirror axis: {axis}")
+
     def expand_mirrored_cells(self, cells: set[tuple[int, int, int]]) -> set[tuple[int, int, int]]:
         expanded: set[tuple[int, int, int]] = set()
         for x, y, z in cells:
-            xs = (x, -x) if self.mirror_x_enabled else (x,)
-            ys = (y, -y) if self.mirror_y_enabled else (y,)
-            zs = (z, -z) if self.mirror_z_enabled else (z,)
+            mirror_x = (2 * self.mirror_x_offset) - x
+            mirror_y = (2 * self.mirror_y_offset) - y
+            mirror_z = (2 * self.mirror_z_offset) - z
+            xs = (x, mirror_x) if self.mirror_x_enabled else (x,)
+            ys = (y, mirror_y) if self.mirror_y_enabled else (y,)
+            zs = (z, mirror_z) if self.mirror_z_enabled else (z,)
             for mirrored_x in xs:
                 for mirrored_y in ys:
                     for mirrored_z in zs:
