@@ -1,6 +1,6 @@
 # Voxel Tool (Desktop)
 
-See PROJECT_SPEC.md for the full specification.
+See `Doc/PROJECT_SPEC.md` for the full specification.
 
 ## Quick Start (Windows)
 
@@ -20,7 +20,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
-python -m voxel_tool.app.main
+python src/app/main.py
 ```
 
 ## Windows Packaging (PyInstaller)
@@ -37,4 +37,4 @@ Expected output executable:
 
 For verification steps, use:
 
-`PACKAGING_CHECKLIST.md`
+`Doc/PACKAGING_CHECKLIST.md`

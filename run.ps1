@@ -13,4 +13,4 @@ python -m pip install --upgrade pip
 python -m pip install -r (Join-Path $repoRoot "requirements.txt")
 python -m pip install -e $repoRoot
 
-python -m voxel_tool.app.main
+python (Join-Path $repoRoot "src\app\main.py")

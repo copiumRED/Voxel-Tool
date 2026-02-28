@@ -38,7 +38,7 @@
 - Added Windows packaging assets:
   - functional `tools/build_pyinstaller.spec`
   - `tools/package_windows.ps1`
-  - `PACKAGING_CHECKLIST.md`
+  - `Doc/PACKAGING_CHECKLIST.md`
 - Extended automated tests across commands, meshing, raycast, exporters, mirrors, and stats.
 
 ## Quick Test Checklist

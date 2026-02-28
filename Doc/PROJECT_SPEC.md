@@ -222,7 +222,7 @@ Mirror in mesh edit (MVP pragmatic scope):
 ```text
 voxel_tool/
   README.md
-  PROJECT_SPEC.md
+  Doc/PROJECT_SPEC.md
   pyproject.toml
   requirements.txt
   assets/
