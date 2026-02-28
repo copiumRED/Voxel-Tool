@@ -82,6 +82,18 @@
 - Issues noticed:
   - No regressions observed in command stack behavior.
 
+### Roadmap 07: Mirror Plane Visual Gizmos
+- What was done:
+  - Added viewport mirror plane guides for enabled mirror axes.
+  - Added axis-specific guide colors for quick visual identification.
+  - Updated tools panel labels to `Mirror X`, `Mirror Y`, `Mirror Z` for direct mapping to guides.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Toggle mirror X/Y/Z and confirm corresponding colored guide planes appear/disappear in viewport.
+  - Run: `pytest -q` (current: `47 passed`)
+- Issues noticed:
+  - Visual tuning may still be adjusted later for density/brightness after broader manual feedback.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

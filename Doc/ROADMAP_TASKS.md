@@ -35,23 +35,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Wired shortcuts through tools panel state setters to keep UI and context behavior synchronized.
 
 ### Task 06: Undo Transaction Grouping for Drag Tools
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `1455599`
 - Added command-stack transaction support (`begin_transaction` / `end_transaction`) with compound undo/redo behavior.
 - Added tests verifying multi-command transactions collapse to one undo step.
 - Added mirror-enabled drag-tool tests asserting Box/Line/Fill remain single-step undo operations.
 
-## Remaining Tasks
+### Task 07: Mirror Plane Visual Gizmos
+- Commit: `COMMIT_HASH_PENDING`
+- Added viewport-rendered mirror plane guide gizmos for active X/Y/Z mirror toggles.
+- Added color-coded guide planes so mirror axes are visible and distinguishable during editing.
+- Updated tools panel mirror toggle labels to `Mirror X/Y/Z` for clearer control-to-guide mapping.
 
-## Task 07: Mirror Plane Visual Gizmos
-- Goal: improve mirror discoverability and confidence.
-- Files/modules likely touched:
-  - `src/app/viewport/gl_widget.py`
-  - `src/app/ui/panels/tools_panel.py`
-- Acceptance criteria:
-  - Active mirror axes are visible in viewport.
-  - Mirror toggles clearly map to rendered guides.
-- Tests required:
-  - Manual visual verification.
+## Remaining Tasks
 
 ## Task 08: Custom Mirror Plane Offsets
 - Goal: move beyond origin-only symmetry.

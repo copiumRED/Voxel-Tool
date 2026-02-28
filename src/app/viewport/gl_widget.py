@@ -174,6 +174,7 @@ class GLViewportWidget(QOpenGLWidget):
 
         mvp = self._build_view_projection_matrix()
         self._draw_world_grid(funcs, mvp)
+        self._draw_mirror_guides(funcs, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
         if voxel_rows:
@@ -265,6 +266,39 @@ class GLViewportWidget(QOpenGLWidget):
             line_vertices.extend((float(grid_max), 0.0, float(i), shade, shade, shade))
 
         self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
+
+    def _draw_mirror_guides(self, funcs, mvp: QMatrix4x4) -> None:
+        if self._app_context is None:
+            return
+        guide_extent = 20.0
+        vertices = array("f")
+
+        if self._app_context.mirror_x_enabled:
+            color = (0.95, 0.35, 0.35)
+            for i in range(-20, 21, 2):
+                vertices.extend((0.0, float(i), -guide_extent, color[0], color[1], color[2]))
+                vertices.extend((0.0, float(i), guide_extent, color[0], color[1], color[2]))
+                vertices.extend((0.0, -guide_extent, float(i), color[0], color[1], color[2]))
+                vertices.extend((0.0, guide_extent, float(i), color[0], color[1], color[2]))
+
+        if self._app_context.mirror_y_enabled:
+            color = (0.35, 0.95, 0.35)
+            for i in range(-20, 21, 2):
+                vertices.extend((float(i), 0.0, -guide_extent, color[0], color[1], color[2]))
+                vertices.extend((float(i), 0.0, guide_extent, color[0], color[1], color[2]))
+                vertices.extend((-guide_extent, 0.0, float(i), color[0], color[1], color[2]))
+                vertices.extend((guide_extent, 0.0, float(i), color[0], color[1], color[2]))
+
+        if self._app_context.mirror_z_enabled:
+            color = (0.35, 0.6, 0.95)
+            for i in range(-20, 21, 2):
+                vertices.extend((float(i), -guide_extent, 0.0, color[0], color[1], color[2]))
+                vertices.extend((float(i), guide_extent, 0.0, color[0], color[1], color[2]))
+                vertices.extend((-guide_extent, float(i), 0.0, color[0], color[1], color[2]))
+                vertices.extend((guide_extent, float(i), 0.0, color[0], color[1], color[2]))
+
+        if vertices:
+            self._draw_colored_vertices(funcs, vertices, self._GL_LINES, mvp)
 
     def _draw_overlay_text(self, voxel_count: int, error_text: str | None) -> None:
         painter = QPainter(self)
