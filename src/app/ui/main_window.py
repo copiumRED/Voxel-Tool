@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindo
 from app.app_context import AppContext
 from app.settings import get_settings
 from core.commands.demo_commands import AddVoxelCommand, ClearVoxelsCommand, RenameProjectCommand
+from core.export.obj_exporter import export_voxels_to_obj
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -70,6 +71,12 @@ class MainWindow(QMainWindow):
         save_as_action = QAction("Save Project As", self)
         save_as_action.triggered.connect(self._on_save_project_as)
         file_menu.addAction(save_as_action)
+
+        file_menu.addSeparator()
+
+        export_obj_action = QAction("Export OBJ", self)
+        export_obj_action.triggered.connect(self._on_export_obj)
+        file_menu.addAction(export_obj_action)
 
         file_menu.addSeparator()
 
@@ -171,6 +178,22 @@ class MainWindow(QMainWindow):
         self.context.current_project.modified_utc = utc_now_iso()
         save_project(self.context.current_project, path)
         self.statusBar().showMessage(f"Saved: {path}", 5000)
+
+    def _on_export_obj(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export OBJ",
+            "",
+            "OBJ (*.obj);;All Files (*)",
+        )
+        if not path:
+            return
+        export_voxels_to_obj(self.context.current_project.voxels, self.context.palette, path)
+        voxel_count = self.context.current_project.voxels.count()
+        if voxel_count == 0:
+            self.statusBar().showMessage(f"No voxels to export | Exported OBJ: {path}", 5000)
+            return
+        self.statusBar().showMessage(f"Exported OBJ: {path} | Voxels: {voxel_count}", 5000)
 
     def _on_demo_rename_project(self) -> None:
         text, ok = QInputDialog.getText(
