@@ -1,0 +1,2 @@
+"""Dock panel placeholders."""
+
