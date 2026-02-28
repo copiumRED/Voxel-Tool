@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
         self._build_file_menu()
         self._build_edit_menu()
+        self._build_view_menu()
         self._build_voxels_menu()
         self.statusBar().showMessage("Ready")
         self._restore_layout_settings()
@@ -88,6 +89,15 @@ class MainWindow(QMainWindow):
         self.redo_action = QAction("Redo", self)
         self.redo_action.triggered.connect(self._on_redo)
         edit_menu.addAction(self.redo_action)
+
+    def _build_view_menu(self) -> None:
+        view_menu = self.menuBar().addMenu("&View")
+
+        debug_overlay_action = QAction("Toggle Debug Overlay", self)
+        debug_overlay_action.setCheckable(True)
+        debug_overlay_action.setChecked(self.viewport.debug_overlay_enabled)
+        debug_overlay_action.toggled.connect(self._on_toggle_debug_overlay)
+        view_menu.addAction(debug_overlay_action)
 
     def _build_voxels_menu(self) -> None:
         voxels_menu = self.menuBar().addMenu("&Voxels")
@@ -200,6 +210,10 @@ class MainWindow(QMainWindow):
     def _show_voxel_status(self, message: str) -> None:
         count = self.context.current_project.voxels.count()
         self.statusBar().showMessage(f"{message} | Voxels: {count}", 5000)
+
+    def _on_toggle_debug_overlay(self, enabled: bool) -> None:
+        self.viewport.debug_overlay_enabled = enabled
+        self.viewport.update()
 
     def _restore_layout_settings(self) -> None:
         settings = get_settings()

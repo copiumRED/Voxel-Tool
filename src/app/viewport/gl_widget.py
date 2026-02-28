@@ -6,7 +6,7 @@ from math import cos, radians, sin
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QMatrix4x4, QVector3D
+from PySide6.QtGui import QColor, QMatrix4x4, QPainter, QVector3D
 from PySide6.QtOpenGL import QOpenGLBuffer, QOpenGLShader, QOpenGLShaderProgram
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
@@ -18,6 +18,7 @@ class GLViewportWidget(QOpenGLWidget):
     _GL_COLOR_BUFFER_BIT = 0x00004000
     _GL_DEPTH_BUFFER_BIT = 0x00000100
     _GL_POINTS = 0x0000
+    _GL_LINES = 0x0001
     _GL_FLOAT = 0x1406
     _GL_DEPTH_TEST = 0x0B71
     _GL_ARRAY_BUFFER = 0x8892
@@ -38,6 +39,7 @@ class GLViewportWidget(QOpenGLWidget):
         self._app_context: AppContext | None = None
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
+        self.debug_overlay_enabled = True
         self.yaw_deg = 45.0
         self.pitch_deg = -30.0
         self.distance = 25.0
@@ -122,19 +124,6 @@ class GLViewportWidget(QOpenGLWidget):
         if self._app_context is None or self._program is None or self._buffer is None:
             return
 
-        voxel_rows = self._app_context.current_project.voxels.to_list()
-        if not voxel_rows:
-            return
-
-        vertex_data = array("f")
-        for x, y, z, color_index in voxel_rows:
-            color = self._PALETTE[color_index % len(self._PALETTE)]
-            vertex_data.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
-
-        self._buffer.bind()
-        self._buffer.allocate(vertex_data.tobytes(), len(vertex_data) * 4)
-        funcs.glBindBuffer(self._GL_ARRAY_BUFFER, self._buffer.bufferId())
-
         width = max(1, self.width())
         height = max(1, self.height())
         mvp = QMatrix4x4()
@@ -148,6 +137,25 @@ class GLViewportWidget(QOpenGLWidget):
         )
         mvp.lookAt(eye, self.target, QVector3D(0.0, 1.0, 0.0))
 
+        voxel_rows = self._app_context.current_project.voxels.to_list()
+        if voxel_rows:
+            voxel_vertices = array("f")
+            for x, y, z, color_index in voxel_rows:
+                color = self._PALETTE[color_index % len(self._PALETTE)]
+                voxel_vertices.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
+            self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
+
+        if self.debug_overlay_enabled:
+            self._draw_debug_overlay(funcs, mvp, len(voxel_rows))
+
+    def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> None:
+        if self._program is None or self._buffer is None or len(vertex_data) == 0:
+            return
+
+        self._buffer.bind()
+        self._buffer.allocate(vertex_data.tobytes(), len(vertex_data) * 4)
+        funcs.glBindBuffer(self._GL_ARRAY_BUFFER, self._buffer.bufferId())
+
         self._program.bind()
         self._program.setUniformValue("u_mvp", mvp)
 
@@ -158,11 +166,43 @@ class GLViewportWidget(QOpenGLWidget):
         self._program.enableAttributeArray(color_location)
         funcs.glVertexAttribPointer(position_location, 3, self._GL_FLOAT, False, stride, c_void_p(0))
         funcs.glVertexAttribPointer(color_location, 3, self._GL_FLOAT, False, stride, c_void_p(3 * 4))
-        funcs.glDrawArrays(self._GL_POINTS, 0, len(voxel_rows))
+        funcs.glDrawArrays(mode, 0, len(vertex_data) // 6)
         self._program.disableAttributeArray(position_location)
         self._program.disableAttributeArray(color_location)
         self._program.release()
         self._buffer.release()
+
+    def _draw_debug_overlay(self, funcs, mvp: QMatrix4x4, voxel_count: int) -> None:
+        line_vertices = array("f")
+
+        # Axes
+        axis_len = 6.0
+        line_vertices.extend((0.0, 0.0, 0.0, 1.0, 0.2, 0.2, axis_len, 0.0, 0.0, 1.0, 0.2, 0.2))
+        line_vertices.extend((0.0, 0.0, 0.0, 0.2, 1.0, 0.2, 0.0, axis_len, 0.0, 0.2, 1.0, 0.2))
+        line_vertices.extend((0.0, 0.0, 0.0, 0.2, 0.5, 1.0, 0.0, 0.0, axis_len, 0.2, 0.5, 1.0))
+
+        # Ground grid on XZ plane
+        grid_min = -10
+        grid_max = 10
+        for i in range(grid_min, grid_max + 1):
+            shade = 0.35 if i == 0 else 0.22
+            line_vertices.extend((float(i), 0.0, float(grid_min), shade, shade, shade))
+            line_vertices.extend((float(i), 0.0, float(grid_max), shade, shade, shade))
+            line_vertices.extend((float(grid_min), 0.0, float(i), shade, shade, shade))
+            line_vertices.extend((float(grid_max), 0.0, float(i), shade, shade, shade))
+
+        self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
+
+        painter = QPainter(self)
+        painter.setPen(QColor(230, 230, 230))
+        painter.drawText(12, 20, f"Voxels: {voxel_count}")
+        painter.drawText(12, 38, f"Yaw: {self.yaw_deg:.1f}  Pitch: {self.pitch_deg:.1f}  Dist: {self.distance:.1f}")
+        painter.drawText(
+            12,
+            56,
+            f"Target: {self.target.x():.2f} {self.target.y():.2f} {self.target.z():.2f}",
+        )
+        painter.end()
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
