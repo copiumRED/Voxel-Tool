@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from core.commands.command import Command
 from core.voxels.voxel_grid import VoxelGrid
 
@@ -117,3 +119,61 @@ class AddVoxelCommand(PaintVoxelCommand):
     @property
     def name(self) -> str:
         return "Add Voxel"
+
+
+@dataclass(slots=True)
+class _VoxelDelta:
+    x: int
+    y: int
+    z: int
+    previous_color: int | None
+
+
+class BoxVoxelCommand(Command):
+    def __init__(
+        self,
+        start_x: int,
+        start_y: int,
+        end_x: int,
+        end_y: int,
+        z: int,
+        mode: str,
+        color_index: int | None = None,
+    ) -> None:
+        self.start_x = start_x
+        self.start_y = start_y
+        self.end_x = end_x
+        self.end_y = end_y
+        self.z = z
+        self.mode = mode
+        self.color_index = color_index
+        self._deltas: list[_VoxelDelta] = []
+
+    @property
+    def name(self) -> str:
+        return "Box Fill" if self.mode == "paint" else "Box Erase"
+
+    def do(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        self._deltas = []
+        min_x, max_x = sorted((self.start_x, self.end_x))
+        min_y, max_y = sorted((self.start_y, self.end_y))
+
+        for x in range(min_x, max_x + 1):
+            for y in range(min_y, max_y + 1):
+                previous = voxels.get(x, y, self.z)
+                self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
+                if self.mode == "erase":
+                    voxels.remove(x, y, self.z)
+                else:
+                    if self.color_index is None:
+                        raise ValueError("Box paint command requires a color index.")
+                    voxels.set(x, y, self.z, self.color_index)
+
+    def undo(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        for delta in self._deltas:
+            if delta.previous_color is None:
+                voxels.remove(delta.x, delta.y, delta.z)
+            else:
+                voxels.set(delta.x, delta.y, delta.z, delta.previous_color)

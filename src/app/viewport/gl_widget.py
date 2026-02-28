@@ -301,9 +301,13 @@ class GLViewportWidget(QOpenGLWidget):
                 if (press_dx * press_dx + press_dy * press_dy) >= 9.0:
                     self._left_dragging = True
             if self._left_dragging:
-                self.yaw_deg += dx * 0.4
-                self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
-                self.update()
+                if (
+                    self._app_context is None
+                    or self._app_context.voxel_tool_shape == self._app_context.TOOL_SHAPE_BRUSH
+                ):
+                    self.yaw_deg += dx * 0.4
+                    self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                    self.update()
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -315,7 +319,13 @@ class GLViewportWidget(QOpenGLWidget):
 
     def mouseReleaseEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
-            if not self._left_dragging:
+            if (
+                self._app_context is not None
+                and self._app_context.voxel_tool_shape == self._app_context.TOOL_SHAPE_BOX
+                and self._left_press_pos is not None
+            ):
+                self._handle_box_drag(self._left_press_pos, event.position(), event.modifiers())
+            elif not self._left_dragging:
                 self._handle_left_click(event.position(), event.modifiers())
             self._left_press_pos = None
             self._left_dragging = False
@@ -360,21 +370,10 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_left_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None:
             return
-        ray = self._screen_to_world_ray(pos.x(), pos.y())
-        if ray is None:
+        hit_cell = self._screen_to_plane_cell(pos)
+        if hit_cell is None:
             return
-        origin, direction = ray
-        if abs(direction.z()) < 1e-6:
-            return
-
-        t = -origin.z() / direction.z()
-        if t <= 0.0:
-            return
-
-        hit = origin + (direction * t)
-        x = int(round(hit.x()))
-        y = int(round(hit.y()))
-        z = 0
+        x, y, z = hit_cell
         temporary_erase = modifiers & Qt.ShiftModifier
         mode = self._app_context.voxel_tool_mode
         should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
@@ -391,6 +390,53 @@ class GLViewportWidget(QOpenGLWidget):
             self._app_context.command_stack.do(PaintVoxelCommand(x, y, z, color_index), self._app_context)
             self.voxel_edit_applied.emit(f"Paint: ({x}, {y}, {z}) color {color_index}")
         self.update()
+
+    def _handle_box_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
+        if self._app_context is None:
+            return
+        start_cell = self._screen_to_plane_cell(start_pos)
+        end_cell = self._screen_to_plane_cell(end_pos)
+        if start_cell is None or end_cell is None:
+            return
+
+        start_x, start_y, z = start_cell
+        end_x, end_y, _ = end_cell
+        temporary_erase = modifiers & Qt.ShiftModifier
+        mode = self._app_context.voxel_tool_mode
+        command_mode = "erase" if temporary_erase or mode == self._app_context.TOOL_MODE_ERASE else "paint"
+
+        from core.commands.demo_commands import BoxVoxelCommand
+
+        color_index = self._app_context.active_color_index if command_mode == "paint" else None
+        self._app_context.command_stack.do(
+            BoxVoxelCommand(
+                start_x=start_x,
+                start_y=start_y,
+                end_x=end_x,
+                end_y=end_y,
+                z=z,
+                mode=command_mode,
+                color_index=color_index,
+            ),
+            self._app_context,
+        )
+        self.voxel_edit_applied.emit(f"Box {command_mode}: ({start_x}, {start_y}) -> ({end_x}, {end_y})")
+        self.update()
+
+    def _screen_to_plane_cell(self, pos: QPointF) -> tuple[int, int, int] | None:
+        ray = self._screen_to_world_ray(pos.x(), pos.y())
+        if ray is None:
+            return None
+        origin, direction = ray
+        if abs(direction.z()) < 1e-6:
+            return None
+
+        t = -origin.z() / direction.z()
+        if t <= 0.0:
+            return None
+
+        hit = origin + (direction * t)
+        return int(round(hit.x())), int(round(hit.y())), 0
 
     def _screen_to_world_ray(self, x: float, y: float) -> tuple[QVector3D, QVector3D] | None:
         width = max(1, self.width())

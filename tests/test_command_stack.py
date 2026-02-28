@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.app_context import AppContext
 from core.commands.demo_commands import (
+    BoxVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
     PaintVoxelCommand,
@@ -101,3 +102,22 @@ def test_paint_and_erase_commands_overwrite_semantics() -> None:
 
     ctx.command_stack.undo(ctx)
     assert ctx.current_project.voxels.get(3, 3, 0) == 6
+
+
+def test_box_fill_and_erase_single_undo_per_operation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+
+    ctx.command_stack.do(BoxVoxelCommand(0, 0, 2, 1, z=0, mode="paint", color_index=4), ctx)
+    assert ctx.current_project.voxels.count() == 6
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0
+
+    ctx.command_stack.redo(ctx)
+    assert ctx.current_project.voxels.count() == 6
+
+    ctx.command_stack.do(BoxVoxelCommand(1, 0, 2, 0, z=0, mode="erase"), ctx)
+    assert ctx.current_project.voxels.count() == 4
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 6
