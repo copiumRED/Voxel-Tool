@@ -194,6 +194,19 @@
 - Issues noticed:
   - Unit conversion currently assumes `1 voxel = 1.0 m` baseline.
 
+### Roadmap 16: Save/Open Workflow Hardening
+- What was done:
+  - Added `editor_state` persistence to project files for tool/mirror/session essentials.
+  - Added load-time editor-state restoration and save-time capture in main window.
+  - Added clear open-file error dialog for invalid/corrupt project data.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Change tool/mirror settings, save project, reopen it, and verify state restoration.
+  - Attempt to open an invalid/corrupt JSON file and verify explicit error dialog.
+  - Run: `pytest -q` (current: `60 passed`)
+- Issues noticed:
+  - Editor state schema is additive and backward-compatible; future migrations may need explicit versioning if fields evolve.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

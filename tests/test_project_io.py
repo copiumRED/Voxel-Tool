@@ -19,6 +19,11 @@ def test_project_save_load_roundtrip() -> None:
     )
     project.voxels.set(1, 1, 1, 3)
     project.voxels.set(-2, 4, 0, 7)
+    project.editor_state = {
+        "active_color_index": 3,
+        "voxel_tool_mode": "erase",
+        "mirror_x_enabled": True,
+    }
     second_part = project.scene.add_part("Part 2")
     project.scene.set_active_part(second_part.part_id)
     second_part.voxels.set(5, 0, -1, 6)
@@ -32,6 +37,7 @@ def test_project_save_load_roundtrip() -> None:
         assert loaded.created_utc == project.created_utc
         assert loaded.modified_utc == project.modified_utc
         assert loaded.version == project.version
+        assert loaded.editor_state == project.editor_state
         assert len(loaded.scene.parts) == 2
         assert loaded.scene.active_part_id == second_part.part_id
         assert loaded.scene.parts[project.active_part_id].voxels.to_list() == second_part.voxels.to_list()
@@ -69,6 +75,7 @@ def test_project_load_older_schema_without_voxels() -> None:
         loaded = load_project(str(path))
         assert loaded.name == "Legacy"
         assert loaded.voxels.count() == 0
+        assert loaded.editor_state == {}
     finally:
         path.unlink(missing_ok=True)
 
@@ -88,5 +95,27 @@ def test_project_load_legacy_schema_with_root_voxels() -> None:
         assert loaded.voxels.count() == 2
         assert loaded.voxels.get(0, 0, 0) == 2
         assert loaded.voxels.get(1, 0, 0) == 3
+        assert loaded.editor_state == {}
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_project_load_rejects_non_object_editor_state() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"test-project-editor-state-{uuid.uuid4().hex}.json"
+    payload = {
+        "name": "Bad EditorState",
+        "created_utc": "2026-02-28T00:00:00+00:00",
+        "modified_utc": "2026-02-28T00:00:00+00:00",
+        "version": 1,
+        "editor_state": [],
+        "scene": {
+            "active_part_id": "part-1",
+            "parts": [{"part_id": "part-1", "name": "Part 1", "voxels": []}],
+        },
+    }
+    try:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError):
+            load_project(str(path))
     finally:
         path.unlink(missing_ok=True)

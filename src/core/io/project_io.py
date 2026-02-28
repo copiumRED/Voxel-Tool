@@ -10,6 +10,7 @@ from core.voxels.voxel_grid import VoxelGrid
 _REQUIRED_BASE_KEYS = {"name", "created_utc", "modified_utc", "version"}
 _SCENE_KEY = "scene"
 _LEGACY_VOXELS_KEY = "voxels"
+_EDITOR_STATE_KEY = "editor_state"
 
 
 def save_project(project: Project, path: str) -> None:
@@ -30,6 +31,7 @@ def save_project(project: Project, path: str) -> None:
         "created_utc": project.created_utc,
         "modified_utc": project.modified_utc,
         "version": project.version,
+        "editor_state": project.editor_state,
         "scene": {
             "active_part_id": project.scene.active_part_id,
             "parts": parts_payload,
@@ -51,7 +53,7 @@ def load_project(path: str) -> Project:
         missing = sorted(_REQUIRED_BASE_KEYS - keys)
         raise ValueError(f"Invalid project schema (missing keys: {', '.join(missing)}).")
 
-    allowed = _REQUIRED_BASE_KEYS | {_SCENE_KEY, _LEGACY_VOXELS_KEY}
+    allowed = _REQUIRED_BASE_KEYS | {_SCENE_KEY, _LEGACY_VOXELS_KEY, _EDITOR_STATE_KEY}
     extra = keys - allowed
     if extra:
         extra_sorted = sorted(extra)
@@ -66,6 +68,10 @@ def load_project(path: str) -> Project:
         modified_utc=str(payload["modified_utc"]),
         version=int(payload["version"]),
     )
+    editor_state = payload.get(_EDITOR_STATE_KEY, {})
+    if not isinstance(editor_state, dict):
+        raise ValueError("Invalid project schema (editor_state must be an object).")
+    project.editor_state = editor_state
 
     scene_payload = payload.get(_SCENE_KEY)
     if isinstance(scene_payload, dict):

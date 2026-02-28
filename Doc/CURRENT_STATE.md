@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **91%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **93%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -33,6 +33,7 @@ Reasoning:
 - Correction 17: Fill safety threshold is implemented with explicit user feedback for blocked oversized fills.
 - Correction 18: Explicit solidify/rebuild action now refreshes active-part mesh cache used by stats/export paths.
 - Correction 19: Stats panel now shows unit-aware bounds (voxels + meters) for active part analysis.
+- Correction 20: Save/Open now persists and restores core editor tool state with explicit invalid-file error messaging.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -49,7 +50,7 @@ Reasoning:
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Unknown at larger voxel counts | Need perf benchmarks and optimization passes | P0 |
-| Crash resilience | Stable session behavior | Better logs + error signaling | Need broader exception surfacing and recovery paths | P0 |
+| Crash resilience | Stable session behavior | Improved invalid-file error surfacing in Open flow | Need broader exception recovery paths | P0 |
 | Packaging/run consistency | “Works out of box” | Packaging scripts/spec present | Needs clean-machine validation and installer docs | P0 |
 | UX discoverability | Low friction UI | Functional but utilitarian | Missing onboarding hints/tooltips/status guidance polish | P1 |
 

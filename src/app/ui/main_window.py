@@ -283,9 +283,19 @@ class MainWindow(QMainWindow):
         )
         if not path:
             return
-        project = load_project(path)
+        try:
+            project = load_project(path)
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Open Project Failed",
+                "Failed to open project file. The file may be invalid or corrupt.\n\n"
+                f"Details: {exc}",
+            )
+            return
         self.context.current_project = project
         self.context.current_path = path
+        self._apply_editor_state(project.editor_state)
         self.context.command_stack.clear()
         self.viewport.frame_to_voxels()
         self._show_voxel_status(f"Loaded: {path}")
@@ -311,6 +321,7 @@ class MainWindow(QMainWindow):
 
     def _save_to_path(self, path: str) -> None:
         self.context.current_project.modified_utc = utc_now_iso()
+        self.context.current_project.editor_state = self._capture_editor_state()
         save_project(self.context.current_project, path)
         self.statusBar().showMessage(f"Saved: {path}", 5000)
 
@@ -583,6 +594,47 @@ class MainWindow(QMainWindow):
             "Please update your GPU drivers and ensure OpenGL is supported.\n\n"
             f"Details: {message}",
         )
+
+    def _capture_editor_state(self) -> dict[str, object]:
+        return {
+            "active_color_index": self.context.active_color_index,
+            "voxel_tool_mode": self.context.voxel_tool_mode,
+            "voxel_tool_shape": self.context.voxel_tool_shape,
+            "mirror_x_enabled": self.context.mirror_x_enabled,
+            "mirror_y_enabled": self.context.mirror_y_enabled,
+            "mirror_z_enabled": self.context.mirror_z_enabled,
+            "mirror_x_offset": self.context.mirror_x_offset,
+            "mirror_y_offset": self.context.mirror_y_offset,
+            "mirror_z_offset": self.context.mirror_z_offset,
+            "fill_max_cells": self.context.fill_max_cells,
+        }
+
+    def _apply_editor_state(self, state: dict[str, object]) -> None:
+        if not isinstance(state, dict):
+            return
+        palette_size = max(1, len(self.context.palette))
+        active_color = int(state.get("active_color_index", self.context.active_color_index))
+        self.context.active_color_index = max(0, min(active_color, palette_size - 1))
+
+        mode = str(state.get("voxel_tool_mode", self.context.voxel_tool_mode))
+        shape = str(state.get("voxel_tool_shape", self.context.voxel_tool_shape))
+        if mode in (AppContext.TOOL_MODE_PAINT, AppContext.TOOL_MODE_ERASE):
+            self.context.voxel_tool_mode = mode
+        if shape in (
+            AppContext.TOOL_SHAPE_BRUSH,
+            AppContext.TOOL_SHAPE_BOX,
+            AppContext.TOOL_SHAPE_LINE,
+            AppContext.TOOL_SHAPE_FILL,
+        ):
+            self.context.voxel_tool_shape = shape
+
+        self.context.mirror_x_enabled = bool(state.get("mirror_x_enabled", self.context.mirror_x_enabled))
+        self.context.mirror_y_enabled = bool(state.get("mirror_y_enabled", self.context.mirror_y_enabled))
+        self.context.mirror_z_enabled = bool(state.get("mirror_z_enabled", self.context.mirror_z_enabled))
+        self.context.mirror_x_offset = int(state.get("mirror_x_offset", self.context.mirror_x_offset))
+        self.context.mirror_y_offset = int(state.get("mirror_y_offset", self.context.mirror_y_offset))
+        self.context.mirror_z_offset = int(state.get("mirror_z_offset", self.context.mirror_z_offset))
+        self.context.fill_max_cells = int(state.get("fill_max_cells", self.context.fill_max_cells))
 
     def _restore_layout_settings(self) -> None:
         settings = get_settings()

@@ -18,6 +18,7 @@ class Project:
     modified_utc: str = field(default_factory=utc_now_iso)
     version: int = 1
     scene: Scene = field(default_factory=Scene.with_default_part)
+    editor_state: dict[str, object] = field(default_factory=dict)
 
     @property
     def active_part_id(self) -> str:

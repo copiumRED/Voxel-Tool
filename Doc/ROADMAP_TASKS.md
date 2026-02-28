@@ -89,23 +89,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Updated stats/export paths to consume refreshed mesh buffers consistently when cache is present.
 
 ### Task 15: Bounds + Unit-Aware Stats Display
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `c6b8353`
 - Added unit-aware part bounds metrics (`bounds_meters`) in analysis stats output.
 - Updated stats panel object display to show both voxel bounds and metric bounds (`m`) clearly.
 - Extended stats tests to assert bounds values remain accurate in both voxel and meter units.
 
-## Remaining Tasks
+### Task 16: Save/Open Workflow Hardening
+- Commit: `COMMIT_HASH_PENDING`
+- Added editor-state persistence in project IO for key tool/mirror/session fields.
+- Added editor-state restoration on open and save-time capture in main window.
+- Added clear user error dialog for invalid/corrupt project files and IO tests for new schema behavior.
 
-## Task 16: Save/Open Workflow Hardening
-- Goal: reduce data-loss risk and improve reliability.
-- Files/modules likely touched:
-  - `src/core/io/project_io.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria:
-  - Save/open roundtrip preserves parts, active part, tool state essentials.
-  - User gets clear error message for invalid/corrupt files.
-- Tests required:
-  - IO regression tests + legacy-compat tests.
+## Remaining Tasks
 
 ## Task 17: Performance Baseline Harness (Voxel Operations)
 - Goal: establish measurable perf baseline for Phase 1.
