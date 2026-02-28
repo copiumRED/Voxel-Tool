@@ -15,8 +15,8 @@ from PySide6.QtOpenGL import (
     QOpenGLVertexArrayObject,
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from core.commands.demo_commands import build_box_plane_cells, build_brush_cells, build_line_plane_cells
 from core.voxels.raycast import resolve_brush_target_cell
-from core.commands.demo_commands import build_brush_cells
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -80,6 +80,8 @@ class GLViewportWidget(QOpenGLWidget):
         self._hover_preview_cells: set[tuple[int, int, int]] = set()
         self._hover_preview_source: str | None = None
         self._hover_preview_erase = False
+        self._shape_preview_cells: set[tuple[int, int, int]] = set()
+        self._shape_preview_erase = False
 
     def set_context(self, ctx: "AppContext") -> None:
         self._app_context = ctx
@@ -199,6 +201,7 @@ class GLViewportWidget(QOpenGLWidget):
                 self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
 
         self._draw_hover_preview(funcs, mvp)
+        self._draw_shape_preview(funcs, mvp)
 
         if self.debug_overlay_enabled:
             self._draw_overlay_text(len(voxel_rows), error_text=None)
@@ -333,6 +336,15 @@ class GLViewportWidget(QOpenGLWidget):
         color = (1.0, 0.35, 0.35) if self._hover_preview_erase else (0.20, 1.0, 0.90)
         outline_vertices = array("f")
         for cell in sorted(self._hover_preview_cells):
+            outline_vertices.extend(self._build_cell_outline_vertices(cell, color))
+        self._draw_colored_vertices(funcs, outline_vertices, self._GL_LINES, mvp)
+
+    def _draw_shape_preview(self, funcs, mvp: QMatrix4x4) -> None:
+        if not self._shape_preview_cells:
+            return
+        color = (1.0, 0.45, 0.20) if self._shape_preview_erase else (0.25, 0.85, 1.0)
+        outline_vertices = array("f")
+        for cell in sorted(self._shape_preview_cells):
             outline_vertices.extend(self._build_cell_outline_vertices(cell, color))
         self._draw_colored_vertices(funcs, outline_vertices, self._GL_LINES, mvp)
 
@@ -521,6 +533,7 @@ class GLViewportWidget(QOpenGLWidget):
             self._left_press_pos = event.position()
             self._left_dragging = False
             self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
+            self._update_drag_preview(self._left_press_pos, self._left_press_pos, event.modifiers())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
@@ -549,6 +562,8 @@ class GLViewportWidget(QOpenGLWidget):
                     self.update()
             if self._brush_stroke_active:
                 self._continue_brush_stroke(pos, event.modifiers())
+            elif self._left_press_pos is not None:
+                self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -583,6 +598,7 @@ class GLViewportWidget(QOpenGLWidget):
                 self._handle_fill_click(event.position(), event.modifiers())
             elif not self._left_dragging:
                 self._handle_left_click(event.position(), event.modifiers())
+            self._shape_preview_cells = set()
             self._left_press_pos = None
             self._left_dragging = False
         if event.button() in (Qt.LeftButton, Qt.RightButton):
@@ -598,9 +614,10 @@ class GLViewportWidget(QOpenGLWidget):
         super().wheelEvent(event)
 
     def leaveEvent(self, event) -> None:
-        if self._hover_preview_cells:
+        if self._hover_preview_cells or self._shape_preview_cells:
             self._hover_preview_cells = set()
             self._hover_preview_source = None
+            self._shape_preview_cells = set()
             self.update()
         super().leaveEvent(event)
 
@@ -753,12 +770,33 @@ class GLViewportWidget(QOpenGLWidget):
     def _update_hover_preview(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None:
             return
-        if self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH:
+        shape = self._app_context.voxel_tool_shape
+        if shape == self._app_context.TOOL_SHAPE_FILL:
+            fill_cell = self._screen_to_plane_cell(pos)
+            next_cells: set[tuple[int, int, int]] = {fill_cell} if fill_cell is not None else set()
+            if fill_cell is not None:
+                next_cells = self._app_context.expand_mirrored_cells(next_cells)
+            temporary_erase = bool(modifiers & Qt.ShiftModifier)
+            mode = self._app_context.voxel_tool_mode
+            should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+            if next_cells != self._shape_preview_cells or should_erase != self._shape_preview_erase:
+                self._shape_preview_cells = next_cells
+                self._shape_preview_erase = should_erase
+                self.update()
             if self._hover_preview_cells:
                 self._hover_preview_cells = set()
                 self._hover_preview_source = None
                 self.update()
             return
+        if shape != self._app_context.TOOL_SHAPE_BRUSH:
+            if self._hover_preview_cells:
+                self._hover_preview_cells = set()
+                self._hover_preview_source = None
+                self.update()
+            return
+        if self._shape_preview_cells:
+            self._shape_preview_cells = set()
+            self.update()
 
         ray = self._screen_to_world_ray(pos.x(), pos.y())
         if ray is None:
@@ -792,6 +830,39 @@ class GLViewportWidget(QOpenGLWidget):
             self._hover_preview_cells = next_cells
             self._hover_preview_source = next_source
             self._hover_preview_erase = should_erase
+            self.update()
+
+    def _update_drag_preview(
+        self,
+        start_pos: QPointF,
+        end_pos: QPointF,
+        modifiers: Qt.KeyboardModifier,
+    ) -> None:
+        if self._app_context is None:
+            return
+        shape = self._app_context.voxel_tool_shape
+        if shape not in (self._app_context.TOOL_SHAPE_BOX, self._app_context.TOOL_SHAPE_LINE):
+            return
+        start_cell = self._screen_to_plane_cell(start_pos)
+        end_cell = self._screen_to_plane_cell(end_pos)
+        if start_cell is None or end_cell is None:
+            if self._shape_preview_cells:
+                self._shape_preview_cells = set()
+                self.update()
+            return
+        start_x, start_y, z = start_cell
+        end_x, end_y, _ = end_cell
+        if shape == self._app_context.TOOL_SHAPE_BOX:
+            cells = build_box_plane_cells(start_x, start_y, end_x, end_y, z)
+        else:
+            cells = build_line_plane_cells(start_x, start_y, end_x, end_y, z)
+        cells = self._app_context.expand_mirrored_cells(cells)
+        temporary_erase = bool(modifiers & Qt.ShiftModifier)
+        mode = self._app_context.voxel_tool_mode
+        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+        if cells != self._shape_preview_cells or should_erase != self._shape_preview_erase:
+            self._shape_preview_cells = cells
+            self._shape_preview_erase = should_erase
             self.update()
 
     def _handle_box_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:

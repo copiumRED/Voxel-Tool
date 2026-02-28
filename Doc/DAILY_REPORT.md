@@ -18,6 +18,19 @@
 - Issues noticed:
   - `git pull` still failed in-session due to restricted network access to GitHub; task executed from local `main` baseline.
 
+### Roadmap 02 (Next Workday): Non-Brush Hover Ghosting (Line/Box/Fill)
+- What was done:
+  - Added shared helper functions for line/box cell generation and reused them in command execution paths.
+  - Added line/box drag ghost previews in viewport with mirror-aware preview expansion.
+  - Added fill hover target preview and test coverage for preview helper outputs.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Set tool to Box and Line, click-drag to verify ghost preview appears and final applied cells match preview.
+  - Set tool to Fill and move cursor to verify target-cell preview.
+  - Run: `pytest -q` (current: `66 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by network restrictions; work continued on local branch baseline.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

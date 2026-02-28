@@ -10,7 +10,9 @@ from core.commands.demo_commands import (
     PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
+    build_box_plane_cells,
     build_brush_cells,
+    build_line_plane_cells,
     rasterize_brush_stroke_segment,
 )
 from core.project import Project
@@ -278,3 +280,20 @@ def test_paint_and_erase_respect_brush_profile() -> None:
 
     ctx.command_stack.do(RemoveVoxelCommand(0, 0, 0), ctx)
     assert ctx.current_project.voxels.count() == 0
+
+
+def test_build_box_plane_cells_for_preview_generation() -> None:
+    cells = build_box_plane_cells(0, 0, 2, 1, 0)
+    assert cells == {
+        (0, 0, 0),
+        (0, 1, 0),
+        (1, 0, 0),
+        (1, 1, 0),
+        (2, 0, 0),
+        (2, 1, 0),
+    }
+
+
+def test_build_line_plane_cells_for_preview_generation() -> None:
+    cells = build_line_plane_cells(0, 0, 3, 2, 0)
+    assert cells == {(0, 0, 0), (1, 1, 0), (2, 1, 0), (3, 2, 0)}

@@ -169,13 +169,7 @@ class BoxVoxelCommand(Command):
     def do(self, ctx) -> None:
         _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
-        base_cells: set[tuple[int, int, int]] = set()
-        min_x, max_x = sorted((self.start_x, self.end_x))
-        min_y, max_y = sorted((self.start_y, self.end_y))
-
-        for x in range(min_x, max_x + 1):
-            for y in range(min_y, max_y + 1):
-                base_cells.add((x, y, self.z))
+        base_cells = build_box_plane_cells(self.start_x, self.start_y, self.end_x, self.end_y, self.z)
 
         cells = _expand_mirror_cells(ctx, base_cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
@@ -216,9 +210,7 @@ class LineVoxelCommand(Command):
     def do(self, ctx) -> None:
         _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
-        base_cells: set[tuple[int, int, int]] = set()
-        for x, y in _rasterize_line(self.start_x, self.start_y, self.end_x, self.end_y):
-            base_cells.add((x, y, self.z))
+        base_cells = build_line_plane_cells(self.start_x, self.start_y, self.end_x, self.end_y, self.z)
         cells = _expand_mirror_cells(ctx, base_cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
 
@@ -340,6 +332,32 @@ def build_brush_cells(
                     continue
                 cells.add((x + dx, y + dy, z + dz))
     return cells
+
+
+def build_box_plane_cells(
+    start_x: int,
+    start_y: int,
+    end_x: int,
+    end_y: int,
+    z: int,
+) -> set[tuple[int, int, int]]:
+    cells: set[tuple[int, int, int]] = set()
+    min_x, max_x = sorted((start_x, end_x))
+    min_y, max_y = sorted((start_y, end_y))
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
+            cells.add((x, y, z))
+    return cells
+
+
+def build_line_plane_cells(
+    start_x: int,
+    start_y: int,
+    end_x: int,
+    end_y: int,
+    z: int,
+) -> set[tuple[int, int, int]]:
+    return {(x, y, z) for x, y in _rasterize_line(start_x, start_y, end_x, end_y)}
 
 
 def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:

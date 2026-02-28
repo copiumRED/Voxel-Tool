@@ -13,21 +13,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Updated paint/erase commands to apply configurable brush footprints while preserving mirrored edit behavior.
 - Added Tools panel controls for brush size/shape and viewport hover preview rendering for multi-cell brush footprints.
 
-## Remaining Tasks
-
 ### Task 02: Non-Brush Hover Ghosting (Line/Box/Fill)
-- Goal:
-  - Add live ghost preview for line, box, and fill tools before commit.
-- Files/modules likely touched:
-  - `src/app/viewport/gl_widget.py`
-  - `src/app/ui/panels/tools_panel.py`
-- Acceptance criteria (human-testable):
-  - Hover/drag preview appears for line and box extents.
-  - Fill hover target is clearly indicated.
-  - Final operation matches previewed cells.
-- Tests required:
-  - Unit tests for preview target generation.
-  - Manual viewport preview smoke on all tool modes.
+- Commit: `COMMIT_PENDING`
+- Added shared line/box cell-generation helpers used by both command execution and preview rendering to keep preview-to-apply parity.
+- Added viewport drag ghost previews for line and box tools, including mirror-aware preview cell expansion.
+- Added fill hover target preview and tests validating preview-generation helper outputs for line/box paths.
+
+## Remaining Tasks
 
 ### Task 03: Pick Mode Toggle (Surface vs Plane Lock)
 - Goal:
