@@ -53,7 +53,7 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added tests verifying mirrored coordinate generation and paint commands honor configured mirror plane offsets.
 
 ### Task 09: Export Options Panel v1 (OBJ/glTF/VOX)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `59aa157`
 - Added export options dialog flow with session-persisted options across export actions.
 - Added OBJ options wiring for greedy meshing and triangulation controls.
 - Added scale preset placeholder option surfaced for OBJ/glTF/VOX and persisted during the session.
