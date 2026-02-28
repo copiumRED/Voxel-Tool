@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.app_context import AppContext
 from core.commands.demo_commands import AddVoxelCommand
 from core.project import Project
+from core.scene import Scene
 
 
 def test_new_project_has_default_scene_with_active_part() -> None:
@@ -27,3 +28,17 @@ def test_active_part_switch_changes_voxel_authority_for_commands() -> None:
     assert first_part.voxels.count() == 1
     assert second_part.voxels.count() == 1
     assert ctx.current_project.voxels.get(-1, 0, 5) == 2
+
+
+def test_scene_add_rename_and_select_active_part() -> None:
+    scene = Scene.with_default_part()
+    first_active_id = scene.active_part_id
+    assert first_active_id is not None
+
+    second = scene.add_part("Blockout")
+    scene.rename_part(second.part_id, "Blockout B")
+    scene.set_active_part(second.part_id)
+
+    assert scene.active_part_id == second.part_id
+    assert scene.parts[second.part_id].name == "Blockout B"
+    assert first_active_id in scene.parts

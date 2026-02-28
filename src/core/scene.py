@@ -42,3 +42,11 @@ class Scene:
         if part_id not in self.parts:
             raise ValueError(f"Part '{part_id}' does not exist.")
         self.active_part_id = part_id
+
+    def rename_part(self, part_id: str, new_name: str) -> None:
+        if part_id not in self.parts:
+            raise ValueError(f"Part '{part_id}' does not exist.")
+        name = new_name.strip()
+        if not name:
+            raise ValueError("Part name cannot be empty.")
+        self.parts[part_id].name = name

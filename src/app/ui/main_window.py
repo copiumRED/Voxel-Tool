@@ -40,7 +40,10 @@ class MainWindow(QMainWindow):
         self.viewport.viewport_error.connect(self._on_viewport_error)
         self.setCentralWidget(self.viewport)
         self.tools_dock = self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
-        self.inspector_dock = self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
+        self.inspector_panel = InspectorPanel(self)
+        self.inspector_panel.set_context(self.context)
+        self.inspector_panel.part_selection_changed.connect(self._on_part_selection_changed)
+        self.inspector_dock = self._add_dock("Inspector", self.inspector_panel, Qt.RightDockWidgetArea)
         self.palette_panel = PalettePanel(self)
         self.palette_panel.set_context(self.context)
         self.palette_panel.active_color_changed.connect(self._on_active_color_changed)
@@ -262,6 +265,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"Voxel Tool - Phase 0 - {self.context.current_project.name}")
         self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
         self.palette_panel.refresh()
+        self.inspector_panel.refresh()
         self.viewport.update()
         if self.undo_action is not None:
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
@@ -271,7 +275,11 @@ class MainWindow(QMainWindow):
     def _show_voxel_status(self, message: str) -> None:
         count = self.context.current_project.voxels.count()
         active = self.context.active_color_index
-        self.statusBar().showMessage(f"{message} | Voxels: {count} | Active Color: {active}", 5000)
+        part_name = self.context.active_part.name
+        self.statusBar().showMessage(
+            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active}",
+            5000,
+        )
 
     def _on_active_color_changed(self, index: int) -> None:
         self._show_voxel_status(f"Active Color: {index}")
@@ -289,6 +297,11 @@ class MainWindow(QMainWindow):
 
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
         self._show_voxel_status(message)
+        self._refresh_ui_state()
+
+    def _on_part_selection_changed(self, part_id: str) -> None:
+        self._show_voxel_status(f"Active part: {self.context.active_part.name} ({part_id})")
+        self.viewport.frame_to_voxels()
         self._refresh_ui_state()
 
     def _on_create_test_voxels(self) -> None:
