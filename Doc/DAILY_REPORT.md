@@ -28,6 +28,18 @@
 - Issues noticed:
   - `git pull` intermittently failed in-session due to network restrictions, but merge/push from local `main` remained successful.
 
+### Roadmap 03: Part Actions v1 (Delete/Duplicate)
+- What was done:
+  - Added scene APIs for duplicating parts (with voxel copy) and deleting parts (with minimum-one-part guard).
+  - Added Inspector actions for Duplicate/Delete with active part switching and status feedback.
+  - Added tests for duplicate voxel isolation, delete active-part reassignment, and delete-last-part guard.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Inspector, duplicate selected part and verify new part becomes active; delete active part and verify another part becomes active; try deleting last part and verify guard message.
+  - Run: `pytest -q` (current: `43 passed`)
+- Issues noticed:
+  - No functional regressions observed in automated tests.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

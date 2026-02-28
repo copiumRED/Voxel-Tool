@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from itertools import count
 
 from core.part import Part
+from core.voxels.voxel_grid import VoxelGrid
 
 _PART_ID_COUNTER = count(start=1)
 
@@ -50,3 +51,29 @@ class Scene:
         if not name:
             raise ValueError("Part name cannot be empty.")
         self.parts[part_id].name = name
+
+    def duplicate_part(self, part_id: str, *, new_name: str | None = None) -> Part:
+        source = self.parts.get(part_id)
+        if source is None:
+            raise ValueError(f"Part '{part_id}' does not exist.")
+        duplicate_name = new_name.strip() if new_name is not None else f"{source.name} Copy"
+        if not duplicate_name:
+            raise ValueError("Part name cannot be empty.")
+
+        duplicated_voxels = VoxelGrid.from_list(source.voxels.to_list())
+        duplicate = Part(part_id=_next_part_id(), name=duplicate_name, voxels=duplicated_voxels)
+        self.parts[duplicate.part_id] = duplicate
+        self.active_part_id = duplicate.part_id
+        return duplicate
+
+    def delete_part(self, part_id: str) -> str:
+        if part_id not in self.parts:
+            raise ValueError(f"Part '{part_id}' does not exist.")
+        if len(self.parts) <= 1:
+            raise ValueError("Cannot delete the last remaining part.")
+
+        was_active = self.active_part_id == part_id
+        del self.parts[part_id]
+        if was_active:
+            self.active_part_id = next(iter(self.parts.keys()))
+        return self.active_part_id or ""

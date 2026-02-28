@@ -42,3 +42,37 @@ def test_scene_add_rename_and_select_active_part() -> None:
     assert scene.active_part_id == second.part_id
     assert scene.parts[second.part_id].name == "Blockout B"
     assert first_active_id in scene.parts
+
+
+def test_scene_duplicate_part_copies_voxels_and_sets_active_part() -> None:
+    scene = Scene.with_default_part()
+    source = scene.get_active_part()
+    source.voxels.set(1, 2, 3, 7)
+
+    duplicate = scene.duplicate_part(source.part_id, new_name="Part 1 Copy")
+
+    assert duplicate.part_id != source.part_id
+    assert scene.active_part_id == duplicate.part_id
+    assert duplicate.voxels.to_list() == source.voxels.to_list()
+
+    duplicate.voxels.set(-1, 0, 0, 2)
+    assert source.voxels.get(-1, 0, 0) is None
+
+
+def test_scene_delete_part_reassigns_active_and_keeps_one_minimum() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    scene.set_active_part(second.part_id)
+
+    next_active = scene.delete_part(second.part_id)
+    assert next_active == first.part_id
+    assert scene.active_part_id == first.part_id
+    assert second.part_id not in scene.parts
+
+    try:
+        scene.delete_part(first.part_id)
+    except ValueError as exc:
+        assert "last remaining part" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("Expected deleting last part to fail.")

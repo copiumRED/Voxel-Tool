@@ -11,25 +11,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Verified startup smoke and full automated tests (`pytest -q`) remained green.
 
 ### Task 02: First-Voxel UX Preview (Hover Cell/Face)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `665f469`
 - Added brush-mode hover preview marker with clear paint/erase coloring, rendered directly in the viewport.
 - Implemented reusable brush target resolution helper with plane fallback support for empty-scene preview.
 - Added core math tests for hover target resolution paths and validated full test suite pass.
 
-## Remaining Tasks
+### Task 03: Part Actions v1 (Delete/Duplicate)
+- Commit: `COMMIT_HASH_PENDING`
+- Added scene-level duplicate and delete operations with active-part reassignment and guard against deleting the last part.
+- Added inspector UI actions for duplicate/delete part and status feedback messages in main window.
+- Added tests for duplicate copy behavior, active-part switching after delete, and minimum-part guard.
 
-## Task 03: Part Actions v1 (Delete/Duplicate)
-- Goal: complete basic object workflow beyond add/rename/select.
-- Files/modules likely touched:
-  - `src/core/scene.py`
-  - `src/app/ui/panels/inspector_panel.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria:
-  - User can duplicate selected part.
-  - User can delete selected part (with guard to keep at least one part).
-  - Painting affects selected part only.
-- Tests required:
-  - Core tests for part counts, active-part switching, and voxel isolation.
+## Remaining Tasks
 
 ## Task 04: Part Visibility/Lock Flags
 - Goal: add minimum scene control parity with expected voxel editor workflow.

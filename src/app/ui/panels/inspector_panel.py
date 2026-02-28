@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -17,6 +18,7 @@ from app.app_context import AppContext
 
 class InspectorPanel(QWidget):
     part_selection_changed = Signal(str)
+    part_status_message = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -37,6 +39,14 @@ class InspectorPanel(QWidget):
         self.rename_part_button = QPushButton("Rename Part", self)
         self.rename_part_button.clicked.connect(self._on_rename_part)
         buttons_layout.addWidget(self.rename_part_button)
+
+        self.duplicate_part_button = QPushButton("Duplicate Part", self)
+        self.duplicate_part_button.clicked.connect(self._on_duplicate_part)
+        buttons_layout.addWidget(self.duplicate_part_button)
+
+        self.delete_part_button = QPushButton("Delete Part", self)
+        self.delete_part_button.clicked.connect(self._on_delete_part)
+        buttons_layout.addWidget(self.delete_part_button)
 
         layout.addLayout(buttons_layout)
         layout.addStretch(1)
@@ -98,3 +108,57 @@ class InspectorPanel(QWidget):
             return
         self._context.set_active_part(part_id)
         self.part_selection_changed.emit(part_id)
+
+    def _on_duplicate_part(self) -> None:
+        if self._context is None:
+            return
+        current_item = self.part_list.currentItem()
+        if current_item is None:
+            return
+        source_part_id = current_item.data(Qt.UserRole)
+        if not isinstance(source_part_id, str):
+            return
+
+        source_name = current_item.text().strip()
+        default_name = f"{source_name} Copy" if source_name else "Part Copy"
+        name, accepted = QInputDialog.getText(self, "Duplicate Part", "New part name:", text=default_name)
+        if not accepted:
+            return
+        duplicate_name = name.strip()
+        if not duplicate_name:
+            return
+
+        duplicated = self._context.current_project.scene.duplicate_part(source_part_id, new_name=duplicate_name)
+        self.refresh()
+        self.part_selection_changed.emit(duplicated.part_id)
+        self.part_status_message.emit(f"Duplicated part: {duplicate_name}")
+
+    def _on_delete_part(self) -> None:
+        if self._context is None:
+            return
+        current_item = self.part_list.currentItem()
+        if current_item is None:
+            return
+        part_id = current_item.data(Qt.UserRole)
+        if not isinstance(part_id, str):
+            return
+        part_name = current_item.text().strip() or part_id
+
+        scene = self._context.current_project.scene
+        if len(scene.parts) <= 1:
+            QMessageBox.information(self, "Delete Part", "At least one part must remain in the scene.")
+            return
+        answer = QMessageBox.question(
+            self,
+            "Delete Part",
+            f"Delete part '{part_name}'?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if answer != QMessageBox.Yes:
+            return
+
+        next_active_part_id = scene.delete_part(part_id)
+        self.refresh()
+        self.part_selection_changed.emit(next_active_part_id)
+        self.part_status_message.emit(f"Deleted part: {part_name}")

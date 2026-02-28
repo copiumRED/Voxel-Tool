@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
         self.inspector_panel.part_selection_changed.connect(self._on_part_selection_changed)
+        self.inspector_panel.part_status_message.connect(self._on_part_status_message)
         self.inspector_dock = self._add_dock("Inspector", self.inspector_panel, Qt.RightDockWidgetArea)
         self.palette_panel = PalettePanel(self)
         self.palette_panel.set_context(self.context)
@@ -373,6 +374,10 @@ class MainWindow(QMainWindow):
     def _on_part_selection_changed(self, part_id: str) -> None:
         self._show_voxel_status(f"Active part: {self.context.active_part.name} ({part_id})")
         self.viewport.frame_to_voxels()
+        self._refresh_ui_state()
+
+    def _on_part_status_message(self, message: str) -> None:
+        self._show_voxel_status(message)
         self._refresh_ui_state()
 
     def _on_tool_mode_changed(self, mode: str) -> None:
