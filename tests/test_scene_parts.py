@@ -112,3 +112,25 @@ def test_part_lock_flag_blocks_edit_intent_in_context() -> None:
     active = ctx.active_part
     active.locked = True
     assert active.locked is True
+
+
+def test_scene_group_assign_and_visibility_lock_propagation() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    group = scene.create_group("Characters")
+    scene.assign_part_to_group(first.part_id, group.group_id)
+    scene.assign_part_to_group(second.part_id, group.group_id)
+
+    scene.set_group_visible(group.group_id, False)
+    assert first.visible is False
+    assert second.visible is False
+    assert scene.groups[group.group_id].visible is False
+
+    scene.set_group_locked(group.group_id, True)
+    assert first.locked is True
+    assert second.locked is True
+    assert scene.groups[group.group_id].locked is True
+
+    scene.unassign_part_from_group(second.part_id, group.group_id)
+    assert second.part_id not in scene.groups[group.group_id].part_ids

@@ -4,7 +4,7 @@ import json
 
 from core.part import Part
 from core.project import Project
-from core.scene import Scene
+from core.scene import PartGroup, Scene
 from core.voxels.voxel_grid import VoxelGrid
 
 _REQUIRED_BASE_KEYS = {"name", "created_utc", "modified_utc", "version"}
@@ -38,6 +38,16 @@ def save_project(project: Project, path: str) -> None:
         "scene": {
             "active_part_id": project.scene.active_part_id,
             "parts": parts_payload,
+            "groups": [
+                {
+                    "group_id": group.group_id,
+                    "name": group.name,
+                    "part_ids": list(group.part_ids),
+                    "visible": group.visible,
+                    "locked": group.locked,
+                }
+                for _, group in project.scene.iter_groups_ordered()
+            ],
         },
     }
     with open(path, "w", encoding="utf-8") as file_obj:
@@ -116,6 +126,29 @@ def load_project(path: str) -> Project:
             scene.active_part_id = requested_active_part_id
         else:
             scene.active_part_id = scene.part_order[0]
+
+        groups_payload = scene_payload.get("groups", [])
+        if isinstance(groups_payload, list):
+            for raw_group in groups_payload:
+                if not isinstance(raw_group, dict):
+                    continue
+                group_id = str(raw_group.get("group_id", "")).strip()
+                name = str(raw_group.get("name", "")).strip()
+                if not group_id or not name:
+                    continue
+                part_ids = [
+                    part_id
+                    for part_id in raw_group.get("part_ids", [])
+                    if isinstance(part_id, str) and part_id in scene.parts
+                ]
+                scene.groups[group_id] = PartGroup(
+                    group_id=group_id,
+                    name=name,
+                    part_ids=part_ids,
+                    visible=bool(raw_group.get("visible", True)),
+                    locked=bool(raw_group.get("locked", False)),
+                )
+                scene.group_order.append(group_id)
 
         project.scene = scene
     else:

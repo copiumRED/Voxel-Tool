@@ -7,10 +7,24 @@ from core.part import Part
 from core.voxels.voxel_grid import VoxelGrid
 
 _PART_ID_COUNTER = count(start=1)
+_GROUP_ID_COUNTER = count(start=1)
 
 
 def _next_part_id() -> str:
     return f"part-{next(_PART_ID_COUNTER)}"
+
+
+def _next_group_id() -> str:
+    return f"group-{next(_GROUP_ID_COUNTER)}"
+
+
+@dataclass(slots=True)
+class PartGroup:
+    group_id: str
+    name: str
+    part_ids: list[str] = field(default_factory=list)
+    visible: bool = True
+    locked: bool = False
 
 
 @dataclass(slots=True)
@@ -18,6 +32,8 @@ class Scene:
     parts: dict[str, Part] = field(default_factory=dict)
     active_part_id: str | None = None
     part_order: list[str] = field(default_factory=list)
+    groups: dict[str, PartGroup] = field(default_factory=dict)
+    group_order: list[str] = field(default_factory=list)
 
     @classmethod
     def with_default_part(cls) -> "Scene":
@@ -87,6 +103,8 @@ class Scene:
         was_active = self.active_part_id == part_id
         del self.parts[part_id]
         self.part_order = [pid for pid in self.part_order if pid != part_id]
+        for group in self.groups.values():
+            group.part_ids = [pid for pid in group.part_ids if pid != part_id]
         if was_active:
             self.active_part_id = self.part_order[0]
         return self.active_part_id or ""
@@ -110,3 +128,58 @@ class Scene:
             return False
         self.part_order[index], self.part_order[target] = self.part_order[target], self.part_order[index]
         return True
+
+    def create_group(self, name: str) -> PartGroup:
+        group_name = name.strip()
+        if not group_name:
+            raise ValueError("Group name cannot be empty.")
+        group = PartGroup(group_id=_next_group_id(), name=group_name)
+        self.groups[group.group_id] = group
+        self.group_order.append(group.group_id)
+        return group
+
+    def delete_group(self, group_id: str) -> None:
+        if group_id not in self.groups:
+            raise ValueError(f"Group '{group_id}' does not exist.")
+        del self.groups[group_id]
+        self.group_order = [gid for gid in self.group_order if gid != group_id]
+
+    def assign_part_to_group(self, part_id: str, group_id: str) -> None:
+        if part_id not in self.parts:
+            raise ValueError(f"Part '{part_id}' does not exist.")
+        group = self.groups.get(group_id)
+        if group is None:
+            raise ValueError(f"Group '{group_id}' does not exist.")
+        if part_id not in group.part_ids:
+            group.part_ids.append(part_id)
+
+    def unassign_part_from_group(self, part_id: str, group_id: str) -> None:
+        group = self.groups.get(group_id)
+        if group is None:
+            raise ValueError(f"Group '{group_id}' does not exist.")
+        group.part_ids = [pid for pid in group.part_ids if pid != part_id]
+
+    def set_group_visible(self, group_id: str, visible: bool) -> None:
+        group = self.groups.get(group_id)
+        if group is None:
+            raise ValueError(f"Group '{group_id}' does not exist.")
+        group.visible = bool(visible)
+        for part_id in group.part_ids:
+            part = self.parts.get(part_id)
+            if part is not None:
+                part.visible = group.visible
+
+    def set_group_locked(self, group_id: str, locked: bool) -> None:
+        group = self.groups.get(group_id)
+        if group is None:
+            raise ValueError(f"Group '{group_id}' does not exist.")
+        group.locked = bool(locked)
+        for part_id in group.part_ids:
+            part = self.parts.get(part_id)
+            if part is not None:
+                part.locked = group.locked
+
+    def iter_groups_ordered(self) -> list[tuple[str, PartGroup]]:
+        if not self.group_order:
+            self.group_order = list(self.groups.keys())
+        return [(group_id, self.groups[group_id]) for group_id in self.group_order if group_id in self.groups]

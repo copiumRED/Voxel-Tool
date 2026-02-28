@@ -69,6 +69,35 @@ class InspectorPanel(QWidget):
         flags_layout.addWidget(self.locked_checkbox)
         layout.addLayout(flags_layout)
 
+        layout.addWidget(QLabel("Groups"))
+        self.group_list = QListWidget(self)
+        self.group_list.currentItemChanged.connect(self._on_current_group_changed)
+        layout.addWidget(self.group_list)
+
+        group_buttons_layout = QHBoxLayout()
+        self.add_group_button = QPushButton("Add Group", self)
+        self.add_group_button.clicked.connect(self._on_add_group)
+        group_buttons_layout.addWidget(self.add_group_button)
+        self.delete_group_button = QPushButton("Delete Group", self)
+        self.delete_group_button.clicked.connect(self._on_delete_group)
+        group_buttons_layout.addWidget(self.delete_group_button)
+        self.assign_group_button = QPushButton("Assign Active Part", self)
+        self.assign_group_button.clicked.connect(self._on_assign_active_part_to_group)
+        group_buttons_layout.addWidget(self.assign_group_button)
+        self.unassign_group_button = QPushButton("Unassign Active Part", self)
+        self.unassign_group_button.clicked.connect(self._on_unassign_active_part_from_group)
+        group_buttons_layout.addWidget(self.unassign_group_button)
+        layout.addLayout(group_buttons_layout)
+
+        group_flags_layout = QHBoxLayout()
+        self.group_visible_checkbox = QCheckBox("Group Visible", self)
+        self.group_visible_checkbox.stateChanged.connect(self._on_group_visible_toggled)
+        group_flags_layout.addWidget(self.group_visible_checkbox)
+        self.group_locked_checkbox = QCheckBox("Group Locked", self)
+        self.group_locked_checkbox.stateChanged.connect(self._on_group_locked_toggled)
+        group_flags_layout.addWidget(self.group_locked_checkbox)
+        layout.addLayout(group_flags_layout)
+
         transform_layout = QFormLayout()
         self.position_x = self._create_transform_spin()
         self.position_y = self._create_transform_spin()
@@ -119,9 +148,18 @@ class InspectorPanel(QWidget):
             if part_id == active_part_id:
                 self.part_list.setCurrentItem(item)
         self.part_list.blockSignals(False)
+        self.group_list.blockSignals(True)
+        self.group_list.clear()
+        for group_id, group in self._context.current_project.scene.iter_groups_ordered():
+            item = QListWidgetItem(group.name)
+            item.setData(Qt.UserRole, group_id)
+            self.group_list.addItem(item)
+        self.group_list.blockSignals(False)
 
         self.visible_checkbox.blockSignals(True)
         self.locked_checkbox.blockSignals(True)
+        self.group_visible_checkbox.blockSignals(True)
+        self.group_locked_checkbox.blockSignals(True)
         self._set_transform_signals_blocked(True)
         self.visible_checkbox.setChecked(active_part.visible)
         self.locked_checkbox.setChecked(active_part.locked)
@@ -136,6 +174,15 @@ class InspectorPanel(QWidget):
         self.scale_z.setValue(active_part.scale[2])
         self.visible_checkbox.blockSignals(False)
         self.locked_checkbox.blockSignals(False)
+        selected_group = self._selected_group()
+        if selected_group is not None:
+            self.group_visible_checkbox.setChecked(selected_group.visible)
+            self.group_locked_checkbox.setChecked(selected_group.locked)
+        else:
+            self.group_visible_checkbox.setChecked(False)
+            self.group_locked_checkbox.setChecked(False)
+        self.group_visible_checkbox.blockSignals(False)
+        self.group_locked_checkbox.blockSignals(False)
         self._set_transform_signals_blocked(False)
 
     def _on_add_part(self) -> None:
@@ -260,6 +307,109 @@ class InspectorPanel(QWidget):
             "Part transform updated: "
             f"pos={part.position} rot={part.rotation} scale={part.scale} ({part.name})"
         )
+
+    def _selected_group(self):
+        if self._context is None:
+            return None
+        current_item = self.group_list.currentItem()
+        if current_item is None:
+            return None
+        group_id = current_item.data(Qt.UserRole)
+        if not isinstance(group_id, str):
+            return None
+        return self._context.current_project.scene.groups.get(group_id)
+
+    def _on_current_group_changed(self, current: QListWidgetItem | None, previous: QListWidgetItem | None) -> None:
+        del previous
+        if self._context is None or current is None:
+            return
+        group = self._selected_group()
+        self.group_visible_checkbox.blockSignals(True)
+        self.group_locked_checkbox.blockSignals(True)
+        if group is not None:
+            self.group_visible_checkbox.setChecked(group.visible)
+            self.group_locked_checkbox.setChecked(group.locked)
+        else:
+            self.group_visible_checkbox.setChecked(False)
+            self.group_locked_checkbox.setChecked(False)
+        self.group_visible_checkbox.blockSignals(False)
+        self.group_locked_checkbox.blockSignals(False)
+
+    def _on_add_group(self) -> None:
+        if self._context is None:
+            return
+        name, accepted = QInputDialog.getText(self, "Add Group", "Group name:", text="Group 1")
+        if not accepted:
+            return
+        group_name = name.strip()
+        if not group_name:
+            return
+        group = self._context.current_project.scene.create_group(group_name)
+        self.refresh()
+        for row in range(self.group_list.count()):
+            item = self.group_list.item(row)
+            if item.data(Qt.UserRole) == group.group_id:
+                self.group_list.setCurrentRow(row)
+                break
+        self.part_status_message.emit(f"Created group: {group.name}")
+
+    def _on_delete_group(self) -> None:
+        if self._context is None:
+            return
+        current_item = self.group_list.currentItem()
+        if current_item is None:
+            return
+        group_id = current_item.data(Qt.UserRole)
+        if not isinstance(group_id, str):
+            return
+        group_name = current_item.text().strip() or group_id
+        self._context.current_project.scene.delete_group(group_id)
+        self.refresh()
+        self.part_status_message.emit(f"Deleted group: {group_name}")
+
+    def _on_assign_active_part_to_group(self) -> None:
+        if self._context is None:
+            return
+        group = self._selected_group()
+        if group is None:
+            return
+        part = self._context.active_part
+        self._context.current_project.scene.assign_part_to_group(part.part_id, group.group_id)
+        self.part_status_message.emit(f"Assigned {part.name} -> {group.name}")
+        self.refresh()
+
+    def _on_unassign_active_part_from_group(self) -> None:
+        if self._context is None:
+            return
+        group = self._selected_group()
+        if group is None:
+            return
+        part = self._context.active_part
+        self._context.current_project.scene.unassign_part_from_group(part.part_id, group.group_id)
+        self.part_status_message.emit(f"Unassigned {part.name} from {group.name}")
+        self.refresh()
+
+    def _on_group_visible_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        group = self._selected_group()
+        if group is None:
+            return
+        visible = state == Qt.Checked
+        self._context.current_project.scene.set_group_visible(group.group_id, visible)
+        self.part_status_message.emit(f"Group visibility: {'on' if visible else 'off'} ({group.name})")
+        self.refresh()
+
+    def _on_group_locked_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        group = self._selected_group()
+        if group is None:
+            return
+        locked = state == Qt.Checked
+        self._context.current_project.scene.set_group_locked(group.group_id, locked)
+        self.part_status_message.emit(f"Group lock: {'on' if locked else 'off'} ({group.name})")
+        self.refresh()
 
     def _on_move_part(self, direction: int) -> None:
         if self._context is None:

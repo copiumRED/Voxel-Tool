@@ -37,25 +37,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added Inspector `Move Up`/`Move Down` actions for part list reordering with immediate list refresh.
 - Updated project IO to persist/load part order and added tests for scene reorder behavior and IO roundtrip order stability.
 
-## Remaining Tasks
-
 ### Task 06: Grouping v1 (Create Group, Add/Remove Parts, Group Visibility/Lock)
-- Goal:
-  - Add lightweight part grouping for organization and batch control.
-- Files/modules likely touched:
-  - `src/core/scene.py`
-  - `src/core/project.py`
-  - `src/app/ui/panels/inspector_panel.py`
-  - `src/core/io/project_io.py`
-- Acceptance criteria (human-testable):
-  - Create/delete groups from inspector.
-  - Assign/unassign parts to groups.
-  - Group visibility/lock affects member parts.
-- Tests required:
-  - Unit tests for group membership and flags.
-  - Save/open tests for group persistence.
-- Risk/rollback note:
-  - If group model destabilizes existing part flows, merge group metadata first and defer UI actions.
+- Commit: `COMMIT_PENDING`
+- Added lightweight `PartGroup` model with ordered group storage and scene APIs for create/delete/assign/unassign operations.
+- Added group visibility/lock propagation so group toggles update member part visibility/lock flags.
+- Added Inspector group controls and project IO persistence with regression tests for group membership/state roundtrip.
+
+## Remaining Tasks
 
 ### Task 07: Palette Editing v1 (Add/Remove/Edit/Swap Colors)
 - Goal:

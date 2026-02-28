@@ -72,6 +72,20 @@
 - Issues noticed:
   - `git pull` remained blocked by network restrictions; task executed from local `main` baseline.
 
+### Roadmap 06 (Next Workday): Grouping v1 (Create Group, Add/Remove Parts, Group Visibility/Lock)
+- What was done:
+  - Added `PartGroup` support in scene core with create/delete and part membership operations.
+  - Added group visibility/lock propagation to member parts.
+  - Added Inspector group controls for create/delete/assign/unassign and group flag toggles.
+  - Added project save/load group persistence and tests for grouping behavior and IO roundtrip.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create a group, assign active part, toggle group visible/locked, and verify member part flags update.
+  - Save/open and verify group and membership state persists.
+  - Run: `pytest -q` (current: `70 passed`)
+- Issues noticed:
+  - `git pull` still blocked by restricted network access; local branch workflow continued.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

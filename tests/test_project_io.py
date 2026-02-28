@@ -35,6 +35,9 @@ def test_project_save_load_roundtrip() -> None:
     second_part.scale = (1.0, 2.0, 1.0)
     second_part.visible = False
     second_part.locked = True
+    group = project.scene.create_group("Group A")
+    project.scene.assign_part_to_group(second_part.part_id, group.group_id)
+    project.scene.set_group_locked(group.group_id, True)
     path = get_app_temp_dir("VoxelTool") / f"test-project-{uuid.uuid4().hex}.json"
     try:
         save_project(project, str(path))
@@ -57,6 +60,11 @@ def test_project_save_load_roundtrip() -> None:
         assert loaded.scene.parts[first_part_id].visible is True
         assert loaded.scene.parts[first_part_id].locked is False
         assert loaded.scene.part_order == project.scene.part_order
+        assert len(loaded.scene.groups) == 1
+        loaded_group = next(iter(loaded.scene.groups.values()))
+        assert loaded_group.name == "Group A"
+        assert second_part.part_id in loaded_group.part_ids
+        assert loaded_group.locked is True
     finally:
         path.unlink(missing_ok=True)
 
