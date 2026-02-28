@@ -104,6 +104,7 @@ class MainWindow(QMainWindow):
         self.context.current_project = Project(name="Untitled")
         self.context.current_path = None
         self.context.command_stack.clear()
+        self.viewport.frame_to_voxels()
         self._show_voxel_status("New project created: Untitled")
         self._refresh_ui_state()
 
@@ -120,6 +121,7 @@ class MainWindow(QMainWindow):
         self.context.current_project = project
         self.context.current_path = path
         self.context.command_stack.clear()
+        self.viewport.frame_to_voxels()
         self._show_voxel_status(f"Loaded: {path}")
         self._refresh_ui_state()
 
@@ -182,6 +184,7 @@ class MainWindow(QMainWindow):
 
     def _on_demo_clear_voxels(self) -> None:
         self.context.command_stack.do(ClearVoxelsCommand(), self.context)
+        self.viewport.frame_to_voxels()
         self._show_voxel_status("Cleared voxels")
         self._refresh_ui_state()
 

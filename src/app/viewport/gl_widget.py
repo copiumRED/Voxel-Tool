@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from array import array
 from ctypes import c_void_p
+from math import cos, radians, sin
 from typing import TYPE_CHECKING
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QMatrix4x4, QVector3D
 from PySide6.QtOpenGL import QOpenGLBuffer, QOpenGLShader, QOpenGLShaderProgram
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -36,9 +38,44 @@ class GLViewportWidget(QOpenGLWidget):
         self._app_context: AppContext | None = None
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
+        self.yaw_deg = 45.0
+        self.pitch_deg = -30.0
+        self.distance = 25.0
+        self.target = QVector3D(0.0, 0.0, 0.0)
+        self._last_mouse_pos: tuple[float, float] | None = None
 
     def set_context(self, ctx: "AppContext") -> None:
         self._app_context = ctx
+        self.frame_to_voxels()
+        self.update()
+
+    def frame_to_voxels(self) -> None:
+        if self._app_context is None:
+            return
+
+        voxel_rows = self._app_context.current_project.voxels.to_list()
+        if not voxel_rows:
+            self.yaw_deg = 45.0
+            self.pitch_deg = -30.0
+            self.distance = 25.0
+            self.target = QVector3D(0.0, 0.0, 0.0)
+            self.update()
+            return
+
+        xs = [row[0] for row in voxel_rows]
+        ys = [row[1] for row in voxel_rows]
+        zs = [row[2] for row in voxel_rows]
+        min_x, max_x = min(xs), max(xs)
+        min_y, max_y = min(ys), max(ys)
+        min_z, max_z = min(zs), max(zs)
+
+        self.target = QVector3D(
+            (min_x + max_x) * 0.5,
+            (min_y + max_y) * 0.5,
+            (min_z + max_z) * 0.5,
+        )
+        max_extent = max(max_x - min_x, max_y - min_y, max_z - min_z, 1)
+        self.distance = self._clamp(max_extent * 2.5 + 2.0, 2.0, 200.0)
         self.update()
 
     def initializeGL(self) -> None:
@@ -102,7 +139,14 @@ class GLViewportWidget(QOpenGLWidget):
         height = max(1, self.height())
         mvp = QMatrix4x4()
         mvp.perspective(45.0, width / height, 0.1, 200.0)
-        mvp.lookAt(QVector3D(14.0, 14.0, 14.0), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, 1.0, 0.0))
+        yaw = radians(self.yaw_deg)
+        pitch = radians(self.pitch_deg)
+        eye = QVector3D(
+            self.target.x() + self.distance * cos(pitch) * cos(yaw),
+            self.target.y() + self.distance * sin(pitch),
+            self.target.z() + self.distance * cos(pitch) * sin(yaw),
+        )
+        mvp.lookAt(eye, self.target, QVector3D(0.0, 1.0, 0.0))
 
         self._program.bind()
         self._program.setUniformValue("u_mvp", mvp)
@@ -119,3 +163,39 @@ class GLViewportWidget(QOpenGLWidget):
         self._program.disableAttributeArray(color_location)
         self._program.release()
         self._buffer.release()
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            pos = event.position()
+            self._last_mouse_pos = (pos.x(), pos.y())
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if self._last_mouse_pos is None or not (event.buttons() & Qt.LeftButton):
+            super().mouseMoveEvent(event)
+            return
+        pos = event.position()
+        dx = pos.x() - self._last_mouse_pos[0]
+        dy = pos.y() - self._last_mouse_pos[1]
+        self._last_mouse_pos = (pos.x(), pos.y())
+
+        self.yaw_deg += dx * 0.4
+        self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+        self.update()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self._last_mouse_pos = None
+        super().mouseReleaseEvent(event)
+
+    def wheelEvent(self, event) -> None:
+        steps = event.angleDelta().y() / 120.0
+        if steps != 0:
+            self.distance = self._clamp(self.distance * (0.9 ** steps), 2.0, 200.0)
+            self.update()
+        super().wheelEvent(event)
+
+    @staticmethod
+    def _clamp(value: float, min_value: float, max_value: float) -> float:
+        return max(min_value, min(max_value, value))
