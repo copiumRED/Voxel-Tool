@@ -207,6 +207,17 @@
 - Issues noticed:
   - Editor state schema is additive and backward-compatible; future migrations may need explicit versioning if fields evolve.
 
+### Roadmap 17: Performance Baseline Harness (Voxel Operations)
+- What was done:
+  - Added benchmark-style performance harness covering brush paint, fill, and solidify timings.
+  - Added stored baseline JSON for regression tracking.
+  - Added non-blocking threshold assertions using a configurable regression multiplier.
+- How to test quickly:
+  - Run: `pytest -q` (includes `test_perf_baseline_harness_non_blocking_thresholds`)
+  - Baseline file: `tests/perf_baseline.json`
+- Issues noticed:
+  - Baselines are environment-sensitive and currently conservative by design to reduce false positives.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

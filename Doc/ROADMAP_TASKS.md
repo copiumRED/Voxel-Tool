@@ -95,24 +95,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Extended stats tests to assert bounds values remain accurate in both voxel and meter units.
 
 ### Task 16: Save/Open Workflow Hardening
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `f630b18`
 - Added editor-state persistence in project IO for key tool/mirror/session fields.
 - Added editor-state restoration on open and save-time capture in main window.
 - Added clear user error dialog for invalid/corrupt project files and IO tests for new schema behavior.
 
-## Remaining Tasks
+### Task 17: Performance Baseline Harness (Voxel Operations)
+- Commit: `COMMIT_HASH_PENDING`
+- Added automated performance harness test for brush paint, fill, and solidify timings.
+- Added stored baseline file (`tests/perf_baseline.json`) for regression tracking.
+- Added non-blocking threshold assertions via configurable multiplier to flag major regressions without overfitting local variance.
 
-## Task 17: Performance Baseline Harness (Voxel Operations)
-- Goal: establish measurable perf baseline for Phase 1.
-- Files/modules likely touched:
-  - `tests/`
-  - `src/core/commands/demo_commands.py`
-  - `src/core/meshing/`
-- Acceptance criteria:
-  - Automated benchmark-style test script records brush/fill/solidify timings.
-  - Baseline stored for regression tracking.
-- Tests required:
-  - Perf harness execution (non-blocking threshold assertions).
+## Remaining Tasks
 
 ## Task 18: Clean-Machine Packaging Validation
 - Goal: verify packaging reproducibility and startup reliability.
