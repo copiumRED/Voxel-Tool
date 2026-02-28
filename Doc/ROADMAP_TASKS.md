@@ -119,7 +119,7 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added shortcut reminder line in the same visible hint block for onboarding/discoverability.
 
 ### Task 20: Phase 1 QA Gate + Bugfix Buffer
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `1bd9c23`
 - Ran Phase 1 QA gate checks: app launch smoke, full test suite, project save/open smoke, and OBJ/glTF/VOX export smoke.
 - Verified packaged app launch smoke (`dist\\VoxelTool\\VoxelTool.exe`) and confirmed packaging pipeline remains runnable.
 - Consolidated go/no-go readiness notes for operator human validation handoff.
