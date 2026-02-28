@@ -70,6 +70,8 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
   - Palette index mapping remains stable for current palette set.
 - Tests required:
   - Unit tests + manual external import check.
+- Status:
+  - Blocked in current environment pending operator-side external editor import verification.
 
 ## Task 11: Palette Management v1 (Save/Load Presets)
 - Goal: improve color workflow parity.

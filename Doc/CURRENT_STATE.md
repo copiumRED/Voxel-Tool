@@ -26,6 +26,7 @@ Reasoning:
 - Correction 10: Mirror plane visual guides are now rendered in viewport and mapped clearly to `Mirror X/Y/Z` controls.
 - Correction 11: Custom mirror plane offsets are implemented and mirrored edits now honor per-axis configured planes.
 - Correction 12: Export options dialog flow is implemented with session-persisted options and OBJ greedy/triangulate controls.
+- Correction 13: VOX exporter validation tests were expanded for deterministic palette/chunk behavior, but external editor interoperability confirmation is still pending.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -60,7 +61,7 @@ Reasoning:
 - Mitigation: add perf tests; profile hot paths; consider chunked/hybrid representation if thresholds fail.
 
 5. Export interoperability expectations not fully met
-- Mitigation: export options panel v1 shipped; next is VOX compatibility validation and external import smoke checks.
+- Mitigation: VOX binary compatibility tests improved; remaining blocker is manual external editor import validation on operator machine.
 
 6. Undo/redo edge-case breakage in compound/mirrored operations
 - Mitigation: transaction grouping and mirrored drag regression tests are now in place; next is stress/perf-oriented undo torture coverage.
@@ -76,3 +77,8 @@ Reasoning:
 
 10. Phase boundary creep (mesh-edit ambitions entering Phase 1 prematurely)
 - Mitigation: enforce Phase 1 roadmap guardrails; defer Blender-like editing tasks to Phase 2 backlog.
+
+## Active Blocker (Today)
+- Roadmap Task 10 requires external voxel editor import verification.
+- In this environment, external editor execution/import testing is unavailable.
+- Branch `feature/roadmap-10-vox-compat-validation` contains safe test/validation improvements, but is intentionally unmerged pending operator-side interoperability check.

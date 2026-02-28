@@ -42,7 +42,7 @@ def export_voxels_to_vox(
         vx = x - min_x
         vy = y - min_y
         vz = z - min_z
-        vox_color = (color_index % 255) + 1
+        vox_color = _to_vox_palette_index(color_index)
         vox_entries.append((vx, vy, vz, vox_color))
 
     payload = _build_vox_payload(vox_entries, size, palette)
@@ -83,3 +83,8 @@ def _build_vox_payload(
 
 def _chunk(chunk_id: bytes, content: bytes, children: bytes) -> bytes:
     return chunk_id + struct.pack("<II", len(content), len(children)) + content + children
+
+
+def _to_vox_palette_index(color_index: int) -> int:
+    # VOX uses palette indices in 1..255 where 0 means empty.
+    return (int(color_index) % 255) + 1
