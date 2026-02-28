@@ -4,6 +4,7 @@ from app.app_context import AppContext
 from core.commands.demo_commands import (
     AddVoxelCommand,
     ClearVoxelsCommand,
+    CreateTestVoxelsCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
 )
@@ -70,3 +71,19 @@ def test_remove_voxel_undo_restores_if_present() -> None:
 
     ctx.command_stack.undo(ctx)
     assert ctx.current_project.voxels.get(2, -1, 0) == 5
+
+
+def test_create_test_voxels_command_undo_redo_counts() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.current_project.voxels.set(9, 9, 9, 1)
+
+    ctx.command_stack.do(CreateTestVoxelsCommand(center_color_index=2, arm_color_index=3), ctx)
+    assert ctx.current_project.voxels.count() == 7
+    assert ctx.current_project.voxels.get(0, 0, 0) == 2
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 1
+    assert ctx.current_project.voxels.get(9, 9, 9) == 1
+
+    ctx.command_stack.redo(ctx)
+    assert ctx.current_project.voxels.count() == 7

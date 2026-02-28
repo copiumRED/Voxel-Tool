@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from array import array
 from ctypes import c_void_p
 from math import cos, radians, sin
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 
 class GLViewportWidget(QOpenGLWidget):
     voxel_edit_applied = Signal(str)
+    viewport_ready = Signal(str)
+    viewport_error = Signal(str)
 
     _GL_COLOR_BUFFER_BIT = 0x00004000
     _GL_DEPTH_BUFFER_BIT = 0x00000100
@@ -24,6 +27,9 @@ class GLViewportWidget(QOpenGLWidget):
     _GL_FLOAT = 0x1406
     _GL_DEPTH_TEST = 0x0B71
     _GL_ARRAY_BUFFER = 0x8892
+    _GL_VENDOR = 0x1F00
+    _GL_RENDERER = 0x1F01
+    _GL_VERSION = 0x1F02
     _DEFAULT_YAW_DEG = 45.0
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
@@ -41,9 +47,12 @@ class GLViewportWidget(QOpenGLWidget):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.setMinimumSize(400, 300)
         self._app_context: AppContext | None = None
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
+        self._logger = logging.getLogger("voxel_tool")
+        self.last_gl_info = "unknown"
         self.debug_overlay_enabled = True
         self.yaw_deg = self._DEFAULT_YAW_DEG
         self.pitch_deg = self._DEFAULT_PITCH_DEG
@@ -91,42 +100,52 @@ class GLViewportWidget(QOpenGLWidget):
         self.update()
 
     def initializeGL(self) -> None:
-        funcs = self.context().functions()
-        funcs.glClearColor(0.10, 0.12, 0.15, 1.0)
-        funcs.glEnable(self._GL_DEPTH_TEST)
+        try:
+            funcs = self.context().functions()
+            funcs.glClearColor(0.18, 0.22, 0.27, 1.0)
+            funcs.glEnable(self._GL_DEPTH_TEST)
 
-        program = QOpenGLShaderProgram(self)
-        program.addShaderFromSourceCode(
-            QOpenGLShader.Vertex,
-            """
-            #version 120
-            attribute vec3 position;
-            attribute vec3 color;
-            varying vec3 v_color;
-            uniform mat4 u_mvp;
-            void main() {
-                v_color = color;
-                gl_Position = u_mvp * vec4(position, 1.0);
-                gl_PointSize = 8.0;
-            }
-            """,
-        )
-        program.addShaderFromSourceCode(
-            QOpenGLShader.Fragment,
-            """
-            #version 120
-            varying vec3 v_color;
-            void main() {
-                gl_FragColor = vec4(v_color, 1.0);
-            }
-            """,
-        )
-        program.link()
-        self._program = program
+            vendor = self._gl_string(funcs, self._GL_VENDOR)
+            renderer = self._gl_string(funcs, self._GL_RENDERER)
+            version = self._gl_string(funcs, self._GL_VERSION)
+            self.last_gl_info = f"{version} | {vendor} | {renderer}"
+            self.viewport_ready.emit(self.last_gl_info)
 
-        buffer = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
-        buffer.create()
-        self._buffer = buffer
+            program = QOpenGLShaderProgram(self)
+            program.addShaderFromSourceCode(
+                QOpenGLShader.Vertex,
+                """
+                #version 120
+                attribute vec3 position;
+                attribute vec3 color;
+                varying vec3 v_color;
+                uniform mat4 u_mvp;
+                void main() {
+                    v_color = color;
+                    gl_Position = u_mvp * vec4(position, 1.0);
+                    gl_PointSize = 12.0;
+                }
+                """,
+            )
+            program.addShaderFromSourceCode(
+                QOpenGLShader.Fragment,
+                """
+                #version 120
+                varying vec3 v_color;
+                void main() {
+                    gl_FragColor = vec4(v_color, 1.0);
+                }
+                """,
+            )
+            program.link()
+            self._program = program
+
+            buffer = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
+            buffer.create()
+            self._buffer = buffer
+        except Exception as exc:  # pragma: no cover
+            self.viewport_error.emit(str(exc))
+            self._logger.exception("OpenGL initialization failed")
 
     def paintGL(self) -> None:
         funcs = self.context().functions()
@@ -135,21 +154,29 @@ class GLViewportWidget(QOpenGLWidget):
             return
 
         mvp = self._build_view_projection_matrix()
-
         voxel_rows = self._app_context.current_project.voxels.to_list()
+        if hasattr(funcs, "glPointSize"):
+            funcs.glPointSize(12.0)
         if voxel_rows:
+            funcs.glDisable(self._GL_DEPTH_TEST)
             voxel_vertices = array("f")
             for x, y, z, color_index in voxel_rows:
                 color = self._PALETTE[color_index % len(self._PALETTE)]
                 voxel_vertices.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
-            self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
+            draw_count = self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
+            funcs.glEnable(self._GL_DEPTH_TEST)
+            if draw_count == 0:
+                self._logger.warning("Voxel draw count was zero; rebuilding GL buffer.")
+                self._buffer.destroy()
+                self._buffer.create()
+                self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
 
         if self.debug_overlay_enabled:
             self._draw_debug_overlay(funcs, mvp, len(voxel_rows))
 
-    def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> None:
+    def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> int:
         if self._program is None or self._buffer is None or len(vertex_data) == 0:
-            return
+            return 0
 
         self._buffer.bind()
         self._buffer.allocate(vertex_data.tobytes(), len(vertex_data) * 4)
@@ -165,26 +192,26 @@ class GLViewportWidget(QOpenGLWidget):
         self._program.enableAttributeArray(color_location)
         funcs.glVertexAttribPointer(position_location, 3, self._GL_FLOAT, False, stride, c_void_p(0))
         funcs.glVertexAttribPointer(color_location, 3, self._GL_FLOAT, False, stride, c_void_p(3 * 4))
-        funcs.glDrawArrays(mode, 0, len(vertex_data) // 6)
+        count = len(vertex_data) // 6
+        funcs.glDrawArrays(mode, 0, count)
         self._program.disableAttributeArray(position_location)
         self._program.disableAttributeArray(color_location)
         self._program.release()
         self._buffer.release()
+        return count
 
     def _draw_debug_overlay(self, funcs, mvp: QMatrix4x4, voxel_count: int) -> None:
         line_vertices = array("f")
 
-        # Axes
-        axis_len = 6.0
+        axis_len = 20.0
         line_vertices.extend((0.0, 0.0, 0.0, 1.0, 0.2, 0.2, axis_len, 0.0, 0.0, 1.0, 0.2, 0.2))
         line_vertices.extend((0.0, 0.0, 0.0, 0.2, 1.0, 0.2, 0.0, axis_len, 0.0, 0.2, 1.0, 0.2))
         line_vertices.extend((0.0, 0.0, 0.0, 0.2, 0.5, 1.0, 0.0, 0.0, axis_len, 0.2, 0.5, 1.0))
 
-        # Ground grid on XZ plane
-        grid_min = -10
-        grid_max = 10
+        grid_min = -20
+        grid_max = 20
         for i in range(grid_min, grid_max + 1):
-            shade = 0.35 if i == 0 else 0.22
+            shade = 0.45 if i == 0 else 0.30
             line_vertices.extend((float(i), 0.0, float(grid_min), shade, shade, shade))
             line_vertices.extend((float(i), 0.0, float(grid_max), shade, shade, shade))
             line_vertices.extend((float(grid_min), 0.0, float(i), shade, shade, shade))
@@ -328,3 +355,10 @@ class GLViewportWidget(QOpenGLWidget):
             forward + (right * (ndc_x * aspect * tan_half_fov)) + (up * (ndc_y * tan_half_fov))
         ).normalized()
         return eye, direction
+
+    @staticmethod
+    def _gl_string(funcs, token: int) -> str:
+        value = funcs.glGetString(token)
+        if isinstance(value, (bytes, bytearray)):
+            return value.decode(errors="replace")
+        return str(value) if value is not None else "unknown"

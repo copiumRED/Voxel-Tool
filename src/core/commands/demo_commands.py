@@ -87,3 +87,26 @@ class ClearVoxelsCommand(Command):
 
     def undo(self, ctx) -> None:
         ctx.current_project.voxels = VoxelGrid.from_list(self._snapshot)
+
+
+class CreateTestVoxelsCommand(Command):
+    def __init__(self, center_color_index: int, arm_color_index: int | None = None) -> None:
+        self.center_color_index = center_color_index
+        self.arm_color_index = arm_color_index if arm_color_index is not None else center_color_index
+        self._snapshot: list[list[int]] = []
+
+    @property
+    def name(self) -> str:
+        return "Create Test Voxels"
+
+    def do(self, ctx) -> None:
+        self._snapshot = ctx.current_project.voxels.to_list()
+        voxels = ctx.current_project.voxels
+        voxels.clear()
+
+        voxels.set(0, 0, 0, self.center_color_index)
+        for x, y, z in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)):
+            voxels.set(x, y, z, self.arm_color_index)
+
+    def undo(self, ctx) -> None:
+        ctx.current_project.voxels = VoxelGrid.from_list(self._snapshot)

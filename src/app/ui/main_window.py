@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import logging
 import random
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent
-from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow
+from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow, QMessageBox
 
 from app.app_context import AppContext
 from app.settings import get_settings
-from core.commands.demo_commands import AddVoxelCommand, ClearVoxelsCommand, RenameProjectCommand
+from core.commands.demo_commands import (
+    AddVoxelCommand,
+    ClearVoxelsCommand,
+    CreateTestVoxelsCommand,
+    RenameProjectCommand,
+)
 from core.export.obj_exporter import export_voxels_to_obj
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
@@ -30,28 +36,32 @@ class MainWindow(QMainWindow):
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
         self.viewport.voxel_edit_applied.connect(self._on_viewport_voxel_edit_applied)
+        self.viewport.viewport_ready.connect(self._on_viewport_ready)
+        self.viewport.viewport_error.connect(self._on_viewport_error)
         self.setCentralWidget(self.viewport)
-        self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
-        self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
+        self.tools_dock = self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
+        self.inspector_dock = self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
         self.palette_panel = PalettePanel(self)
         self.palette_panel.set_context(self.context)
         self.palette_panel.active_color_changed.connect(self._on_active_color_changed)
-        self._add_dock("Palette", self.palette_panel, Qt.RightDockWidgetArea)
+        self.palette_dock = self._add_dock("Palette", self.palette_panel, Qt.RightDockWidgetArea)
         self.stats_panel = StatsPanel(self)
-        self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
+        self.stats_dock = self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
         self._build_file_menu()
         self._build_edit_menu()
         self._build_view_menu()
         self._build_voxels_menu()
+        self._build_debug_menu()
         self.statusBar().showMessage("Ready")
         self._restore_layout_settings()
         self._refresh_ui_state()
 
-    def _add_dock(self, title: str, widget, area: Qt.DockWidgetArea) -> None:
+    def _add_dock(self, title: str, widget, area: Qt.DockWidgetArea) -> QDockWidget:
         dock = QDockWidget(title, self)
         dock.setObjectName(f"{title.lower()}_dock")
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
+        return dock
 
     def _build_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("&File")
@@ -120,6 +130,12 @@ class MainWindow(QMainWindow):
         debug_overlay_action.toggled.connect(self._on_toggle_debug_overlay)
         view_menu.addAction(debug_overlay_action)
 
+        view_menu.addSeparator()
+
+        reset_layout_action = QAction("Reset Layout", self)
+        reset_layout_action.triggered.connect(self._on_reset_layout)
+        view_menu.addAction(reset_layout_action)
+
     def _build_voxels_menu(self) -> None:
         voxels_menu = self.menuBar().addMenu("&Voxels")
 
@@ -130,6 +146,13 @@ class MainWindow(QMainWindow):
         clear_voxels_action = QAction("Demo: Clear Voxels", self)
         clear_voxels_action.triggered.connect(self._on_demo_clear_voxels)
         voxels_menu.addAction(clear_voxels_action)
+
+    def _build_debug_menu(self) -> None:
+        debug_menu = self.menuBar().addMenu("&Debug")
+
+        create_test_voxels_action = QAction("Create Test Voxels (Cross)", self)
+        create_test_voxels_action.triggered.connect(self._on_create_test_voxels)
+        debug_menu.addAction(create_test_voxels_action)
 
     def _on_new_project(self) -> None:
         self.context.current_project = Project(name="Untitled")
@@ -268,6 +291,36 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(message)
         self._refresh_ui_state()
 
+    def _on_create_test_voxels(self) -> None:
+        center_color = self.context.active_color_index
+        arm_color = (center_color + 3) % len(self.context.palette)
+        self.context.command_stack.do(CreateTestVoxelsCommand(center_color, arm_color), self.context)
+        self.viewport.frame_to_voxels()
+        self._show_voxel_status("Test voxels created")
+        self._refresh_ui_state()
+
+    def _on_reset_layout(self) -> None:
+        settings = get_settings()
+        settings.remove("main_window/geometry")
+        settings.remove("main_window/state")
+        self.resize(1280, 720)
+        self._apply_default_layout()
+        settings.setValue("main_window/geometry", self.saveGeometry())
+        settings.setValue("main_window/state", self.saveState())
+
+    def _on_viewport_ready(self, gl_info: str) -> None:
+        logging.getLogger("voxel_tool").info("Viewport ready | OpenGL: %s", gl_info)
+        self.statusBar().showMessage(f"Viewport ready | OpenGL: {gl_info}", 8000)
+
+    def _on_viewport_error(self, message: str) -> None:
+        QMessageBox.critical(
+            self,
+            "OpenGL Error",
+            "Failed to initialize OpenGL context.\n"
+            "Please update your GPU drivers and ensure OpenGL is supported.\n\n"
+            f"Details: {message}",
+        )
+
     def _restore_layout_settings(self) -> None:
         settings = get_settings()
         geometry = settings.value("main_window/geometry")
@@ -276,6 +329,18 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         if state is not None:
             self.restoreState(state)
+        else:
+            self._apply_default_layout()
+
+    def _apply_default_layout(self) -> None:
+        self.tools_dock.show()
+        self.inspector_dock.show()
+        self.palette_dock.show()
+        self.stats_dock.show()
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.tools_dock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.inspector_dock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.palette_dock)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.stats_dock)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         settings = get_settings()
