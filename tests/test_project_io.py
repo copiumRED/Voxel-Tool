@@ -27,6 +27,9 @@ def test_project_save_load_roundtrip() -> None:
     second_part = project.scene.add_part("Part 2")
     project.scene.set_active_part(second_part.part_id)
     second_part.voxels.set(5, 0, -1, 6)
+    second_part.position = (2.5, -1.0, 3.0)
+    second_part.rotation = (0.0, 45.0, 0.0)
+    second_part.scale = (1.0, 2.0, 1.0)
     second_part.visible = False
     second_part.locked = True
     path = get_app_temp_dir("VoxelTool") / f"test-project-{uuid.uuid4().hex}.json"
@@ -41,6 +44,9 @@ def test_project_save_load_roundtrip() -> None:
         assert len(loaded.scene.parts) == 2
         assert loaded.scene.active_part_id == second_part.part_id
         assert loaded.scene.parts[project.active_part_id].voxels.to_list() == second_part.voxels.to_list()
+        assert loaded.scene.parts[project.active_part_id].position == (2.5, -1.0, 3.0)
+        assert loaded.scene.parts[project.active_part_id].rotation == (0.0, 45.0, 0.0)
+        assert loaded.scene.parts[project.active_part_id].scale == (1.0, 2.0, 1.0)
         assert loaded.scene.parts[project.active_part_id].visible is False
         assert loaded.scene.parts[project.active_part_id].locked is True
         first_part_id = next(part_id for part_id in loaded.scene.parts if part_id != second_part.part_id)

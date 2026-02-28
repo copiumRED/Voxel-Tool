@@ -48,12 +48,18 @@ def test_scene_duplicate_part_copies_voxels_and_sets_active_part() -> None:
     scene = Scene.with_default_part()
     source = scene.get_active_part()
     source.voxels.set(1, 2, 3, 7)
+    source.position = (1.0, 2.0, 3.0)
+    source.rotation = (10.0, 20.0, 30.0)
+    source.scale = (1.5, 1.0, 0.75)
 
     duplicate = scene.duplicate_part(source.part_id, new_name="Part 1 Copy")
 
     assert duplicate.part_id != source.part_id
     assert scene.active_part_id == duplicate.part_id
     assert duplicate.voxels.to_list() == source.voxels.to_list()
+    assert duplicate.position == source.position
+    assert duplicate.rotation == source.rotation
+    assert duplicate.scale == source.scale
 
     duplicate.voxels.set(-1, 0, 0, 2)
     assert source.voxels.get(-1, 0, 0) is None

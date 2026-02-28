@@ -21,6 +21,9 @@ def save_project(project: Project, path: str) -> None:
                 "part_id": part.part_id,
                 "name": part.name,
                 "voxels": part.voxels.to_list(),
+                "position": [part.position[0], part.position[1], part.position[2]],
+                "rotation": [part.rotation[0], part.rotation[1], part.rotation[2]],
+                "scale": [part.scale[0], part.scale[1], part.scale[2]],
                 "visible": part.visible,
                 "locked": part.locked,
             }
@@ -88,12 +91,18 @@ def load_project(path: str) -> Project:
             if not part_id or not name:
                 raise ValueError("Invalid project schema (part_id and name are required for each part).")
             voxels = VoxelGrid.from_list(raw_part.get("voxels", []))
+            position = _parse_vec3(raw_part.get("position"), default=(0.0, 0.0, 0.0))
+            rotation = _parse_vec3(raw_part.get("rotation"), default=(0.0, 0.0, 0.0))
+            scale = _parse_vec3(raw_part.get("scale"), default=(1.0, 1.0, 1.0))
             visible = bool(raw_part.get("visible", True))
             locked = bool(raw_part.get("locked", False))
             scene.parts[part_id] = Part(
                 part_id=part_id,
                 name=name,
                 voxels=voxels,
+                position=position,
+                rotation=rotation,
+                scale=scale,
                 visible=visible,
                 locked=locked,
             )
@@ -112,3 +121,12 @@ def load_project(path: str) -> Project:
         project.voxels = VoxelGrid.from_list(payload.get(_LEGACY_VOXELS_KEY, []))
 
     return project
+
+
+def _parse_vec3(value, *, default: tuple[float, float, float]) -> tuple[float, float, float]:
+    if not isinstance(value, list) or len(value) != 3:
+        return default
+    try:
+        return (float(value[0]), float(value[1]), float(value[2]))
+    except (TypeError, ValueError):
+        return default

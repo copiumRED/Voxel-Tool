@@ -3,6 +3,8 @@ from __future__ import annotations
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
+    QDoubleSpinBox,
+    QFormLayout,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -60,6 +62,36 @@ class InspectorPanel(QWidget):
         self.locked_checkbox.stateChanged.connect(self._on_locked_toggled)
         flags_layout.addWidget(self.locked_checkbox)
         layout.addLayout(flags_layout)
+
+        transform_layout = QFormLayout()
+        self.position_x = self._create_transform_spin()
+        self.position_y = self._create_transform_spin()
+        self.position_z = self._create_transform_spin()
+        self.rotation_x = self._create_transform_spin(min_value=-360.0, max_value=360.0)
+        self.rotation_y = self._create_transform_spin(min_value=-360.0, max_value=360.0)
+        self.rotation_z = self._create_transform_spin(min_value=-360.0, max_value=360.0)
+        self.scale_x = self._create_transform_spin(min_value=0.01, max_value=100.0, default=1.0)
+        self.scale_y = self._create_transform_spin(min_value=0.01, max_value=100.0, default=1.0)
+        self.scale_z = self._create_transform_spin(min_value=0.01, max_value=100.0, default=1.0)
+        self.position_x.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.position_y.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.position_z.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.rotation_x.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.rotation_y.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.rotation_z.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.scale_x.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.scale_y.valueChanged.connect(lambda _: self._on_transform_changed())
+        self.scale_z.valueChanged.connect(lambda _: self._on_transform_changed())
+        transform_layout.addRow("Pos X", self.position_x)
+        transform_layout.addRow("Pos Y", self.position_y)
+        transform_layout.addRow("Pos Z", self.position_z)
+        transform_layout.addRow("Rot X", self.rotation_x)
+        transform_layout.addRow("Rot Y", self.rotation_y)
+        transform_layout.addRow("Rot Z", self.rotation_z)
+        transform_layout.addRow("Scale X", self.scale_x)
+        transform_layout.addRow("Scale Y", self.scale_y)
+        transform_layout.addRow("Scale Z", self.scale_z)
+        layout.addLayout(transform_layout)
         layout.addStretch(1)
 
     def set_context(self, context: AppContext) -> None:
@@ -84,10 +116,21 @@ class InspectorPanel(QWidget):
 
         self.visible_checkbox.blockSignals(True)
         self.locked_checkbox.blockSignals(True)
+        self._set_transform_signals_blocked(True)
         self.visible_checkbox.setChecked(active_part.visible)
         self.locked_checkbox.setChecked(active_part.locked)
+        self.position_x.setValue(active_part.position[0])
+        self.position_y.setValue(active_part.position[1])
+        self.position_z.setValue(active_part.position[2])
+        self.rotation_x.setValue(active_part.rotation[0])
+        self.rotation_y.setValue(active_part.rotation[1])
+        self.rotation_z.setValue(active_part.rotation[2])
+        self.scale_x.setValue(active_part.scale[0])
+        self.scale_y.setValue(active_part.scale[1])
+        self.scale_z.setValue(active_part.scale[2])
         self.visible_checkbox.blockSignals(False)
         self.locked_checkbox.blockSignals(False)
+        self._set_transform_signals_blocked(False)
 
     def _on_add_part(self) -> None:
         if self._context is None:
@@ -199,3 +242,43 @@ class InspectorPanel(QWidget):
         part.locked = state == Qt.Checked
         self.part_status_message.emit(f"Part lock: {'on' if part.locked else 'off'} ({part.name})")
         self.refresh()
+
+    def _on_transform_changed(self) -> None:
+        if self._context is None:
+            return
+        part = self._context.active_part
+        part.position = (self.position_x.value(), self.position_y.value(), self.position_z.value())
+        part.rotation = (self.rotation_x.value(), self.rotation_y.value(), self.rotation_z.value())
+        part.scale = (self.scale_x.value(), self.scale_y.value(), self.scale_z.value())
+        self.part_status_message.emit(
+            "Part transform updated: "
+            f"pos={part.position} rot={part.rotation} scale={part.scale} ({part.name})"
+        )
+
+    @staticmethod
+    def _create_transform_spin(
+        *,
+        min_value: float = -999.0,
+        max_value: float = 999.0,
+        default: float = 0.0,
+    ) -> QDoubleSpinBox:
+        spin = QDoubleSpinBox()
+        spin.setRange(min_value, max_value)
+        spin.setDecimals(2)
+        spin.setSingleStep(0.1)
+        spin.setValue(default)
+        return spin
+
+    def _set_transform_signals_blocked(self, blocked: bool) -> None:
+        for control in (
+            self.position_x,
+            self.position_y,
+            self.position_z,
+            self.rotation_x,
+            self.rotation_y,
+            self.rotation_z,
+            self.scale_x,
+            self.scale_y,
+            self.scale_z,
+        ):
+            control.blockSignals(blocked)

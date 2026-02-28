@@ -45,6 +45,20 @@
 - Issues noticed:
   - `git pull` continued to fail due network restrictions; task was completed on local branch baseline.
 
+### Roadmap 04 (Next Workday): Part Transform Controls (Position/Rotation/Scale)
+- What was done:
+  - Added per-part transform fields (`position`, `rotation`, `scale`) to core model and project IO persistence.
+  - Added Inspector transform controls (Pos/Rot/Scale) for active part editing.
+  - Updated viewport rendering and framing to apply part transforms immediately for visible parts.
+  - Extended tests for duplicate-part transform copy and project save/load transform roundtrip.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Inspector, change active part Pos/Rot/Scale values and verify viewport updates immediately.
+  - Save project, reopen it, and confirm transform values are restored.
+  - Run: `pytest -q` (current: `68 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by restricted network access; execution continued against local `main`.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

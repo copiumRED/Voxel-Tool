@@ -99,14 +99,14 @@ class GLViewportWidget(QOpenGLWidget):
         if self._app_context is None:
             return
 
-        voxel_rows = self._visible_voxel_rows()
-        if not voxel_rows:
+        voxel_points = self._visible_voxel_points()
+        if not voxel_points:
             self.reset_camera()
             return
 
-        xs = [row[0] for row in voxel_rows]
-        ys = [row[1] for row in voxel_rows]
-        zs = [row[2] for row in voxel_rows]
+        xs = [point[0] for point in voxel_points]
+        ys = [point[1] for point in voxel_points]
+        zs = [point[2] for point in voxel_points]
         min_x, max_x = min(xs), max(xs)
         min_y, max_y = min(ys), max(ys)
         min_z, max_z = min(zs), max(zs)
@@ -161,7 +161,7 @@ class GLViewportWidget(QOpenGLWidget):
         funcs.glClear(self._GL_COLOR_BUFFER_BIT | self._GL_DEPTH_BUFFER_BIT)
         if self._app_context is None:
             return
-        voxel_rows = self._visible_voxel_rows()
+        voxel_count = len(self._visible_voxel_points())
         if self._program is None or self._buffer is None or self._vao is None:
             if not self._logged_pipeline_missing:
                 self._logger.error(
@@ -172,7 +172,7 @@ class GLViewportWidget(QOpenGLWidget):
                 )
                 self._logged_pipeline_missing = True
             self._draw_overlay_text(
-                len(voxel_rows),
+                voxel_count,
                 error_text=self._init_error_text or "Viewport render pipeline unavailable. Check OpenGL status.",
             )
             return
@@ -182,29 +182,24 @@ class GLViewportWidget(QOpenGLWidget):
         self._draw_mirror_guides(funcs, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
-        if voxel_rows:
+        point_vertices, line_vertices = self._build_visible_part_vertices()
+        if point_vertices:
             funcs.glDisable(self._GL_DEPTH_TEST)
-            voxel_point_vertices = array("f")
-            for x, y, z, color_index in voxel_rows:
-                color = self._PALETTE[color_index % len(self._PALETTE)]
-                voxel_point_vertices.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
-
-            voxel_line_vertices = self._build_voxel_line_vertices(voxel_rows)
-            self._draw_colored_vertices(funcs, voxel_line_vertices, self._GL_LINES, mvp)
-            draw_count = self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
+            self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
+            draw_count = self._draw_colored_vertices(funcs, point_vertices, self._GL_POINTS, mvp)
             funcs.glEnable(self._GL_DEPTH_TEST)
             if draw_count == 0:
                 self._logger.warning("Voxel draw count was zero; rebuilding GL buffer.")
                 self._buffer.destroy()
                 self._buffer.create()
-                self._draw_colored_vertices(funcs, voxel_line_vertices, self._GL_LINES, mvp)
-                self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
+                self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
+                self._draw_colored_vertices(funcs, point_vertices, self._GL_POINTS, mvp)
 
         self._draw_hover_preview(funcs, mvp)
         self._draw_shape_preview(funcs, mvp)
 
         if self.debug_overlay_enabled:
-            self._draw_overlay_text(len(voxel_rows), error_text=None)
+            self._draw_overlay_text(voxel_count, error_text=None)
 
     def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> int:
         if self._program is None or self._buffer is None or len(vertex_data) == 0:
@@ -484,7 +479,11 @@ class GLViewportWidget(QOpenGLWidget):
         self._logger.error("Failed to compile/link viewport shaders: %s", " | ".join(errors))
         return None, "none"
 
-    def _build_voxel_line_vertices(self, voxel_rows: list[list[int]]) -> array:
+    def _build_voxel_line_vertices(
+        self,
+        voxel_rows: list[list[int]],
+        transform: QMatrix4x4 | None = None,
+    ) -> array:
         half = self._VOXEL_HALF_EXTENT
         edges = (
             ((-half, -half, -half), (half, -half, -half)),
@@ -507,17 +506,28 @@ class GLViewportWidget(QOpenGLWidget):
             fy = float(y)
             fz = float(z)
             for start, end in edges:
+                sx = fx + start[0]
+                sy = fy + start[1]
+                sz = fz + start[2]
+                ex = fx + end[0]
+                ey = fy + end[1]
+                ez = fz + end[2]
+                if transform is not None:
+                    start_vec = transform.map(QVector3D(sx, sy, sz))
+                    end_vec = transform.map(QVector3D(ex, ey, ez))
+                    sx, sy, sz = start_vec.x(), start_vec.y(), start_vec.z()
+                    ex, ey, ez = end_vec.x(), end_vec.y(), end_vec.z()
                 vertices.extend(
                     (
-                        fx + start[0],
-                        fy + start[1],
-                        fz + start[2],
+                        sx,
+                        sy,
+                        sz,
                         color[0],
                         color[1],
                         color[2],
-                        fx + end[0],
-                        fy + end[1],
-                        fz + end[2],
+                        ex,
+                        ey,
+                        ez,
                         color[0],
                         color[1],
                         color[2],
@@ -990,6 +1000,45 @@ class GLViewportWidget(QOpenGLWidget):
         for part in self._app_context.current_project.scene.iter_visible_parts():
             rows.extend(part.voxels.to_list())
         return rows
+
+    def _visible_voxel_points(self) -> list[tuple[float, float, float]]:
+        if self._app_context is None:
+            return []
+        points: list[tuple[float, float, float]] = []
+        for part in self._app_context.current_project.scene.iter_visible_parts():
+            transform = self._part_transform_matrix(part)
+            for x, y, z, _ in part.voxels.to_list():
+                mapped = transform.map(QVector3D(float(x), float(y), float(z)))
+                points.append((mapped.x(), mapped.y(), mapped.z()))
+        return points
+
+    def _build_visible_part_vertices(self) -> tuple[array, array]:
+        point_vertices = array("f")
+        line_vertices = array("f")
+        if self._app_context is None:
+            return point_vertices, line_vertices
+        for part in self._app_context.current_project.scene.iter_visible_parts():
+            transform = self._part_transform_matrix(part)
+            part_rows = part.voxels.to_list()
+            for x, y, z, color_index in part_rows:
+                color = self._PALETTE[color_index % len(self._PALETTE)]
+                mapped = transform.map(QVector3D(float(x), float(y), float(z)))
+                point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
+            line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
+        return point_vertices, line_vertices
+
+    @staticmethod
+    def _part_transform_matrix(part) -> QMatrix4x4:
+        matrix = QMatrix4x4()
+        px, py, pz = part.position
+        rx, ry, rz = part.rotation
+        sx, sy, sz = part.scale
+        matrix.translate(float(px), float(py), float(pz))
+        matrix.rotate(float(rx), 1.0, 0.0, 0.0)
+        matrix.rotate(float(ry), 0.0, 1.0, 0.0)
+        matrix.rotate(float(rz), 0.0, 0.0, 1.0)
+        matrix.scale(float(sx), float(sy), float(sz))
+        return matrix
 
     def _active_part_is_locked(self) -> bool:
         if self._app_context is None:

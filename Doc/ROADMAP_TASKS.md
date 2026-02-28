@@ -25,25 +25,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added Tools panel pick mode selector (brush workflow) with status updates and quick-help hint integration.
 - Updated brush targeting so surface mode disables plane fallback while plane-lock mode preserves empty-scene placement behavior.
 
-## Remaining Tasks
-
 ### Task 04: Part Transform Controls (Position/Rotation/Scale)
-- Goal:
-  - Introduce per-part transform editing in inspector.
-- Files/modules likely touched:
-  - `src/core/part.py`
-  - `src/app/ui/panels/inspector_panel.py`
-  - `src/app/viewport/gl_widget.py`
-  - `src/core/io/project_io.py`
-- Acceptance criteria (human-testable):
-  - Active part transform fields are editable.
-  - Viewport reflects transform changes immediately.
-  - Save/open roundtrip restores transform values.
-- Tests required:
-  - IO tests for transform persistence.
-  - Manual transform edit + save/open smoke.
-- Risk/rollback note:
-  - If transform wiring destabilizes render path, disable rotation/scale and keep translation-only for safe merge.
+- Commit: `COMMIT_PENDING`
+- Added transform fields (`position`, `rotation`, `scale`) to part model plus project IO save/load support.
+- Added Inspector transform controls (Pos/Rot/Scale) with immediate active-part updates and status messaging.
+- Updated viewport rendering/frame logic to apply per-part transforms so transform edits are visible immediately.
+
+## Remaining Tasks
 
 ### Task 05: Part Reorder in Inspector + Persistence
 - Goal:

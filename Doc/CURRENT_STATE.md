@@ -41,6 +41,7 @@ Reasoning:
 - Correction 25: Brush profile controls (size + cube/sphere shape) are implemented, including multi-cell hover preview and command-level footprint application.
 - Correction 26: Non-brush tool ghost previews are now implemented for line/box drags, and fill hover target preview is visible with mirror-aware preview parity.
 - Correction 27: Brush pick mode toggle (`Surface` vs `Plane Lock`) is now implemented and persisted in editor state, improving targeting control in sparse scenes.
+- Correction 28: Per-part transform editing (position/rotation/scale) is now active in Inspector and reflected in viewport rendering with project IO persistence.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -50,7 +51,7 @@ Reasoning:
 | Brush/erase usability | Fast, predictable | Continuous brush drag paint + size/shape brush profiles implemented with one-step undo | Remaining gap: stroke smoothing and advanced falloff presets | P1 |
 | Box/line/fill tools | Core productivity tools | Fill safety threshold + feedback implemented | Remaining gap: preview/selection affordance and threshold tuning UX | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
-| Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
+| Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock + transform editing implemented | Remaining gap: reorder/grouping polish | P1 |
 | Palette workflow | Fast color iteration | Save/load presets implemented with active color safety | Remaining gap: palette swap/hotkeys/preset metadata polish | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick + explicit surface/plane-lock mode implemented | Needs accuracy tuning and richer face-normal hinting | P0 |
 | Import/export breadth | Robust interop | Export paths consume refreshed mesh cache + options panel v1 + VOX Qubicle validation | Remaining gap: deeper format parity + VOX import | P0 |

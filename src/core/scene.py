@@ -65,6 +65,9 @@ class Scene:
             part_id=_next_part_id(),
             name=duplicate_name,
             voxels=duplicated_voxels,
+            position=source.position,
+            rotation=source.rotation,
+            scale=source.scale,
             visible=source.visible,
             locked=source.locked,
         )
