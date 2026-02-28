@@ -2,10 +2,22 @@ from __future__ import annotations
 
 import logging
 import random
+from dataclasses import dataclass
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence, QShortcut
-from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow, QMessageBox
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QDockWidget,
+    QFileDialog,
+    QFormLayout,
+    QInputDialog,
+    QMainWindow,
+    QMessageBox,
+)
 
 from app.app_context import AppContext
 from app.settings import get_settings
@@ -16,7 +28,7 @@ from core.commands.demo_commands import (
     RenameProjectCommand,
 )
 from core.analysis.stats import compute_scene_stats
-from core.export.obj_exporter import export_voxels_to_obj
+from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
@@ -28,6 +40,51 @@ from app.ui.panels.tools_panel import ToolsPanel
 from app.viewport.gl_widget import GLViewportWidget
 
 
+@dataclass(slots=True)
+class _ExportSessionOptions:
+    obj_use_greedy_mesh: bool = True
+    obj_triangulate: bool = False
+    scale_preset: str = "Unity (1m)"
+
+
+class _ExportOptionsDialog(QDialog):
+    def __init__(self, parent: QMainWindow, format_name: str, options: _ExportSessionOptions) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(f"Export Options ({format_name})")
+        self._format_name = format_name
+        self._options = options
+
+        layout = QFormLayout(self)
+        self.obj_greedy_checkbox = QCheckBox("Use Greedy Mesh", self)
+        self.obj_greedy_checkbox.setChecked(options.obj_use_greedy_mesh)
+        self.obj_triangulate_checkbox = QCheckBox("Triangulate Faces", self)
+        self.obj_triangulate_checkbox.setChecked(options.obj_triangulate)
+        self.scale_preset_combo = QComboBox(self)
+        self.scale_preset_combo.addItems(["Unity (1m)", "Unreal (1cm)", "Custom (placeholder)"])
+        self.scale_preset_combo.setCurrentText(options.scale_preset)
+
+        if format_name == "OBJ":
+            layout.addRow(self.obj_greedy_checkbox)
+            layout.addRow(self.obj_triangulate_checkbox)
+        layout.addRow("Scale Preset", self.scale_preset_combo)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, parent=self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def to_options(self) -> _ExportSessionOptions:
+        next_options = _ExportSessionOptions(
+            obj_use_greedy_mesh=self._options.obj_use_greedy_mesh,
+            obj_triangulate=self._options.obj_triangulate,
+            scale_preset=self.scale_preset_combo.currentText(),
+        )
+        if self._format_name == "OBJ":
+            next_options.obj_use_greedy_mesh = self.obj_greedy_checkbox.isChecked()
+            next_options.obj_triangulate = self.obj_triangulate_checkbox.isChecked()
+        return next_options
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -36,6 +93,7 @@ class MainWindow(QMainWindow):
         self.undo_action: QAction | None = None
         self.redo_action: QAction | None = None
         self._shortcuts: list[QShortcut] = []
+        self._export_options = _ExportSessionOptions()
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
@@ -250,6 +308,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Saved: {path}", 5000)
 
     def _on_export_obj(self) -> None:
+        export_options = self._prompt_export_options("OBJ")
+        if export_options is None:
+            return
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Export OBJ",
@@ -258,14 +319,35 @@ class MainWindow(QMainWindow):
         )
         if not path:
             return
-        export_voxels_to_obj(self.context.current_project.voxels, self.context.palette, path)
+        export_voxels_to_obj(
+            self.context.current_project.voxels,
+            self.context.palette,
+            path,
+            options=ObjExportOptions(
+                use_greedy_mesh=export_options.obj_use_greedy_mesh,
+                triangulate=export_options.obj_triangulate,
+            ),
+        )
         voxel_count = self.context.current_project.voxels.count()
         if voxel_count == 0:
-            self.statusBar().showMessage(f"No voxels to export | Exported OBJ: {path}", 5000)
+            self.statusBar().showMessage(
+                f"No voxels to export | Exported OBJ: {path} | Scale: {export_options.scale_preset}",
+                5000,
+            )
             return
-        self.statusBar().showMessage(f"Exported OBJ: {path} | Voxels: {voxel_count}", 5000)
+        self.statusBar().showMessage(
+            (
+                f"Exported OBJ: {path} | Voxels: {voxel_count} | "
+                f"Greedy: {export_options.obj_use_greedy_mesh} | "
+                f"Triangulate: {export_options.obj_triangulate} | Scale: {export_options.scale_preset}"
+            ),
+            5000,
+        )
 
     def _on_export_gltf(self) -> None:
+        export_options = self._prompt_export_options("glTF")
+        if export_options is None:
+            return
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Export glTF",
@@ -276,14 +358,23 @@ class MainWindow(QMainWindow):
             return
         stats = export_voxels_to_gltf(self.context.current_project.voxels, path)
         if stats.triangle_count == 0:
-            self.statusBar().showMessage(f"No voxels to export | Exported glTF: {path}", 5000)
+            self.statusBar().showMessage(
+                f"No voxels to export | Exported glTF: {path} | Scale: {export_options.scale_preset}",
+                5000,
+            )
             return
         self.statusBar().showMessage(
-            f"Exported glTF: {path} | Vertices: {stats.vertex_count} | Triangles: {stats.triangle_count}",
+            (
+                f"Exported glTF: {path} | Vertices: {stats.vertex_count} | "
+                f"Triangles: {stats.triangle_count} | Scale: {export_options.scale_preset}"
+            ),
             5000,
         )
 
     def _on_export_vox(self) -> None:
+        export_options = self._prompt_export_options("VOX")
+        if export_options is None:
+            return
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Export VOX",
@@ -294,13 +385,26 @@ class MainWindow(QMainWindow):
             return
         stats = export_voxels_to_vox(self.context.current_project.voxels, self.context.palette, path)
         if stats.voxel_count == 0:
-            self.statusBar().showMessage(f"No voxels to export | Exported VOX: {path}", 5000)
+            self.statusBar().showMessage(
+                f"No voxels to export | Exported VOX: {path} | Scale: {export_options.scale_preset}",
+                5000,
+            )
             return
         sx, sy, sz = stats.size
         self.statusBar().showMessage(
-            f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz}",
+            (
+                f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz} | "
+                f"Scale: {export_options.scale_preset}"
+            ),
             5000,
         )
+
+    def _prompt_export_options(self, format_name: str) -> _ExportSessionOptions | None:
+        dialog = _ExportOptionsDialog(self, format_name, self._export_options)
+        if dialog.exec() != QDialog.Accepted:
+            return None
+        self._export_options = dialog.to_options()
+        return self._export_options
 
     def _on_demo_rename_project(self) -> None:
         text, ok = QInputDialog.getText(

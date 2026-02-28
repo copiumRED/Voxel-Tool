@@ -107,6 +107,19 @@
 - Issues noticed:
   - No mirror regression detected in unit tests; manual UX tuning for offset spinbox ranges can be adjusted later if needed.
 
+### Roadmap 09: Export Options Panel v1 (OBJ/glTF/VOX)
+- What was done:
+  - Added export options dialog before each export action.
+  - Added OBJ option controls for greedy meshing and triangulation.
+  - Added session-persisted scale preset placeholder used across OBJ/glTF/VOX export flows.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Use `File -> Export OBJ` and toggle greedy/triangulate; export and verify status reflects chosen options.
+  - Use `File -> Export glTF` and `File -> Export VOX`; verify scale preset appears and persists between exports.
+  - Run: `pytest -q` (current: `49 passed`)
+- Issues noticed:
+  - Scale preset is currently a placeholder UI/session value and not yet applied to geometry scaling.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

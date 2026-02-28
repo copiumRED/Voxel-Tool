@@ -47,24 +47,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Updated tools panel mirror toggle labels to `Mirror X/Y/Z` for clearer control-to-guide mapping.
 
 ### Task 08: Custom Mirror Plane Offsets
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `aeb9bea`
 - Added per-axis mirror offset configuration in app context (`mirror_x/y/z_offset`) and offset-aware mirrored coordinate expansion.
 - Added Tools panel per-axis offset controls and status messaging when offsets change.
 - Added tests verifying mirrored coordinate generation and paint commands honor configured mirror plane offsets.
 
-## Remaining Tasks
+### Task 09: Export Options Panel v1 (OBJ/glTF/VOX)
+- Commit: `COMMIT_HASH_PENDING`
+- Added export options dialog flow with session-persisted options across export actions.
+- Added OBJ options wiring for greedy meshing and triangulation controls.
+- Added scale preset placeholder option surfaced for OBJ/glTF/VOX and persisted during the session.
 
-## Task 09: Export Options Panel v1 (OBJ/glTF/VOX)
-- Goal: expose practical export controls in UI.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/core/export/obj_exporter.py`
-  - `src/core/export/gltf_exporter.py`
-- Acceptance criteria:
-  - User can choose basic options (greedy/triangulate for OBJ, scale preset placeholder).
-  - Export commands persist last-used options in session.
-- Tests required:
-  - Export smoke tests for option permutations.
+## Remaining Tasks
 
 ## Task 10: VOX Export Compatibility Validation Pass
 - Goal: harden `.vox` interoperability with common voxel tools.

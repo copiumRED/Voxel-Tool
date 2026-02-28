@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **77%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **79%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -25,6 +25,7 @@ Reasoning:
 - Correction 9: Command stack now supports explicit transaction grouping; drag-tool undo behavior is covered with mirror-enabled regression tests.
 - Correction 10: Mirror plane visual guides are now rendered in viewport and mapped clearly to `Mirror X/Y/Z` controls.
 - Correction 11: Custom mirror plane offsets are implemented and mirrored edits now honor per-axis configured planes.
+- Correction 12: Export options dialog flow is implemented with session-persisted options and OBJ greedy/triangulate controls.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -37,7 +38,7 @@ Reasoning:
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Basic palette + active color implemented | Missing richer palette mgmt (save/load/swap/hotkeys) | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
-| Import/export breadth | Robust interop | OBJ + glTF + VOX export implemented | Missing VOX import and stronger export option set | P0 |
+| Import/export breadth | Robust interop | OBJ + glTF + VOX export + options panel v1 implemented | Remaining gap: deeper format parity + VOX import | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Unknown at larger voxel counts | Need perf benchmarks and optimization passes | P0 |
@@ -59,7 +60,7 @@ Reasoning:
 - Mitigation: add perf tests; profile hot paths; consider chunked/hybrid representation if thresholds fail.
 
 5. Export interoperability expectations not fully met
-- Mitigation: validate OBJ/glTF/VOX in target tools; add import smoke tests and option parity tasks.
+- Mitigation: export options panel v1 shipped; next is VOX compatibility validation and external import smoke checks.
 
 6. Undo/redo edge-case breakage in compound/mirrored operations
 - Mitigation: transaction grouping and mirrored drag regression tests are now in place; next is stress/perf-oriented undo torture coverage.
