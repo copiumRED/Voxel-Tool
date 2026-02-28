@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import random
 from dataclasses import dataclass
 
@@ -32,6 +33,7 @@ from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
+from core.io.vox_io import load_vox
 from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -159,6 +161,11 @@ class MainWindow(QMainWindow):
         save_as_action = QAction("Save Project As", self)
         save_as_action.triggered.connect(self._on_save_project_as)
         file_menu.addAction(save_as_action)
+
+        file_menu.addSeparator()
+        import_vox_action = QAction("Import VOX", self)
+        import_vox_action.triggered.connect(self._on_import_vox)
+        file_menu.addAction(import_vox_action)
 
         file_menu.addSeparator()
 
@@ -418,6 +425,34 @@ class MainWindow(QMainWindow):
             ),
             5000,
         )
+
+    def _on_import_vox(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import VOX",
+            "",
+            "VOX (*.vox);;All Files (*)",
+        )
+        if not path:
+            return
+        try:
+            voxels, palette = load_vox(path)
+        except Exception as exc:
+            QMessageBox.warning(self, "Import VOX", f"Failed to import VOX file.\n\n{exc}")
+            return
+
+        scene = self.context.current_project.scene
+        part_name = os.path.splitext(os.path.basename(path))[0] or "Imported VOX"
+        imported_part = scene.add_part(part_name)
+        imported_part.voxels = voxels
+        scene.set_active_part(imported_part.part_id)
+        self.context.palette = palette
+        self.context.active_color_index = max(
+            0,
+            min(self.context.active_color_index, len(self.context.palette) - 1),
+        )
+        self._show_voxel_status(f"Imported VOX: {path}")
+        self._refresh_ui_state()
 
     def _on_export_gltf(self) -> None:
         export_options = self._prompt_export_options("glTF")

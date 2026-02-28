@@ -67,24 +67,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added camera snap toggle and snap-angle setting with state applied during orbit interaction.
 - Added editor-state persistence for grid/snap settings so values survive save/open workflows.
 
-## Remaining Tasks
-
 ### Task 11: VOX Import v1 (Single-Part Path)
-- Goal:
-  - Import Magica/Qubicle-compatible `.vox` into active project as one part.
-- Files/modules likely touched:
-  - `src/core/io/` (new import helper)
-  - `src/core/project.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria (human-testable):
-  - `File -> Import VOX` loads a `.vox` model into scene.
-  - Imported geometry and palette appear correctly.
-  - App remains stable after save/open and export.
-- Tests required:
-  - VOX import parser tests with fixture files.
-  - Import -> save/open -> export smoke test.
-- Risk/rollback note:
-  - If complex VOX variants fail, keep strict v1 parser for common chunks only and reject unsupported files with clear error.
+- Commit: `COMMIT_PENDING`
+- Added VOX file loader support for `SIZE`/`XYZI`/`RGBA` chunk parsing and palette extraction.
+- Added `File -> Import VOX` flow that creates a new part from imported voxels and activates it.
+- Added importer roundtrip test coverage using exported VOX fixtures.
+
+## Remaining Tasks
 
 ### Task 12: VOX Import v2 (Multi-Model Mapping + Palette Fidelity)
 - Goal:

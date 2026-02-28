@@ -141,6 +141,20 @@
 - Issues noticed:
   - `git pull` remained blocked by network restrictions.
 
+### Roadmap 11 (Next Workday): VOX Import v1 (Single-Part Path)
+- What was done:
+  - Added VOX import parser for core `SIZE`/`XYZI`/`RGBA` chunks.
+  - Added `File -> Import VOX` workflow to create and activate an imported part.
+  - Wired palette update from imported VOX RGBA chunk.
+  - Added import/export roundtrip regression test.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Use `File -> Import VOX` on a valid `.vox` file and verify imported part appears in scene.
+  - Save/open project and run one export smoke (VOX/OBJ) to verify stability.
+  - Run: `pytest -q` (current: `72 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by restricted network access.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.
