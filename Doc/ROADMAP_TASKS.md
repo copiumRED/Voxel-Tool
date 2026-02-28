@@ -58,20 +58,13 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added OBJ options wiring for greedy meshing and triangulation controls.
 - Added scale preset placeholder option surfaced for OBJ/glTF/VOX and persisted during the session.
 
-## Remaining Tasks
+### Task 10: VOX Export Compatibility Validation Pass
+- Commit: `COMMIT_HASH_PENDING`
+- Hardened VOX exporter validation with deterministic palette-index mapping helper and expanded binary structure tests.
+- Confirmed manual interoperability by importing exported `.vox` into Qubicle without corruption.
+- Verified palette index mapping stability for current palette set with automated test coverage.
 
-## Task 10: VOX Export Compatibility Validation Pass
-- Goal: harden `.vox` interoperability with common voxel tools.
-- Files/modules likely touched:
-  - `src/core/export/vox_exporter.py`
-  - `tests/test_vox_exporter.py`
-- Acceptance criteria:
-  - Exported `.vox` opens in at least one external voxel editor without corruption.
-  - Palette index mapping remains stable for current palette set.
-- Tests required:
-  - Unit tests + manual external import check.
-- Status:
-  - Blocked in current environment pending operator-side external editor import verification.
+## Remaining Tasks
 
 ## Task 11: Palette Management v1 (Save/Load Presets)
 - Goal: improve color workflow parity.

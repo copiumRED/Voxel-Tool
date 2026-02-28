@@ -120,20 +120,17 @@
 - Issues noticed:
   - Scale preset is currently a placeholder UI/session value and not yet applied to geometry scaling.
 
-## Active Blocker
-- Task: Roadmap 10 (VOX Export Compatibility Validation Pass)
-- Blocked item:
-  - Manual verification that exported `.vox` opens in an external voxel editor could not be executed in this environment.
-- Work completed on branch:
-  - Added deterministic VOX palette-index mapping helper and extended VOX binary-structure tests (XYZI/RGBA stability).
-  - Current test status on branch: `pytest -q` => `51 passed`.
-- Suspected root cause:
-  - No accessible external voxel editor/runtime is available in the current execution environment for interoperability confirmation.
-- Minimal next experiment to confirm:
-  - On operator machine, export `.vox` from app, open in MagicaVoxel (or another known editor), and verify:
-    - model loads without corruption
-    - palette colors map as expected
-    - voxel count/shape match source scene
+### Roadmap 10: VOX Export Compatibility Validation Pass
+- What was done:
+  - Added deterministic VOX palette-index mapping helper for explicit compatibility behavior.
+  - Expanded VOX exporter tests for XYZI/RGBA chunk structure and palette index stability.
+  - Confirmed manual external import in Qubicle (operator validation) without corruption.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Export VOX via `File -> Export VOX` and import in Qubicle.
+  - Run: `pytest -q` (current on branch: `51 passed`)
+- Issues noticed:
+  - Interoperability is confirmed in Qubicle; broader external-tool coverage can still be expanded later.
 
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
