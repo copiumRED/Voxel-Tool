@@ -225,6 +225,53 @@ class LineVoxelCommand(Command):
                 voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
 
 
+class FillVoxelCommand(Command):
+    def __init__(self, x: int, y: int, z: int, mode: str, color_index: int | None = None) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
+        self.mode = mode
+        self.color_index = color_index
+        self._deltas: list[_VoxelDelta] = []
+
+    @property
+    def name(self) -> str:
+        return "Flood Fill" if self.mode == "paint" else "Flood Erase"
+
+    def do(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        target_color = voxels.get(self.x, self.y, self.z)
+        if self.mode == "paint":
+            if self.color_index is None:
+                raise ValueError("Flood fill paint requires a color index.")
+            if target_color == self.color_index:
+                self._deltas = []
+                return
+        elif target_color is None:
+            self._deltas = []
+            return
+
+        bounds = _plane_fill_bounds(voxels, self.z, self.x, self.y)
+        connected = _flood_plane_region(voxels, self.x, self.y, self.z, target_color, bounds)
+
+        self._deltas = []
+        for x, y in connected:
+            previous = voxels.get(x, y, self.z)
+            self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
+            if self.mode == "erase":
+                voxels.remove(x, y, self.z)
+            else:
+                voxels.set(x, y, self.z, self.color_index)  # type: ignore[arg-type]
+
+    def undo(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        for delta in self._deltas:
+            if delta.previous_color is None:
+                voxels.remove(delta.x, delta.y, delta.z)
+            else:
+                voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
+
+
 def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
     points: list[tuple[int, int]] = []
     x0, y0, x1, y1 = start_x, start_y, end_x, end_y
@@ -245,3 +292,42 @@ def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[
         if error2 <= dx:
             error += dx
             y0 += sy
+
+
+def _plane_fill_bounds(voxels: VoxelGrid, z: int, seed_x: int, seed_y: int) -> tuple[int, int, int, int]:
+    plane_cells = [(x, y) for x, y, cell_z, _ in voxels.to_list() if cell_z == z]
+    if not plane_cells:
+        return seed_x, seed_x, seed_y, seed_y
+    xs = [cell[0] for cell in plane_cells] + [seed_x]
+    ys = [cell[1] for cell in plane_cells] + [seed_y]
+    return min(xs), max(xs), min(ys), max(ys)
+
+
+def _flood_plane_region(
+    voxels: VoxelGrid,
+    seed_x: int,
+    seed_y: int,
+    z: int,
+    target_color: int | None,
+    bounds: tuple[int, int, int, int],
+) -> set[tuple[int, int]]:
+    min_x, max_x, min_y, max_y = bounds
+    queue: list[tuple[int, int]] = [(seed_x, seed_y)]
+    visited: set[tuple[int, int]] = set()
+    connected: set[tuple[int, int]] = set()
+
+    while queue:
+        x, y = queue.pop()
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+        if x < min_x or x > max_x or y < min_y or y > max_y:
+            continue
+        if voxels.get(x, y, z) != target_color:
+            continue
+        connected.add((x, y))
+        queue.append((x + 1, y))
+        queue.append((x - 1, y))
+        queue.append((x, y + 1))
+        queue.append((x, y - 1))
+    return connected

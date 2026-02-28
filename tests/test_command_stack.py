@@ -5,6 +5,7 @@ from core.commands.demo_commands import (
     BoxVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    FillVoxelCommand,
     LineVoxelCommand,
     PaintVoxelCommand,
     RemoveVoxelCommand,
@@ -133,3 +134,33 @@ def test_line_command_rasterizes_expected_plane_cells() -> None:
         for x, y, z, _ in ctx.current_project.voxels.to_list()
     }
     assert painted_cells == {(0, 0, 0), (1, 1, 0), (2, 1, 0), (3, 2, 0)}
+
+
+def test_fill_replaces_connected_region_and_undo_restores() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    for x, y in ((0, 0), (1, 0), (0, 1), (3, 3)):
+        voxels.set(x, y, 0, 2)
+
+    ctx.command_stack.do(FillVoxelCommand(0, 0, 0, mode="paint", color_index=6), ctx)
+    assert voxels.get(0, 0, 0) == 6
+    assert voxels.get(1, 0, 0) == 6
+    assert voxels.get(0, 1, 0) == 6
+    assert voxels.get(3, 3, 0) == 2
+
+    ctx.command_stack.undo(ctx)
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 2
+    assert voxels.get(0, 1, 0) == 2
+
+
+def test_fill_erase_clears_connected_region_only() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    for x, y in ((0, 0), (1, 0), (2, 2)):
+        voxels.set(x, y, 0, 4)
+
+    ctx.command_stack.do(FillVoxelCommand(0, 0, 0, mode="erase"), ctx)
+    assert voxels.get(0, 0, 0) is None
+    assert voxels.get(1, 0, 0) is None
+    assert voxels.get(2, 2, 0) == 4

@@ -20,14 +20,17 @@ class ToolsPanel(QWidget):
         self.brush_shape_radio = QRadioButton("Brush", self)
         self.box_shape_radio = QRadioButton("Box", self)
         self.line_shape_radio = QRadioButton("Line", self)
+        self.fill_shape_radio = QRadioButton("Fill", self)
         self.brush_shape_radio.setChecked(True)
         self.brush_shape_radio.toggled.connect(self._on_shape_toggled)
         self.box_shape_radio.toggled.connect(self._on_shape_toggled)
         self.line_shape_radio.toggled.connect(self._on_shape_toggled)
+        self.fill_shape_radio.toggled.connect(self._on_shape_toggled)
 
         layout.addWidget(self.brush_shape_radio)
         layout.addWidget(self.box_shape_radio)
         layout.addWidget(self.line_shape_radio)
+        layout.addWidget(self.fill_shape_radio)
         layout.addWidget(QLabel("Action"))
 
         self.paint_radio = QRadioButton("Paint", self)
@@ -57,16 +60,19 @@ class ToolsPanel(QWidget):
         self.brush_shape_radio.blockSignals(True)
         self.box_shape_radio.blockSignals(True)
         self.line_shape_radio.blockSignals(True)
+        self.fill_shape_radio.blockSignals(True)
         self.paint_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_PAINT)
         self.erase_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_ERASE)
         self.brush_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH)
         self.box_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BOX)
         self.line_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_LINE)
+        self.fill_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_FILL)
         self.paint_radio.blockSignals(False)
         self.erase_radio.blockSignals(False)
         self.brush_shape_radio.blockSignals(False)
         self.box_shape_radio.blockSignals(False)
         self.line_shape_radio.blockSignals(False)
+        self.fill_shape_radio.blockSignals(False)
 
     def _on_mode_toggled(self, checked: bool) -> None:
         if not checked or self._context is None:
@@ -82,7 +88,9 @@ class ToolsPanel(QWidget):
             shape = AppContext.TOOL_SHAPE_BRUSH
         elif self.box_shape_radio.isChecked():
             shape = AppContext.TOOL_SHAPE_BOX
-        else:
+        elif self.line_shape_radio.isChecked():
             shape = AppContext.TOOL_SHAPE_LINE
+        else:
+            shape = AppContext.TOOL_SHAPE_FILL
         self._context.set_voxel_tool_shape(shape)
         self.tool_shape_changed.emit(shape)
