@@ -5,6 +5,7 @@ from core.commands.demo_commands import (
     BoxVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    LineVoxelCommand,
     PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
@@ -121,3 +122,14 @@ def test_box_fill_and_erase_single_undo_per_operation() -> None:
 
     ctx.command_stack.undo(ctx)
     assert ctx.current_project.voxels.count() == 6
+
+
+def test_line_command_rasterizes_expected_plane_cells() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+
+    ctx.command_stack.do(LineVoxelCommand(0, 0, 3, 2, z=0, mode="paint", color_index=5), ctx)
+    painted_cells = {
+        (x, y, z)
+        for x, y, z, _ in ctx.current_project.voxels.to_list()
+    }
+    assert painted_cells == {(0, 0, 0), (1, 1, 0), (2, 1, 0), (3, 2, 0)}

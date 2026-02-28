@@ -13,8 +13,9 @@ class AppContext:
     TOOL_MODE_ERASE = "erase"
     TOOL_SHAPE_BRUSH = "brush"
     TOOL_SHAPE_BOX = "box"
+    TOOL_SHAPE_LINE = "line"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
-    _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX}
+    _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX, TOOL_SHAPE_LINE}
 
     current_project: Project
     current_path: str | None = None

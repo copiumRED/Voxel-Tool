@@ -177,3 +177,71 @@ class BoxVoxelCommand(Command):
                 voxels.remove(delta.x, delta.y, delta.z)
             else:
                 voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
+
+
+class LineVoxelCommand(Command):
+    def __init__(
+        self,
+        start_x: int,
+        start_y: int,
+        end_x: int,
+        end_y: int,
+        z: int,
+        mode: str,
+        color_index: int | None = None,
+    ) -> None:
+        self.start_x = start_x
+        self.start_y = start_y
+        self.end_x = end_x
+        self.end_y = end_y
+        self.z = z
+        self.mode = mode
+        self.color_index = color_index
+        self._deltas: list[_VoxelDelta] = []
+
+    @property
+    def name(self) -> str:
+        return "Line Paint" if self.mode == "paint" else "Line Erase"
+
+    def do(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        self._deltas = []
+        for x, y in _rasterize_line(self.start_x, self.start_y, self.end_x, self.end_y):
+            previous = voxels.get(x, y, self.z)
+            self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
+            if self.mode == "erase":
+                voxels.remove(x, y, self.z)
+            else:
+                if self.color_index is None:
+                    raise ValueError("Line paint command requires a color index.")
+                voxels.set(x, y, self.z, self.color_index)
+
+    def undo(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        for delta in self._deltas:
+            if delta.previous_color is None:
+                voxels.remove(delta.x, delta.y, delta.z)
+            else:
+                voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
+
+
+def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
+    points: list[tuple[int, int]] = []
+    x0, y0, x1, y1 = start_x, start_y, end_x, end_y
+    dx = abs(x1 - x0)
+    dy = -abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    error = dx + dy
+
+    while True:
+        points.append((x0, y0))
+        if x0 == x1 and y0 == y1:
+            return points
+        error2 = 2 * error
+        if error2 >= dy:
+            error += dy
+            x0 += sx
+        if error2 <= dx:
+            error += dx
+            y0 += sy

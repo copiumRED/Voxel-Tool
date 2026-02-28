@@ -321,10 +321,16 @@ class GLViewportWidget(QOpenGLWidget):
         if event.button() == Qt.LeftButton:
             if (
                 self._app_context is not None
-                and self._app_context.voxel_tool_shape == self._app_context.TOOL_SHAPE_BOX
+                and self._app_context.voxel_tool_shape in (
+                    self._app_context.TOOL_SHAPE_BOX,
+                    self._app_context.TOOL_SHAPE_LINE,
+                )
                 and self._left_press_pos is not None
             ):
-                self._handle_box_drag(self._left_press_pos, event.position(), event.modifiers())
+                if self._app_context.voxel_tool_shape == self._app_context.TOOL_SHAPE_BOX:
+                    self._handle_box_drag(self._left_press_pos, event.position(), event.modifiers())
+                else:
+                    self._handle_line_drag(self._left_press_pos, event.position(), event.modifiers())
             elif not self._left_dragging:
                 self._handle_left_click(event.position(), event.modifiers())
             self._left_press_pos = None
@@ -421,6 +427,38 @@ class GLViewportWidget(QOpenGLWidget):
             self._app_context,
         )
         self.voxel_edit_applied.emit(f"Box {command_mode}: ({start_x}, {start_y}) -> ({end_x}, {end_y})")
+        self.update()
+
+    def _handle_line_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
+        if self._app_context is None:
+            return
+        start_cell = self._screen_to_plane_cell(start_pos)
+        end_cell = self._screen_to_plane_cell(end_pos)
+        if start_cell is None or end_cell is None:
+            return
+
+        start_x, start_y, z = start_cell
+        end_x, end_y, _ = end_cell
+        temporary_erase = modifiers & Qt.ShiftModifier
+        mode = self._app_context.voxel_tool_mode
+        command_mode = "erase" if temporary_erase or mode == self._app_context.TOOL_MODE_ERASE else "paint"
+
+        from core.commands.demo_commands import LineVoxelCommand
+
+        color_index = self._app_context.active_color_index if command_mode == "paint" else None
+        self._app_context.command_stack.do(
+            LineVoxelCommand(
+                start_x=start_x,
+                start_y=start_y,
+                end_x=end_x,
+                end_y=end_y,
+                z=z,
+                mode=command_mode,
+                color_index=color_index,
+            ),
+            self._app_context,
+        )
+        self.voxel_edit_applied.emit(f"Line {command_mode}: ({start_x}, {start_y}) -> ({end_x}, {end_y})")
         self.update()
 
     def _screen_to_plane_cell(self, pos: QPointF) -> tuple[int, int, int] | None:
