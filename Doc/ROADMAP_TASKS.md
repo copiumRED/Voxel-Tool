@@ -23,23 +23,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added tests for duplicate copy behavior, active-part switching after delete, and minimum-part guard.
 
 ### Task 04: Part Visibility/Lock Flags
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `9fda1e3`
 - Added per-part `visible` and `locked` flags in the core model and persisted them through project save/load.
 - Added Inspector visibility/lock toggles and viewport lock guard to block edits on locked active part.
 - Updated viewport drawing/camera framing to use only visible parts and added tests for visibility filtering and flag persistence.
 
-## Remaining Tasks
+### Task 05: Shortcut Map v1
+- Commit: `COMMIT_HASH_PENDING`
+- Added keyboard hotkeys for tool shape switching (Brush/Box/Line/Fill) and mode switching (Paint/Erase).
+- Added camera hotkeys for frame/reset (`Shift+F` / `Shift+R`) with matching View menu shortcuts.
+- Wired shortcuts through tools panel state setters to keep UI and context behavior synchronized.
 
-## Task 05: Shortcut Map v1
-- Goal: establish productivity keybindings for core tools and camera actions.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/app/ui/panels/tools_panel.py`
-- Acceptance criteria:
-  - Hotkeys switch Brush/Box/Line/Fill and Paint/Erase.
-  - Hotkeys for frame/reset camera work reliably.
-- Tests required:
-  - Manual shortcut smoke list in docs.
+## Remaining Tasks
 
 ## Task 06: Undo Transaction Grouping for Drag Tools
 - Goal: ensure all drag operations remain one undo step under all conditions.

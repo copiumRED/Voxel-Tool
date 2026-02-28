@@ -4,7 +4,7 @@ import logging
 import random
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtGui import QAction, QCloseEvent, QKeySequence, QShortcut
 from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow, QMessageBox
 
 from app.app_context import AppContext
@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         self.resize(1280, 720)
         self.undo_action: QAction | None = None
         self.redo_action: QAction | None = None
+        self._shortcuts: list[QShortcut] = []
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         self._build_view_menu()
         self._build_voxels_menu()
         self._build_debug_menu()
+        self._setup_shortcuts()
         self.statusBar().showMessage("Viewport: INITIALIZING | Shader: unknown | OpenGL: unknown")
         self._restore_layout_settings()
         self._refresh_ui_state()
@@ -136,10 +138,12 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
 
         reset_camera_action = QAction("Reset Camera", self)
+        reset_camera_action.setShortcut(QKeySequence("Shift+R"))
         reset_camera_action.triggered.connect(self._on_reset_camera)
         view_menu.addAction(reset_camera_action)
 
         frame_voxels_action = QAction("Frame Voxels", self)
+        frame_voxels_action.setShortcut(QKeySequence("Shift+F"))
         frame_voxels_action.triggered.connect(self._on_frame_voxels)
         view_menu.addAction(frame_voxels_action)
 
@@ -174,6 +178,27 @@ class MainWindow(QMainWindow):
         create_test_voxels_action = QAction("Create Test Voxels (Cross)", self)
         create_test_voxels_action.triggered.connect(self._on_create_test_voxels)
         debug_menu.addAction(create_test_voxels_action)
+
+    def _setup_shortcuts(self) -> None:
+        self._register_shortcut("B", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BRUSH))
+        self._register_shortcut("X", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BOX))
+        self._register_shortcut("L", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_LINE))
+        self._register_shortcut("F", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_FILL))
+        self._register_shortcut("P", lambda: self._set_tool_mode(AppContext.TOOL_MODE_PAINT))
+        self._register_shortcut("E", lambda: self._set_tool_mode(AppContext.TOOL_MODE_ERASE))
+        self._register_shortcut("Shift+F", self._on_frame_voxels)
+        self._register_shortcut("Shift+R", self._on_reset_camera)
+
+    def _register_shortcut(self, sequence: str, callback) -> None:
+        shortcut = QShortcut(QKeySequence(sequence), self)
+        shortcut.activated.connect(callback)
+        self._shortcuts.append(shortcut)
+
+    def _set_tool_shape(self, shape: str) -> None:
+        self.tools_panel.set_tool_shape(shape)
+
+    def _set_tool_mode(self, mode: str) -> None:
+        self.tools_panel.set_tool_mode(mode)
 
     def _on_new_project(self) -> None:
         self.context.current_project = Project(name="Untitled")

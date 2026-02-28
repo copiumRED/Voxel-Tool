@@ -120,3 +120,23 @@ class ToolsPanel(QWidget):
             return
         self._context.set_mirror_axis(axis, checked)
         self.mirror_changed.emit(axis, checked)
+
+    def set_tool_shape(self, shape: str) -> None:
+        if shape == AppContext.TOOL_SHAPE_BRUSH:
+            self.brush_shape_radio.setChecked(True)
+            return
+        if shape == AppContext.TOOL_SHAPE_BOX:
+            self.box_shape_radio.setChecked(True)
+            return
+        if shape == AppContext.TOOL_SHAPE_LINE:
+            self.line_shape_radio.setChecked(True)
+            return
+        if shape == AppContext.TOOL_SHAPE_FILL:
+            self.fill_shape_radio.setChecked(True)
+
+    def set_tool_mode(self, mode: str) -> None:
+        if mode == AppContext.TOOL_MODE_PAINT:
+            self.paint_radio.setChecked(True)
+            return
+        if mode == AppContext.TOOL_MODE_ERASE:
+            self.erase_radio.setChecked(True)

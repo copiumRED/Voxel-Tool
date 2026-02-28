@@ -53,6 +53,21 @@
 - Issues noticed:
   - No automated regressions; manual viewport lock/visibility behavior should be validated in operator smoke.
 
+### Roadmap 05: Shortcut Map v1
+- What was done:
+  - Added hotkeys for tool shapes: `B` (Brush), `X` (Box), `L` (Line), `F` (Fill).
+  - Added hotkeys for tool modes: `P` (Paint), `E` (Erase).
+  - Added camera hotkeys: `Shift+F` (Frame Voxels), `Shift+R` (Reset Camera).
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Shortcut smoke list:
+    - Press `B`, `X`, `L`, `F` and confirm active tool shape updates.
+    - Press `P` and `E` and confirm paint/erase mode switches.
+    - Press `Shift+F` and `Shift+R` and confirm camera frame/reset behavior.
+  - Run: `pytest -q` (current: `45 passed`)
+- Issues noticed:
+  - No automated regressions observed.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

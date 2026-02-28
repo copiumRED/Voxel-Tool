@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **69%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **71%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -21,6 +21,7 @@ Reasoning:
 - Correction 5: Brush hover target preview now renders in viewport, including empty-scene plane fallback targeting.
 - Correction 6: Part duplicate/delete actions are now available in Inspector with active-part-safe behavior and last-part delete guard.
 - Correction 7: Part visibility/lock controls are now active and persisted; viewport now renders visible parts only and blocks edits on locked active parts.
+- Correction 8: Shortcut map v1 is active for core tool/mode switching and camera frame/reset controls.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -34,7 +35,7 @@ Reasoning:
 | Palette workflow | Fast color iteration | Basic palette + active color implemented | Missing richer palette mgmt (save/load/swap/hotkeys) | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
 | Import/export breadth | Robust interop | OBJ + glTF + VOX export implemented | Missing VOX import and stronger export option set | P0 |
-| Keyboard shortcuts | Tooling speed via hotkeys | Minimal | Need full shortcut map (tools, camera, part ops) | P0 |
+| Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Command stack present | Need grouped transactions and stress tests | P1 |
 | Performance at scale | Handles practical production scenes | Unknown at larger voxel counts | Need perf benchmarks and optimization passes | P0 |
 | Crash resilience | Stable session behavior | Better logs + error signaling | Need broader exception surfacing and recovery paths | P0 |
