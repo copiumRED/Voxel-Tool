@@ -4,6 +4,20 @@
 - Programmer: Codex
 
 ## Task Updates (Today)
+### Roadmap 01 (Next Workday): Brush Size + Shape Controls v1
+- What was done:
+  - Added brush profile controls in Tools panel: size (`1-3`) and shape (`Cube`/`Sphere`).
+  - Updated brush paint/erase command behavior to apply profile-based footprints instead of single-cell only.
+  - Expanded brush hover preview rendering to show full footprint and persisted brush profile in editor state save/open.
+  - Added tests covering brush cell generation and profile-driven paint/erase behavior.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Brush mode, change size/shape in Tools panel and paint/erase; verify footprint changes.
+  - Save project, reopen, and confirm brush profile is restored.
+  - Run: `pytest -q` (current: `64 passed`)
+- Issues noticed:
+  - `git pull` still failed in-session due to restricted network access to GitHub; task executed from local `main` baseline.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

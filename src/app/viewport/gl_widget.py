@@ -16,6 +16,7 @@ from PySide6.QtOpenGL import (
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from core.voxels.raycast import resolve_brush_target_cell
+from core.commands.demo_commands import build_brush_cells
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -76,7 +77,7 @@ class GLViewportWidget(QOpenGLWidget):
         self._left_dragging = False
         self._brush_stroke_active = False
         self._brush_stroke_last_cell: tuple[int, int, int] | None = None
-        self._hover_preview_cell: tuple[int, int, int] | None = None
+        self._hover_preview_cells: set[tuple[int, int, int]] = set()
         self._hover_preview_source: str | None = None
         self._hover_preview_erase = False
 
@@ -324,13 +325,15 @@ class GLViewportWidget(QOpenGLWidget):
         return f"Viewport: {readiness.upper()} | Shader: {self._shader_profile} | OpenGL: {self.last_gl_info}"
 
     def _draw_hover_preview(self, funcs, mvp: QMatrix4x4) -> None:
-        if self._hover_preview_cell is None or self._app_context is None:
+        if not self._hover_preview_cells or self._app_context is None:
             return
         if self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH:
             return
 
         color = (1.0, 0.35, 0.35) if self._hover_preview_erase else (0.20, 1.0, 0.90)
-        outline_vertices = self._build_cell_outline_vertices(self._hover_preview_cell, color)
+        outline_vertices = array("f")
+        for cell in sorted(self._hover_preview_cells):
+            outline_vertices.extend(self._build_cell_outline_vertices(cell, color))
         self._draw_colored_vertices(funcs, outline_vertices, self._GL_LINES, mvp)
 
     def _build_cell_outline_vertices(
@@ -595,8 +598,8 @@ class GLViewportWidget(QOpenGLWidget):
         super().wheelEvent(event)
 
     def leaveEvent(self, event) -> None:
-        if self._hover_preview_cell is not None:
-            self._hover_preview_cell = None
+        if self._hover_preview_cells:
+            self._hover_preview_cells = set()
             self._hover_preview_source = None
             self.update()
         super().leaveEvent(event)
@@ -751,8 +754,8 @@ class GLViewportWidget(QOpenGLWidget):
         if self._app_context is None:
             return
         if self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH:
-            if self._hover_preview_cell is not None:
-                self._hover_preview_cell = None
+            if self._hover_preview_cells:
+                self._hover_preview_cells = set()
                 self._hover_preview_source = None
                 self.update()
             return
@@ -774,12 +777,19 @@ class GLViewportWidget(QOpenGLWidget):
         )
         next_cell = target[0] if target is not None else None
         next_source = target[1] if target is not None else None
+        next_cells: set[tuple[int, int, int]] = set()
+        if next_cell is not None:
+            next_cells = build_brush_cells(
+                next_cell,
+                brush_size=self._app_context.brush_size,
+                brush_shape=self._app_context.brush_shape,
+            )
         if (
-            next_cell != self._hover_preview_cell
+            next_cells != self._hover_preview_cells
             or next_source != self._hover_preview_source
             or should_erase != self._hover_preview_erase
         ):
-            self._hover_preview_cell = next_cell
+            self._hover_preview_cells = next_cells
             self._hover_preview_source = next_source
             self._hover_preview_erase = should_erase
             self.update()

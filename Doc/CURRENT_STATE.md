@@ -38,13 +38,14 @@ Reasoning:
 - Correction 22: Packaging pipeline path resolution and fail-fast behavior are hardened; packaged EXE launch smoke passed on current machine.
 - Correction 23: In-app quick help/status hints are now visible in Tools panel, including first-use workflow guidance.
 - Correction 24: Phase 1 QA gate pass completed (run/tests/save-open/export/packaged-launch smoke).
+- Correction 25: Brush profile controls (size + cube/sphere shape) are implemented, including multi-cell hover preview and command-level footprint application.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
 |---|---|---|---|---|
 | Viewport reliability | Consistent visible voxel render on launch | Mostly fixed, modern shader fallback added | Need wider GPU/manual validation matrix + stronger fallback UX | P0 |
 | First-voxel workflow | Immediate paint in empty scene | Plane fallback + brush hover preview implemented | Remaining gap is richer ghosting for box/line/fill tools | P0 |
-| Brush/erase usability | Fast, predictable | Continuous brush drag paint implemented with one-step undo | Remaining gap: stroke smoothing + advanced brush options | P1 |
+| Brush/erase usability | Fast, predictable | Continuous brush drag paint + size/shape brush profiles implemented with one-step undo | Remaining gap: stroke smoothing and advanced falloff presets | P1 |
 | Box/line/fill tools | Core productivity tools | Fill safety threshold + feedback implemented | Remaining gap: preview/selection affordance and threshold tuning UX | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |

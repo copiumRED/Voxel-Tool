@@ -10,6 +10,7 @@ from core.commands.demo_commands import (
     PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
+    build_brush_cells,
     rasterize_brush_stroke_segment,
 )
 from core.project import Project
@@ -248,4 +249,32 @@ def test_brush_stroke_transaction_undoes_as_single_step() -> None:
     assert len(ctx.command_stack.undo_stack) == 1
     assert ctx.current_project.voxels.count() == 4
     ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0
+
+
+def test_build_brush_cells_cube_size_three_has_expected_volume() -> None:
+    cells = build_brush_cells((0, 0, 0), brush_size=3, brush_shape="cube")
+    assert len(cells) == 125
+    assert (-2, -2, -2) in cells
+    assert (2, 2, 2) in cells
+
+
+def test_build_brush_cells_sphere_size_three_excludes_corners() -> None:
+    cells = build_brush_cells((0, 0, 0), brush_size=3, brush_shape="sphere")
+    assert (0, 0, 0) in cells
+    assert (2, 0, 0) in cells
+    assert (2, 2, 2) not in cells
+
+
+def test_paint_and_erase_respect_brush_profile() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_brush_size(2)
+    ctx.set_brush_shape("sphere")
+
+    ctx.command_stack.do(PaintVoxelCommand(0, 0, 0, 6), ctx)
+    assert ctx.current_project.voxels.get(0, 0, 0) == 6
+    assert ctx.current_project.voxels.get(1, 0, 0) == 6
+    assert ctx.current_project.voxels.get(1, 1, 1) is None
+
+    ctx.command_stack.do(RemoveVoxelCommand(0, 0, 0), ctx)
     assert ctx.current_project.voxels.count() == 0

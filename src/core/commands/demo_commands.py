@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import sqrt
 
 from core.commands.command import Command
 from core.voxels.voxel_grid import VoxelGrid
@@ -41,7 +42,10 @@ class PaintVoxelCommand(Command):
     def do(self, ctx) -> None:
         _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
-        cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
+        brush_size = int(getattr(ctx, "brush_size", 1))
+        brush_shape = str(getattr(ctx, "brush_shape", "cube"))
+        base_cells = build_brush_cells((self.x, self.y, self.z), brush_size=brush_size, brush_shape=brush_shape)
+        cells = _expand_mirror_cells(ctx, base_cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode="paint", color_index=self.color_index)
 
     def undo(self, ctx) -> None:
@@ -67,7 +71,10 @@ class RemoveVoxelCommand(Command):
     def do(self, ctx) -> None:
         _invalidate_active_mesh_cache(ctx)
         voxels = ctx.current_project.voxels
-        cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
+        brush_size = int(getattr(ctx, "brush_size", 1))
+        brush_shape = str(getattr(ctx, "brush_shape", "cube"))
+        base_cells = build_brush_cells((self.x, self.y, self.z), brush_size=brush_size, brush_shape=brush_shape)
+        cells = _expand_mirror_cells(ctx, base_cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode="erase", color_index=None)
 
     def undo(self, ctx) -> None:
@@ -306,6 +313,32 @@ def rasterize_brush_stroke_segment(
         cell = (x, y, z)
         if not cells or cells[-1] != cell:
             cells.append(cell)
+    return cells
+
+
+def build_brush_cells(
+    center: tuple[int, int, int],
+    *,
+    brush_size: int,
+    brush_shape: str,
+) -> set[tuple[int, int, int]]:
+    x, y, z = center
+    size = max(1, min(int(brush_size), 3))
+    radius = size - 1
+    if radius == 0:
+        return {(x, y, z)}
+
+    shape = brush_shape.strip().lower()
+    if shape not in {"cube", "sphere"}:
+        shape = "cube"
+
+    cells: set[tuple[int, int, int]] = set()
+    for dx in range(-radius, radius + 1):
+        for dy in range(-radius, radius + 1):
+            for dz in range(-radius, radius + 1):
+                if shape == "sphere" and sqrt((dx * dx) + (dy * dy) + (dz * dz)) > radius:
+                    continue
+                cells.add((x + dx, y + dy, z + dz))
     return cells
 
 

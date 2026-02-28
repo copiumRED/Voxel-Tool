@@ -1,128 +1,300 @@
-# ROADMAP_TASKS (Next Workday Roadmap)
+# ROADMAP_TASKS (Next Workday Board)
 
-This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usability), with each task sized for one atomic 1-2-3-4 cycle.
+Date: 2026-02-28  
+Scope: Next full workday run, tasks 01-20 only.  
+Driver: `Doc/QUBICLE_GAP_ANALYSIS.md` P0/P1 gaps.  
+Rule: One task = one branch = one merge commit to `main` after all gates pass.
 
 ## Completed Today
 
-### Task 01: Viewport Health Overlay + Startup Diagnostics
-- Commit: `3e9e38a`
-- Added explicit viewport diagnostics status messaging (`READY`/`UNAVAILABLE`) including shader profile and OpenGL info in startup/status bar flow.
-- Ensured viewport pipeline failures always display clear in-viewport error text, even when debug overlay is toggled off.
-- Verified startup smoke and full automated tests (`pytest -q`) remained green.
-
-### Task 02: First-Voxel UX Preview (Hover Cell/Face)
-- Commit: `665f469`
-- Added brush-mode hover preview marker with clear paint/erase coloring, rendered directly in the viewport.
-- Implemented reusable brush target resolution helper with plane fallback support for empty-scene preview.
-- Added core math tests for hover target resolution paths and validated full test suite pass.
-
-### Task 03: Part Actions v1 (Delete/Duplicate)
-- Commit: `c312b52`
-- Added scene-level duplicate and delete operations with active-part reassignment and guard against deleting the last part.
-- Added inspector UI actions for duplicate/delete part and status feedback messages in main window.
-- Added tests for duplicate copy behavior, active-part switching after delete, and minimum-part guard.
-
-### Task 04: Part Visibility/Lock Flags
-- Commit: `9fda1e3`
-- Added per-part `visible` and `locked` flags in the core model and persisted them through project save/load.
-- Added Inspector visibility/lock toggles and viewport lock guard to block edits on locked active part.
-- Updated viewport drawing/camera framing to use only visible parts and added tests for visibility filtering and flag persistence.
-
-### Task 05: Shortcut Map v1
-- Commit: `eb5941c`
-- Added keyboard hotkeys for tool shape switching (Brush/Box/Line/Fill) and mode switching (Paint/Erase).
-- Added camera hotkeys for frame/reset (`Shift+F` / `Shift+R`) with matching View menu shortcuts.
-- Wired shortcuts through tools panel state setters to keep UI and context behavior synchronized.
-
-### Task 06: Undo Transaction Grouping for Drag Tools
-- Commit: `1455599`
-- Added command-stack transaction support (`begin_transaction` / `end_transaction`) with compound undo/redo behavior.
-- Added tests verifying multi-command transactions collapse to one undo step.
-- Added mirror-enabled drag-tool tests asserting Box/Line/Fill remain single-step undo operations.
-
-### Task 07: Mirror Plane Visual Gizmos
-- Commit: `8cb5943`
-- Added viewport-rendered mirror plane guide gizmos for active X/Y/Z mirror toggles.
-- Added color-coded guide planes so mirror axes are visible and distinguishable during editing.
-- Updated tools panel mirror toggle labels to `Mirror X/Y/Z` for clearer control-to-guide mapping.
-
-### Task 08: Custom Mirror Plane Offsets
-- Commit: `aeb9bea`
-- Added per-axis mirror offset configuration in app context (`mirror_x/y/z_offset`) and offset-aware mirrored coordinate expansion.
-- Added Tools panel per-axis offset controls and status messaging when offsets change.
-- Added tests verifying mirrored coordinate generation and paint commands honor configured mirror plane offsets.
-
-### Task 09: Export Options Panel v1 (OBJ/glTF/VOX)
-- Commit: `59aa157`
-- Added export options dialog flow with session-persisted options across export actions.
-- Added OBJ options wiring for greedy meshing and triangulation controls.
-- Added scale preset placeholder option surfaced for OBJ/glTF/VOX and persisted during the session.
-
-### Task 10: VOX Export Compatibility Validation Pass
-- Commit: `aaa8935`
-- Hardened VOX exporter validation with deterministic palette-index mapping helper and expanded binary structure tests.
-- Confirmed manual interoperability by importing exported `.vox` into Qubicle without corruption.
-- Verified palette index mapping stability for current palette set with automated test coverage.
-
-### Task 11: Palette Management v1 (Save/Load Presets)
-- Commit: `9c600c5`
-- Added palette preset save/load IO helpers with schema validation and roundtrip support.
-- Added Palette panel Save/Load preset actions and status feedback in the main window.
-- Ensured active color index is clamped after palette load and covered by automated tests.
-
-### Task 12: Brush Stroke Drag Paint (Continuous)
-- Commit: `4b38dc3`
-- Added continuous brush stroke painting across drag movement with contiguous segment rasterization.
-- Grouped each brush stroke into a single command transaction so one undo reverts the full stroke.
-- Added command tests for stroke segment rasterization and single-step undo behavior.
-
-### Task 13: Fill Tool Constraints + Safety Guards
-- Commit: `8c7d5f8`
-- Added bounded fill threshold (`fill_max_cells`) to prevent oversized fill operations from freezing interaction.
-- Added explicit fill abort signaling and user-visible status feedback when threshold is exceeded.
-- Added unit test coverage for threshold-blocked fill behavior.
-
-### Task 14: Solidify UI Action + Mesh Cache Refresh
-- Commit: `2813f10`
-- Added explicit `Voxels -> Solidify/Rebuild Mesh` action that rebuilds and caches the active part mesh.
-- Added per-part mesh cache plumbing and cache invalidation on voxel edits.
-- Updated stats/export paths to consume refreshed mesh buffers consistently when cache is present.
-
-### Task 15: Bounds + Unit-Aware Stats Display
-- Commit: `c6b8353`
-- Added unit-aware part bounds metrics (`bounds_meters`) in analysis stats output.
-- Updated stats panel object display to show both voxel bounds and metric bounds (`m`) clearly.
-- Extended stats tests to assert bounds values remain accurate in both voxel and meter units.
-
-### Task 16: Save/Open Workflow Hardening
-- Commit: `f630b18`
-- Added editor-state persistence in project IO for key tool/mirror/session fields.
-- Added editor-state restoration on open and save-time capture in main window.
-- Added clear user error dialog for invalid/corrupt project files and IO tests for new schema behavior.
-
-### Task 17: Performance Baseline Harness (Voxel Operations)
-- Commit: `5bffb80`
-- Added automated performance harness test for brush paint, fill, and solidify timings.
-- Added stored baseline file (`tests/perf_baseline.json`) for regression tracking.
-- Added non-blocking threshold assertions via configurable multiplier to flag major regressions without overfitting local variance.
-
-### Task 18: Clean-Machine Packaging Validation
-- Commit: `20c71cf`
-- Hardened packaging scripts/spec path resolution and fail-fast behavior for reproducible execution.
-- Validated packaging build completion and packaged EXE launch smoke in this environment.
-- Updated `Doc/PACKAGING_CHECKLIST.md` with concrete run notes and expectations.
-
-### Task 19: In-App Quick Help / Status Hints
-- Commit: `4d745d1`
-- Added in-panel tool behavior hints including modifier guidance for active tool mode/shape.
-- Added first-use workflow guidance directly in Tools panel (no external docs required).
-- Added shortcut reminder line in the same visible hint block for onboarding/discoverability.
-
-### Task 20: Phase 1 QA Gate + Bugfix Buffer
-- Commit: `1bd9c23`
-- Ran Phase 1 QA gate checks: app launch smoke, full test suite, project save/open smoke, and OBJ/glTF/VOX export smoke.
-- Verified packaged app launch smoke (`dist\\VoxelTool\\VoxelTool.exe`) and confirmed packaging pipeline remains runnable.
-- Consolidated go/no-go readiness notes for operator human validation handoff.
+### Task 01: Brush Size + Shape Controls v1
+- Commit: `COMMIT_PENDING`
+- Added brush profile state in `AppContext` (`brush_size` 1-3 and `brush_shape` cube/sphere) with validation setters.
+- Updated paint/erase commands to apply configurable brush footprints while preserving mirrored edit behavior.
+- Added Tools panel controls for brush size/shape and viewport hover preview rendering for multi-cell brush footprints.
 
 ## Remaining Tasks
-- None.
+
+### Task 02: Non-Brush Hover Ghosting (Line/Box/Fill)
+- Goal:
+  - Add live ghost preview for line, box, and fill tools before commit.
+- Files/modules likely touched:
+  - `src/app/viewport/gl_widget.py`
+  - `src/app/ui/panels/tools_panel.py`
+- Acceptance criteria (human-testable):
+  - Hover/drag preview appears for line and box extents.
+  - Fill hover target is clearly indicated.
+  - Final operation matches previewed cells.
+- Tests required:
+  - Unit tests for preview target generation.
+  - Manual viewport preview smoke on all tool modes.
+
+### Task 03: Pick Mode Toggle (Surface vs Plane Lock)
+- Goal:
+  - Add explicit pick mode control for surface-only or plane-locked targeting.
+- Files/modules likely touched:
+  - `src/app/app_context.py`
+  - `src/app/ui/panels/tools_panel.py`
+  - `src/app/viewport/gl_widget.py`
+- Acceptance criteria (human-testable):
+  - Toggle is visible in Tools panel.
+  - Surface mode edits only on detected voxel surfaces.
+  - Plane-lock mode allows predictable empty-space editing.
+- Tests required:
+  - Raycast mode tests for both pick modes.
+  - Manual test across empty and dense scene.
+
+### Task 04: Part Transform Controls (Position/Rotation/Scale)
+- Goal:
+  - Introduce per-part transform editing in inspector.
+- Files/modules likely touched:
+  - `src/core/part.py`
+  - `src/app/ui/panels/inspector_panel.py`
+  - `src/app/viewport/gl_widget.py`
+  - `src/core/io/project_io.py`
+- Acceptance criteria (human-testable):
+  - Active part transform fields are editable.
+  - Viewport reflects transform changes immediately.
+  - Save/open roundtrip restores transform values.
+- Tests required:
+  - IO tests for transform persistence.
+  - Manual transform edit + save/open smoke.
+- Risk/rollback note:
+  - If transform wiring destabilizes render path, disable rotation/scale and keep translation-only for safe merge.
+
+### Task 05: Part Reorder in Inspector + Persistence
+- Goal:
+  - Allow part list reordering and persist stable order.
+- Files/modules likely touched:
+  - `src/core/scene.py`
+  - `src/app/ui/panels/inspector_panel.py`
+  - `src/core/io/project_io.py`
+- Acceptance criteria (human-testable):
+  - User can move selected part up/down.
+  - Reordered list persists after save/open.
+- Tests required:
+  - Scene ordering tests.
+  - Project IO order roundtrip tests.
+
+### Task 06: Grouping v1 (Create Group, Add/Remove Parts, Group Visibility/Lock)
+- Goal:
+  - Add lightweight part grouping for organization and batch control.
+- Files/modules likely touched:
+  - `src/core/scene.py`
+  - `src/core/project.py`
+  - `src/app/ui/panels/inspector_panel.py`
+  - `src/core/io/project_io.py`
+- Acceptance criteria (human-testable):
+  - Create/delete groups from inspector.
+  - Assign/unassign parts to groups.
+  - Group visibility/lock affects member parts.
+- Tests required:
+  - Unit tests for group membership and flags.
+  - Save/open tests for group persistence.
+- Risk/rollback note:
+  - If group model destabilizes existing part flows, merge group metadata first and defer UI actions.
+
+### Task 07: Palette Editing v1 (Add/Remove/Edit/Swap Colors)
+- Goal:
+  - Enable in-app palette edits, not just preset load/save.
+- Files/modules likely touched:
+  - `src/app/ui/panels/palette_panel.py`
+  - `src/core/palette.py`
+  - `src/app/app_context.py`
+- Acceptance criteria (human-testable):
+  - User can add/remove/edit/swap palette colors.
+  - Active color remains valid after edits.
+- Tests required:
+  - Palette normalization and clamping tests.
+  - UI-level behavior tests for palette mutations.
+
+### Task 08: Palette Quick Hotkeys (1-0)
+- Goal:
+  - Add numeric hotkeys for quick active-color selection.
+- Files/modules likely touched:
+  - `src/app/ui/main_window.py`
+  - `src/app/ui/panels/palette_panel.py`
+- Acceptance criteria (human-testable):
+  - Pressing `1-0` selects corresponding palette slots.
+  - Status bar confirms active color change.
+- Tests required:
+  - Shortcut mapping tests.
+  - Manual quick-switch paint smoke.
+
+### Task 09: Camera View Presets (Top/Front/Left/Right/Back/Bottom)
+- Goal:
+  - Add orthographic-style workflow presets for precision editing.
+- Files/modules likely touched:
+  - `src/app/ui/main_window.py`
+  - `src/app/viewport/gl_widget.py`
+- Acceptance criteria (human-testable):
+  - Menu/shortcut actions switch to all six preset views.
+  - Orbit/zoom/pan still works after preset switch.
+- Tests required:
+  - Camera orientation tests.
+  - Manual preset switching smoke.
+
+### Task 10: Grid Controls + Camera Snap Settings
+- Goal:
+  - Expose grid visibility/spacing and camera snap controls.
+- Files/modules likely touched:
+  - `src/app/ui/main_window.py`
+  - `src/app/viewport/gl_widget.py`
+  - `src/app/settings.py`
+- Acceptance criteria (human-testable):
+  - User can toggle grid and adjust spacing.
+  - Snap setting changes camera behavior consistently.
+  - Settings persist across relaunch.
+- Tests required:
+  - Settings persistence tests.
+  - Manual viewport behavior smoke.
+
+### Task 11: VOX Import v1 (Single-Part Path)
+- Goal:
+  - Import Magica/Qubicle-compatible `.vox` into active project as one part.
+- Files/modules likely touched:
+  - `src/core/io/` (new import helper)
+  - `src/core/project.py`
+  - `src/app/ui/main_window.py`
+- Acceptance criteria (human-testable):
+  - `File -> Import VOX` loads a `.vox` model into scene.
+  - Imported geometry and palette appear correctly.
+  - App remains stable after save/open and export.
+- Tests required:
+  - VOX import parser tests with fixture files.
+  - Import -> save/open -> export smoke test.
+- Risk/rollback note:
+  - If complex VOX variants fail, keep strict v1 parser for common chunks only and reject unsupported files with clear error.
+
+### Task 12: VOX Import v2 (Multi-Model Mapping + Palette Fidelity)
+- Goal:
+  - Handle multi-model VOX content and better palette-index fidelity.
+- Files/modules likely touched:
+  - `src/core/io/` import helpers
+  - `src/core/scene.py`
+  - `src/app/ui/main_window.py`
+- Acceptance criteria (human-testable):
+  - Multi-model VOX imports as multiple parts.
+  - Colors remain stable after import and re-export.
+- Tests required:
+  - Multi-model import unit tests.
+  - Palette mapping regression tests.
+
+### Task 13: Qubicle `.qb` Feasibility Note + Guardrail
+- Goal:
+  - Add explicit technical decision note for `.qb` support scope/risk.
+- Files/modules likely touched:
+  - `Doc/QUBICLE_GAP_ANALYSIS.md`
+  - `Doc/CURRENT_STATE.md`
+  - `Doc/DAILY_REPORT.md`
+- Acceptance criteria (human-testable):
+  - Decision note exists with go/no-go criteria and rationale.
+  - Team can point to documented scope boundary for current phase.
+- Tests required:
+  - Documentation review only (no code test changes).
+
+### Task 14: OBJ Export Quality Pass (Scale/Pivot/Material Strategy)
+- Goal:
+  - Improve OBJ output reliability for downstream DCC/engine import.
+- Files/modules likely touched:
+  - `src/core/export/obj_exporter.py`
+  - `src/app/ui/main_window.py`
+- Acceptance criteria (human-testable):
+  - Export options correctly affect output scale and pivot behavior.
+  - OBJ + MTL import predictably in at least one DCC and one engine smoke path.
+- Tests required:
+  - Export option unit tests.
+  - Manual external import smoke checklist.
+- Risk/rollback note:
+  - Keep previous exporter path behind fallback option if new output regresses compatibility.
+
+### Task 15: Mesh Normals Validation + Fixups
+- Goal:
+  - Ensure generated meshes have correct winding and consistent normals.
+- Files/modules likely touched:
+  - `src/core/meshing/surface_extractor.py`
+  - `src/core/meshing/greedy_mesher.py`
+  - `src/core/meshing/mesh.py`
+- Acceptance criteria (human-testable):
+  - No inverted normals on canonical test shapes.
+  - External viewer shading appears correct without manual recalc.
+- Tests required:
+  - Normals/winding unit tests on fixtures.
+  - Export/import shading smoke test.
+
+### Task 16: Basic UV Projection + Vertex Color Export Path
+- Goal:
+  - Add basic UV coordinates and preserve color path as defined in spec scope.
+- Files/modules likely touched:
+  - `src/core/meshing/*`
+  - `src/core/export/obj_exporter.py`
+  - `src/core/export/gltf_exporter.py`
+- Acceptance criteria (human-testable):
+  - Exported mesh contains UVs for basic projection workflow.
+  - Vertex color path remains intact for supported exporter targets.
+- Tests required:
+  - UV buffer generation tests.
+  - Export structure tests for UV/color presence.
+- Risk/rollback note:
+  - If UV generation introduces topology bugs, ship UV-disabled fallback toggle and keep color path stable.
+
+### Task 17: Incremental Solidify Rebuild (Dirty Region v1)
+- Goal:
+  - Reduce rebuild cost by processing changed regions only.
+- Files/modules likely touched:
+  - `src/core/meshing/solidify.py`
+  - `src/core/commands/demo_commands.py`
+  - `src/core/part.py`
+- Acceptance criteria (human-testable):
+  - Localized edits trigger faster rebuild than full-scene baseline.
+  - Mesh output remains functionally identical to full rebuild on test fixtures.
+- Tests required:
+  - Perf regression tests against stored baseline.
+  - Equivalence tests full-rebuild vs incremental-rebuild.
+
+### Task 18: Runtime Performance Diagnostics in Stats Panel
+- Goal:
+  - Surface live runtime metrics for frame and mesh performance.
+- Files/modules likely touched:
+  - `src/app/ui/panels/stats_panel.py`
+  - `src/app/viewport/gl_widget.py`
+  - `src/core/analysis/stats.py`
+- Acceptance criteria (human-testable):
+  - Stats panel shows frame time, voxel count, triangle count, rebuild timing.
+  - Metrics update during editing without UI freeze.
+- Tests required:
+  - Stats formatting tests.
+  - Manual stress-scene metrics smoke.
+
+### Task 19: Autosave + Crash Recovery v1
+- Goal:
+  - Add periodic autosave and startup recovery prompt.
+- Files/modules likely touched:
+  - `src/app/ui/main_window.py`
+  - `src/core/io/project_io.py`
+  - `src/app/settings.py`
+- Acceptance criteria (human-testable):
+  - Autosave file updates on configured interval.
+  - Forced-close session prompts recovery on next launch.
+  - Recovery restore opens without corruption.
+- Tests required:
+  - Autosave write/load tests.
+  - Recovery flow tests for interrupted session.
+- Risk/rollback note:
+  - If autosave causes IO contention, increase interval and gate writes to idle periods.
+
+### Task 20: Shortcut/Undo Depth Preferences + Day-End QA Gate
+- Goal:
+  - Finalize usability controls and run full gate before operator handoff.
+- Files/modules likely touched:
+  - `src/app/ui/main_window.py`
+  - `src/core/commands/command_stack.py`
+  - `src/app/settings.py`
+  - `Doc/DAILY_REPORT.md`
+- Acceptance criteria (human-testable):
+  - Undo depth preference is configurable and applied.
+  - Shortcut map additions are discoverable in UI/help.
+  - Full gate passes: launch, `pytest -q`, save/open, export OBJ/VOX, viewport interaction.
+- Tests required:
+  - Command stack cap tests.
+  - End-to-end smoke checklist execution.

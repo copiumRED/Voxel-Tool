@@ -109,6 +109,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.tool_shape_changed.connect(self._on_tool_shape_changed)
         self.tools_panel.mirror_changed.connect(self._on_mirror_changed)
         self.tools_panel.mirror_offset_changed.connect(self._on_mirror_offset_changed)
+        self.tools_panel.brush_profile_changed.connect(self._on_brush_profile_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -510,7 +511,10 @@ class MainWindow(QMainWindow):
             if enabled
         ) or "-"
         self.statusBar().showMessage(
-            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active} | Tool: {shape}/{mode} | Mirror: {mirror_axes}",
+            (
+                f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active} | "
+                f"Tool: {shape}/{mode} | Brush: {self.context.brush_shape}{self.context.brush_size} | Mirror: {mirror_axes}"
+            ),
             5000,
         )
 
@@ -562,6 +566,10 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Mirror {axis.upper()} offset: {offset}")
         self._refresh_ui_state()
 
+    def _on_brush_profile_changed(self, size: int, shape: str) -> None:
+        self._show_voxel_status(f"Brush profile: {shape}{size}")
+        self._refresh_ui_state()
+
     def _on_create_test_voxels(self) -> None:
         center_color = self.context.active_color_index
         arm_color = (center_color + 3) % len(self.context.palette)
@@ -600,6 +608,8 @@ class MainWindow(QMainWindow):
             "active_color_index": self.context.active_color_index,
             "voxel_tool_mode": self.context.voxel_tool_mode,
             "voxel_tool_shape": self.context.voxel_tool_shape,
+            "brush_size": self.context.brush_size,
+            "brush_shape": self.context.brush_shape,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
             "mirror_z_enabled": self.context.mirror_z_enabled,
@@ -627,6 +637,9 @@ class MainWindow(QMainWindow):
             AppContext.TOOL_SHAPE_FILL,
         ):
             self.context.voxel_tool_shape = shape
+        self.context.brush_size = max(1, min(3, int(state.get("brush_size", self.context.brush_size))))
+        brush_shape = str(state.get("brush_shape", self.context.brush_shape)).strip().lower()
+        self.context.brush_shape = brush_shape if brush_shape in {"cube", "sphere"} else "cube"
 
         self.context.mirror_x_enabled = bool(state.get("mirror_x_enabled", self.context.mirror_x_enabled))
         self.context.mirror_y_enabled = bool(state.get("mirror_y_enabled", self.context.mirror_y_enabled))

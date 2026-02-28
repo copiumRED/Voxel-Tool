@@ -25,6 +25,8 @@ class AppContext:
     palette: list[tuple[int, int, int]] = field(default_factory=lambda: list(DEFAULT_PALETTE))
     voxel_tool_mode: str = TOOL_MODE_PAINT
     voxel_tool_shape: str = TOOL_SHAPE_BRUSH
+    brush_size: int = 1
+    brush_shape: str = "cube"
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
@@ -32,6 +34,7 @@ class AppContext:
     mirror_y_offset: int = 0
     mirror_z_offset: int = 0
     fill_max_cells: int = 5000
+    _VALID_BRUSH_SHAPES = {"cube", "sphere"}
 
     @property
     def active_part(self) -> Part:
@@ -53,6 +56,18 @@ class AppContext:
         if shape not in self._VALID_TOOL_SHAPES:
             raise ValueError(f"Unsupported voxel tool shape: {shape}")
         self.voxel_tool_shape = shape
+
+    def set_brush_size(self, size: int) -> None:
+        size_value = int(size)
+        if size_value < 1 or size_value > 3:
+            raise ValueError(f"Unsupported brush size: {size_value}")
+        self.brush_size = size_value
+
+    def set_brush_shape(self, shape: str) -> None:
+        shape_value = str(shape).strip().lower()
+        if shape_value not in self._VALID_BRUSH_SHAPES:
+            raise ValueError(f"Unsupported brush shape: {shape_value}")
+        self.brush_shape = shape_value
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":
