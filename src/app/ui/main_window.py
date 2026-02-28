@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.set_context(self.context)
         self.tools_panel.tool_mode_changed.connect(self._on_tool_mode_changed)
         self.tools_panel.tool_shape_changed.connect(self._on_tool_shape_changed)
+        self.tools_panel.mirror_changed.connect(self._on_mirror_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -283,8 +284,17 @@ class MainWindow(QMainWindow):
         part_name = self.context.active_part.name
         mode = self.context.voxel_tool_mode
         shape = self.context.voxel_tool_shape
+        mirror_axes = "".join(
+            axis
+            for axis, enabled in (
+                ("X", self.context.mirror_x_enabled),
+                ("Y", self.context.mirror_y_enabled),
+                ("Z", self.context.mirror_z_enabled),
+            )
+            if enabled
+        ) or "-"
         self.statusBar().showMessage(
-            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active} | Tool: {shape}/{mode}",
+            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active} | Tool: {shape}/{mode} | Mirror: {mirror_axes}",
             5000,
         )
 
@@ -317,6 +327,11 @@ class MainWindow(QMainWindow):
 
     def _on_tool_shape_changed(self, shape: str) -> None:
         self._show_voxel_status(f"Tool shape: {shape}")
+        self._refresh_ui_state()
+
+    def _on_mirror_changed(self, axis: str, enabled: bool) -> None:
+        state = "on" if enabled else "off"
+        self._show_voxel_status(f"Mirror {axis.upper()}: {state}")
         self._refresh_ui_state()
 
     def _on_create_test_voxels(self) -> None:

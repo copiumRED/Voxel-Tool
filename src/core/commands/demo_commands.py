@@ -32,24 +32,24 @@ class PaintVoxelCommand(Command):
         self.y = y
         self.z = z
         self.color_index = color_index
-        self._had_previous = False
-        self._previous_color: int | None = None
+        self._deltas: list[_VoxelDelta] = []
 
     @property
     def name(self) -> str:
         return "Paint Voxel"
 
     def do(self, ctx) -> None:
-        previous = ctx.current_project.voxels.get(self.x, self.y, self.z)
-        self._had_previous = previous is not None
-        self._previous_color = previous
-        ctx.current_project.voxels.set(self.x, self.y, self.z, self.color_index)
+        voxels = ctx.current_project.voxels
+        cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
+        self._deltas = _apply_voxel_mode(voxels, cells, mode="paint", color_index=self.color_index)
 
     def undo(self, ctx) -> None:
-        if self._had_previous and self._previous_color is not None:
-            ctx.current_project.voxels.set(self.x, self.y, self.z, self._previous_color)
-            return
-        ctx.current_project.voxels.remove(self.x, self.y, self.z)
+        voxels = ctx.current_project.voxels
+        for delta in self._deltas:
+            if delta.previous_color is None:
+                voxels.remove(delta.x, delta.y, delta.z)
+            else:
+                voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
 
 
 class RemoveVoxelCommand(Command):
@@ -57,22 +57,24 @@ class RemoveVoxelCommand(Command):
         self.x = x
         self.y = y
         self.z = z
-        self._had_previous = False
-        self._previous_color: int | None = None
+        self._deltas: list[_VoxelDelta] = []
 
     @property
     def name(self) -> str:
         return "Erase Voxel"
 
     def do(self, ctx) -> None:
-        previous = ctx.current_project.voxels.get(self.x, self.y, self.z)
-        self._had_previous = previous is not None
-        self._previous_color = previous
-        ctx.current_project.voxels.remove(self.x, self.y, self.z)
+        voxels = ctx.current_project.voxels
+        cells = _expand_mirror_cells(ctx, {(self.x, self.y, self.z)})
+        self._deltas = _apply_voxel_mode(voxels, cells, mode="erase", color_index=None)
 
     def undo(self, ctx) -> None:
-        if self._had_previous and self._previous_color is not None:
-            ctx.current_project.voxels.set(self.x, self.y, self.z, self._previous_color)
+        voxels = ctx.current_project.voxels
+        for delta in self._deltas:
+            if delta.previous_color is None:
+                voxels.remove(delta.x, delta.y, delta.z)
+            else:
+                voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
 
 
 class ClearVoxelsCommand(Command):
@@ -155,20 +157,16 @@ class BoxVoxelCommand(Command):
 
     def do(self, ctx) -> None:
         voxels = ctx.current_project.voxels
-        self._deltas = []
+        base_cells: set[tuple[int, int, int]] = set()
         min_x, max_x = sorted((self.start_x, self.end_x))
         min_y, max_y = sorted((self.start_y, self.end_y))
 
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
-                previous = voxels.get(x, y, self.z)
-                self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
-                if self.mode == "erase":
-                    voxels.remove(x, y, self.z)
-                else:
-                    if self.color_index is None:
-                        raise ValueError("Box paint command requires a color index.")
-                    voxels.set(x, y, self.z, self.color_index)
+                base_cells.add((x, y, self.z))
+
+        cells = _expand_mirror_cells(ctx, base_cells)
+        self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
 
     def undo(self, ctx) -> None:
         voxels = ctx.current_project.voxels
@@ -205,16 +203,11 @@ class LineVoxelCommand(Command):
 
     def do(self, ctx) -> None:
         voxels = ctx.current_project.voxels
-        self._deltas = []
+        base_cells: set[tuple[int, int, int]] = set()
         for x, y in _rasterize_line(self.start_x, self.start_y, self.end_x, self.end_y):
-            previous = voxels.get(x, y, self.z)
-            self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
-            if self.mode == "erase":
-                voxels.remove(x, y, self.z)
-            else:
-                if self.color_index is None:
-                    raise ValueError("Line paint command requires a color index.")
-                voxels.set(x, y, self.z, self.color_index)
+            base_cells.add((x, y, self.z))
+        cells = _expand_mirror_cells(ctx, base_cells)
+        self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
 
     def undo(self, ctx) -> None:
         voxels = ctx.current_project.voxels
@@ -253,15 +246,9 @@ class FillVoxelCommand(Command):
 
         bounds = _plane_fill_bounds(voxels, self.z, self.x, self.y)
         connected = _flood_plane_region(voxels, self.x, self.y, self.z, target_color, bounds)
-
-        self._deltas = []
-        for x, y in connected:
-            previous = voxels.get(x, y, self.z)
-            self._deltas.append(_VoxelDelta(x=x, y=y, z=self.z, previous_color=previous))
-            if self.mode == "erase":
-                voxels.remove(x, y, self.z)
-            else:
-                voxels.set(x, y, self.z, self.color_index)  # type: ignore[arg-type]
+        base_cells = {(x, y, self.z) for x, y in connected}
+        cells = _expand_mirror_cells(ctx, base_cells)
+        self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
 
     def undo(self, ctx) -> None:
         voxels = ctx.current_project.voxels
@@ -301,6 +288,33 @@ def _plane_fill_bounds(voxels: VoxelGrid, z: int, seed_x: int, seed_y: int) -> t
     xs = [cell[0] for cell in plane_cells] + [seed_x]
     ys = [cell[1] for cell in plane_cells] + [seed_y]
     return min(xs), max(xs), min(ys), max(ys)
+
+
+def _expand_mirror_cells(ctx, base_cells: set[tuple[int, int, int]]) -> set[tuple[int, int, int]]:
+    expand = getattr(ctx, "expand_mirrored_cells", None)
+    if callable(expand):
+        return expand(base_cells)
+    return set(base_cells)
+
+
+def _apply_voxel_mode(
+    voxels: VoxelGrid,
+    cells: set[tuple[int, int, int]],
+    mode: str,
+    color_index: int | None,
+) -> list[_VoxelDelta]:
+    if mode == "paint" and color_index is None:
+        raise ValueError("Paint command requires color index.")
+
+    deltas: list[_VoxelDelta] = []
+    for x, y, z in sorted(cells):
+        previous = voxels.get(x, y, z)
+        deltas.append(_VoxelDelta(x=x, y=y, z=z, previous_color=previous))
+        if mode == "erase":
+            voxels.remove(x, y, z)
+        else:
+            voxels.set(x, y, z, color_index)  # type: ignore[arg-type]
+    return deltas
 
 
 def _flood_plane_region(
