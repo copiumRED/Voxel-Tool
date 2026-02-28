@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **99%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **100%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -37,6 +37,7 @@ Reasoning:
 - Correction 21: Performance baseline harness is now in tests with tracked baseline values and non-blocking regression thresholds.
 - Correction 22: Packaging pipeline path resolution and fail-fast behavior are hardened; packaged EXE launch smoke passed on current machine.
 - Correction 23: In-app quick help/status hints are now visible in Tools panel, including first-use workflow guidance.
+- Correction 24: Phase 1 QA gate pass completed (run/tests/save-open/export/packaged-launch smoke).
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

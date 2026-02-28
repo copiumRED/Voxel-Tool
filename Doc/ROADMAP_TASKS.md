@@ -113,20 +113,16 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Updated `Doc/PACKAGING_CHECKLIST.md` with concrete run notes and expectations.
 
 ### Task 19: In-App Quick Help / Status Hints
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `4d745d1`
 - Added in-panel tool behavior hints including modifier guidance for active tool mode/shape.
 - Added first-use workflow guidance directly in Tools panel (no external docs required).
 - Added shortcut reminder line in the same visible hint block for onboarding/discoverability.
 
-## Remaining Tasks
+### Task 20: Phase 1 QA Gate + Bugfix Buffer
+- Commit: `COMMIT_HASH_PENDING`
+- Ran Phase 1 QA gate checks: app launch smoke, full test suite, project save/open smoke, and OBJ/glTF/VOX export smoke.
+- Verified packaged app launch smoke (`dist\\VoxelTool\\VoxelTool.exe`) and confirmed packaging pipeline remains runnable.
+- Consolidated go/no-go readiness notes for operator human validation handoff.
 
-## Task 20: Phase 1 QA Gate + Bugfix Buffer
-- Goal: run full Phase 1 smoke suite and close top blockers before Phase 2 planning.
-- Files/modules likely touched:
-  - `Doc/DAILY_REPORT.md`
-  - targeted bugfix files from QA
-- Acceptance criteria:
-  - Full smoke checklist passes (run, edit, save/open, export OBJ/glTF/VOX, packaging smoke).
-  - Remaining issues ranked with go/no-go recommendation for Phase 2.
-- Tests required:
-  - `pytest -q` and manual end-to-end checklist.
+## Remaining Tasks
+- None.

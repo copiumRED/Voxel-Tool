@@ -243,6 +243,33 @@
 - Issues noticed:
   - Hint text currently uses compact multiline format; future UX pass may tune wording/visual hierarchy.
 
+### Roadmap 20: Phase 1 QA Gate + Bugfix Buffer
+- What was done:
+  - Executed full gate: app launch smoke + `pytest -q` + save/open smoke + OBJ/glTF/VOX export smoke.
+  - Verified packaged app launch smoke using `dist\VoxelTool\VoxelTool.exe`.
+  - Confirmed no remaining roadmap tasks are open for this cycle.
+- How to test quickly:
+  - `python src/app/main.py`
+  - `pytest -q`
+  - Validate `dist\VoxelTool\VoxelTool.exe` launches once
+  - Validate export smoke for OBJ/glTF/VOX
+- Issues noticed:
+  - No blocking issues found in this final gate pass.
+
+## End of Day Summary
+- Tasks completed (today run): 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+- Operator must test (checklist):
+  - Full manual viewport/edit flow (brush/box/line/fill + mirrors + offsets)
+  - Part workflows (duplicate/delete/visibility/lock)
+  - Save/Open with editor-state restoration
+  - Export flows (OBJ/glTF/VOX) including Qubicle VOX import
+  - Packaged app workflow from `dist\VoxelTool\VoxelTool.exe`
+- Known issues:
+  - Scale preset in export dialog remains placeholder (not yet applied to geometry scaling).
+  - Packaging confidence is strong on this machine; one independent clean-machine confirmation is still recommended.
+- Recommended next task number for tomorrow:
+  - None in current roadmap (Phase 1 list completed). Next step is operator validation/sign-off and Phase 2 planning.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core
