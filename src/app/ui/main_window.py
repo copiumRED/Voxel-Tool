@@ -210,6 +210,21 @@ class MainWindow(QMainWindow):
         frame_voxels_action.triggered.connect(self._on_frame_voxels)
         view_menu.addAction(frame_voxels_action)
 
+        presets_menu = view_menu.addMenu("View Presets")
+        preset_specs = (
+            ("Top", "Ctrl+1", "top"),
+            ("Front", "Ctrl+2", "front"),
+            ("Left", "Ctrl+3", "left"),
+            ("Right", "Ctrl+4", "right"),
+            ("Back", "Ctrl+5", "back"),
+            ("Bottom", "Ctrl+6", "bottom"),
+        )
+        for label, shortcut, preset in preset_specs:
+            action = QAction(label, self)
+            action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(lambda _checked=False, key=preset: self._on_view_preset(key))
+            presets_menu.addAction(action)
+
         view_menu.addSeparator()
 
         debug_overlay_action = QAction("Toggle Debug Overlay", self)
@@ -554,6 +569,10 @@ class MainWindow(QMainWindow):
 
     def _on_frame_voxels(self) -> None:
         self.viewport.frame_to_voxels()
+
+    def _on_view_preset(self, preset: str) -> None:
+        self.viewport.set_view_preset(preset)
+        self._show_voxel_status(f"View preset: {preset}")
 
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
         self._show_voxel_status(message)

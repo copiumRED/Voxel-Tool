@@ -95,6 +95,30 @@ class GLViewportWidget(QOpenGLWidget):
         self.target = QVector3D(0.0, 0.0, 0.0)
         self.update()
 
+    def set_view_preset(self, preset: str) -> None:
+        preset_key = preset.strip().lower()
+        if preset_key == "top":
+            self.yaw_deg = 0.0
+            self.pitch_deg = -89.0
+        elif preset_key == "bottom":
+            self.yaw_deg = 0.0
+            self.pitch_deg = 89.0
+        elif preset_key == "front":
+            self.yaw_deg = 90.0
+            self.pitch_deg = 0.0
+        elif preset_key == "back":
+            self.yaw_deg = -90.0
+            self.pitch_deg = 0.0
+        elif preset_key == "left":
+            self.yaw_deg = 180.0
+            self.pitch_deg = 0.0
+        elif preset_key == "right":
+            self.yaw_deg = 0.0
+            self.pitch_deg = 0.0
+        else:
+            raise ValueError(f"Unsupported view preset: {preset}")
+        self.update()
+
     def frame_to_voxels(self) -> None:
         if self._app_context is None:
             return

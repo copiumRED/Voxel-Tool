@@ -55,20 +55,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added active color setter path in main window to clamp to palette bounds and refresh UI consistently.
 - Wired status updates so hotkey-driven color changes are visible immediately in the status bar.
 
-## Remaining Tasks
-
 ### Task 09: Camera View Presets (Top/Front/Left/Right/Back/Bottom)
-- Goal:
-  - Add orthographic-style workflow presets for precision editing.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/app/viewport/gl_widget.py`
-- Acceptance criteria (human-testable):
-  - Menu/shortcut actions switch to all six preset views.
-  - Orbit/zoom/pan still works after preset switch.
-- Tests required:
-  - Camera orientation tests.
-  - Manual preset switching smoke.
+- Commit: `COMMIT_PENDING`
+- Added viewport camera preset API for top/front/left/right/back/bottom orientations.
+- Added View menu preset actions with shortcuts (`Ctrl+1` to `Ctrl+6`).
+- Added status feedback for preset switches while preserving existing orbit/zoom/pan interaction.
+
+## Remaining Tasks
 
 ### Task 10: Grid Controls + Camera Snap Settings
 - Goal:

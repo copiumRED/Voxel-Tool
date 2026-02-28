@@ -46,11 +46,13 @@ Reasoning:
 - Correction 30: Grouping v1 is implemented (create/delete/assign/unassign + group visibility/lock) with project IO persistence.
 - Correction 31: Palette editing v1 is implemented (RGB edit + add/remove/swap) with dynamic swatch UI updates.
 - Correction 32: Palette quick hotkeys (`1-0`) now switch active color slots directly.
+- Correction 33: View presets (top/front/left/right/back/bottom) are now available in the View menu with shortcuts.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
 |---|---|---|---|---|
 | Viewport reliability | Consistent visible voxel render on launch | Mostly fixed, modern shader fallback added | Need wider GPU/manual validation matrix + stronger fallback UX | P0 |
+| Viewport UX (presets) | Fast viewport switching with preset views | Camera presets for top/front/left/right/back/bottom are implemented | Remaining gap: true ortho projection mode and snap/grid tuning controls | P1 |
 | First-voxel workflow | Immediate paint in empty scene | Plane fallback + brush/line/box/fill preview affordances implemented | Remaining gap is explicit pick-mode control and richer face-normal hinting | P0 |
 | Brush/erase usability | Fast, predictable | Continuous brush drag paint + size/shape brush profiles implemented with one-step undo | Remaining gap: stroke smoothing and advanced falloff presets | P1 |
 | Box/line/fill tools | Core productivity tools | Fill safety threshold + feedback implemented | Remaining gap: preview/selection affordance and threshold tuning UX | P1 |

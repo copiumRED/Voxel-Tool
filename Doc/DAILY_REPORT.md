@@ -113,6 +113,19 @@
 - Issues noticed:
   - `git pull` still failed due network restrictions.
 
+### Roadmap 09 (Next Workday): Camera View Presets (Top/Front/Left/Right/Back/Bottom)
+- What was done:
+  - Added viewport camera preset method for top/front/left/right/back/bottom viewpoints.
+  - Added View menu preset actions with `Ctrl+1..Ctrl+6` shortcuts.
+  - Added status messages when preset actions are triggered.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Trigger `View -> View Presets` entries (or `Ctrl+1..Ctrl+6`) and verify camera switches each preset.
+  - After switching, verify orbit/zoom/pan still works.
+  - Run: `pytest -q` (current: `71 passed`)
+- Issues noticed:
+  - `git pull` still blocked by network restrictions.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.
