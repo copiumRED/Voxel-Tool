@@ -16,6 +16,18 @@
 - Issues noticed:
   - `git pull` could not be completed in-session due to blocked network access to GitHub; work proceeded from local `main`.
 
+### Roadmap 02: First-Voxel UX Preview (Hover Cell/Face)
+- What was done:
+  - Added hover-cell preview for brush mode, including plane-fallback targeting when no voxel surface is hit.
+  - Added a shared brush target resolution helper used for both hover preview and click placement behavior.
+  - Added raycast helper tests for surface-adjacent, plane-fallback, and erase-only targeting.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In brush mode, move mouse over existing voxels and verify visible hover outline; move over empty scene and verify plane fallback preview appears.
+  - Run: `pytest -q` (current: `41 passed`)
+- Issues noticed:
+  - `git pull` intermittently failed in-session due to network restrictions, but merge/push from local `main` remained successful.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

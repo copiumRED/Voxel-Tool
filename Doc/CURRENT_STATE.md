@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **60%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **63%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -18,12 +18,13 @@ Reasoning:
 - Correction 2: Yesterday checklist cited `36 passed`; current baseline is `38 passed`.
 - Correction 3: Runtime entry consistency improved (`run.ps1` now points to `src/app/main.py`), reducing launch-path ambiguity.
 - Correction 4: Startup diagnostics now report explicit viewport readiness + shader profile in status bar; pipeline-unavailable state now renders clear in-viewport error text.
+- Correction 5: Brush hover target preview now renders in viewport, including empty-scene plane fallback targeting.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
 |---|---|---|---|---|
 | Viewport reliability | Consistent visible voxel render on launch | Mostly fixed, modern shader fallback added | Need wider GPU/manual validation matrix + stronger fallback UX | P0 |
-| First-voxel workflow | Immediate paint in empty scene | Fixed via plane fallback | Needs explicit cursor/ghost feedback | P0 |
+| First-voxel workflow | Immediate paint in empty scene | Plane fallback + brush hover preview implemented | Remaining gap is richer ghosting for box/line/fill tools | P0 |
 | Brush/erase usability | Fast, predictable | Implemented | Missing stroke smoothing + advanced brush options | P1 |
 | Box/line/fill tools | Core productivity tools | Implemented | Needs better preview/selection affordance and edge-case polish | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ implemented (origin reflection) | Missing custom mirror planes and visual mirror gizmos | P1 |
@@ -43,7 +44,7 @@ Reasoning:
 - Mitigation: startup diagnostics and in-viewport error surfacing are implemented; next is fallback mode toggle + GPU matrix QA checklist.
 
 2. Tool confidence gap (user cannot tell where edits will land)
-- Mitigation: add hovered-cell/face preview and operation ghosting for brush/box/line/fill.
+- Mitigation: brush hover preview is in place; next is operation ghosting parity for box/line/fill.
 
 3. Part workflow incompleteness (missing delete/duplicate/visibility/lock)
 - Mitigation: prioritize part management actions + tests before advanced features.

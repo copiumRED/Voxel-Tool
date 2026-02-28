@@ -5,23 +5,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 ## Completed Today
 
 ### Task 01: Viewport Health Overlay + Startup Diagnostics
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `3e9e38a`
 - Added explicit viewport diagnostics status messaging (`READY`/`UNAVAILABLE`) including shader profile and OpenGL info in startup/status bar flow.
 - Ensured viewport pipeline failures always display clear in-viewport error text, even when debug overlay is toggled off.
 - Verified startup smoke and full automated tests (`pytest -q`) remained green.
 
-## Remaining Tasks
+### Task 02: First-Voxel UX Preview (Hover Cell/Face)
+- Commit: `COMMIT_HASH_PENDING`
+- Added brush-mode hover preview marker with clear paint/erase coloring, rendered directly in the viewport.
+- Implemented reusable brush target resolution helper with plane fallback support for empty-scene preview.
+- Added core math tests for hover target resolution paths and validated full test suite pass.
 
-## Task 02: First-Voxel UX Preview (Hover Cell/Face)
-- Goal: show where brush will paint/erase before click.
-- Files/modules likely touched:
-  - `src/app/viewport/gl_widget.py`
-  - `src/core/voxels/raycast.py`
-- Acceptance criteria:
-  - Hover highlight visible in brush mode.
-  - Empty-scene paint target preview visible on plane fallback.
-- Tests required:
-  - Manual + core math tests for hover target helper.
+## Remaining Tasks
 
 ## Task 03: Part Actions v1 (Delete/Duplicate)
 - Goal: complete basic object workflow beyond add/rename/select.
