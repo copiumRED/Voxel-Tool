@@ -1,0 +1,29 @@
+from __future__ import annotations
+
+from app.app_context import AppContext
+from core.commands.demo_commands import AddVoxelCommand
+from core.project import Project
+
+
+def test_new_project_has_default_scene_with_active_part() -> None:
+    project = Project(name="Untitled")
+    assert len(project.scene.parts) == 1
+    active_part = project.scene.get_active_part()
+    assert active_part.name == "Part 1"
+    assert project.active_part_id == active_part.part_id
+
+
+def test_active_part_switch_changes_voxel_authority_for_commands() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    first_part = ctx.active_part
+    second_part = ctx.current_project.scene.add_part("Part 2")
+
+    ctx.command_stack.do(AddVoxelCommand(1, 2, 3, 4), ctx)
+    assert first_part.voxels.count() == 1
+    assert second_part.voxels.count() == 0
+
+    ctx.set_active_part(second_part.part_id)
+    ctx.command_stack.do(AddVoxelCommand(-1, 0, 5, 2), ctx)
+    assert first_part.voxels.count() == 1
+    assert second_part.voxels.count() == 1
+    assert ctx.current_project.voxels.get(-1, 0, 5) == 2

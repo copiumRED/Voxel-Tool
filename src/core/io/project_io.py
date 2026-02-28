@@ -43,10 +43,11 @@ def load_project(path: str) -> Project:
 
     voxels = VoxelGrid.from_list(payload.get("voxels", []))
 
-    return Project(
+    project = Project(
         name=str(payload["name"]),
         created_utc=str(payload["created_utc"]),
         modified_utc=str(payload["modified_utc"]),
         version=int(payload["version"]),
-        voxels=voxels,
     )
+    project.voxels = voxels
+    return project

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
+from core.scene import Scene
 from core.voxels.voxel_grid import VoxelGrid
 
 
@@ -16,4 +17,16 @@ class Project:
     created_utc: str = field(default_factory=utc_now_iso)
     modified_utc: str = field(default_factory=utc_now_iso)
     version: int = 1
-    voxels: VoxelGrid = field(default_factory=VoxelGrid)
+    scene: Scene = field(default_factory=Scene.with_default_part)
+
+    @property
+    def active_part_id(self) -> str:
+        return self.scene.get_active_part().part_id
+
+    @property
+    def voxels(self) -> VoxelGrid:
+        return self.scene.get_active_part().voxels
+
+    @voxels.setter
+    def voxels(self, value: VoxelGrid) -> None:
+        self.scene.get_active_part().voxels = value
