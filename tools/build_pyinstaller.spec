@@ -3,6 +3,8 @@
 from pathlib import Path
 
 project_root = Path.cwd()
+if not (project_root / "src" / "app" / "main.py").exists():
+    project_root = project_root.parent
 assets_dir = project_root / "assets"
 datas = []
 if assets_dir.exists():
@@ -11,7 +13,7 @@ if assets_dir.exists():
 block_cipher = None
 
 a = Analysis(
-    ["src/app/main.py"],
+    [str(project_root / "src" / "app" / "main.py")],
     pathex=[str(project_root / "src")],
     binaries=[],
     datas=datas,

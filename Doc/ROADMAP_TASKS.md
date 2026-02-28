@@ -101,26 +101,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added clear user error dialog for invalid/corrupt project files and IO tests for new schema behavior.
 
 ### Task 17: Performance Baseline Harness (Voxel Operations)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `5bffb80`
 - Added automated performance harness test for brush paint, fill, and solidify timings.
 - Added stored baseline file (`tests/perf_baseline.json`) for regression tracking.
 - Added non-blocking threshold assertions via configurable multiplier to flag major regressions without overfitting local variance.
 
-## Remaining Tasks
+### Task 18: Clean-Machine Packaging Validation
+- Commit: `COMMIT_HASH_PENDING`
+- Hardened packaging scripts/spec path resolution and fail-fast behavior for reproducible execution.
+- Validated packaging build completion and packaged EXE launch smoke in this environment.
+- Updated `Doc/PACKAGING_CHECKLIST.md` with concrete run notes and expectations.
 
-## Task 18: Clean-Machine Packaging Validation
-- Goal: verify packaging reproducibility and startup reliability.
-- Files/modules likely touched:
-  - `tools/package_windows.ps1`
-  - `tools/build_pyinstaller.spec`
-  - `Doc/PACKAGING_CHECKLIST.md`
-- Acceptance criteria:
-  - Fresh environment can build and launch packaged app.
-  - Checklist updated with any required environment notes.
-- Tests required:
-  - Manual packaging checklist.
-- Stop if risky:
-  - Stop merge if packaged app launch fails on validation machine.
+## Remaining Tasks
 
 ## Task 19: In-App Quick Help / Status Hints
 - Goal: improve discoverability for new users.

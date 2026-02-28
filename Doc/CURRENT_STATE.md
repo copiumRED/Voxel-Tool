@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **95%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **97%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -35,6 +35,7 @@ Reasoning:
 - Correction 19: Stats panel now shows unit-aware bounds (voxels + meters) for active part analysis.
 - Correction 20: Save/Open now persists and restores core editor tool state with explicit invalid-file error messaging.
 - Correction 21: Performance baseline harness is now in tests with tracked baseline values and non-blocking regression thresholds.
+- Correction 22: Packaging pipeline path resolution and fail-fast behavior are hardened; packaged EXE launch smoke passed on current machine.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -52,7 +53,7 @@ Reasoning:
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Perf baseline harness implemented for brush/fill/solidify | Remaining gap: broader scale matrix + targeted optimizations | P0 |
 | Crash resilience | Stable session behavior | Improved invalid-file error surfacing in Open flow | Need broader exception recovery paths | P0 |
-| Packaging/run consistency | “Works out of box” | Packaging scripts/spec present | Needs clean-machine validation and installer docs | P0 |
+| Packaging/run consistency | “Works out of box” | Packaging build + packaged launch smoke validated with hardened scripts | Remaining gap: final clean-machine pass + installer docs | P0 |
 | UX discoverability | Low friction UI | Functional but utilitarian | Missing onboarding hints/tooltips/status guidance polish | P1 |
 
 ## Top 10 Risks / Blockers (Ranked) + Mitigations

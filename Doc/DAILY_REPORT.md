@@ -218,6 +218,18 @@
 - Issues noticed:
   - Baselines are environment-sensitive and currently conservative by design to reduce false positives.
 
+### Roadmap 18: Clean-Machine Packaging Validation
+- What was done:
+  - Fixed packaging spec path resolution for reliable script invocation.
+  - Hardened packaging script with explicit non-zero exit handling.
+  - Ran packaging script and verified packaged EXE launch smoke in this environment.
+- How to test quickly:
+  - Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`
+  - Verify `dist\VoxelTool\VoxelTool.exe` exists.
+  - Launch `.\dist\VoxelTool\VoxelTool.exe` once.
+- Issues noticed:
+  - Validation was completed on current machine; operator should still run one clean-machine checklist pass for final packaging confidence.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core
