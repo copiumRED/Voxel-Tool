@@ -74,6 +74,8 @@ class GLViewportWidget(QOpenGLWidget):
         self._last_mouse_pos: tuple[float, float] | None = None
         self._left_press_pos: QPointF | None = None
         self._left_dragging = False
+        self._brush_stroke_active = False
+        self._brush_stroke_last_cell: tuple[int, int, int] | None = None
         self._hover_preview_cell: tuple[int, int, int] | None = None
         self._hover_preview_source: str | None = None
         self._hover_preview_erase = False
@@ -515,6 +517,7 @@ class GLViewportWidget(QOpenGLWidget):
         if event.button() == Qt.LeftButton:
             self._left_press_pos = event.position()
             self._left_dragging = False
+            self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
@@ -536,11 +539,13 @@ class GLViewportWidget(QOpenGLWidget):
             if self._left_dragging:
                 if (
                     self._app_context is None
-                    or self._app_context.voxel_tool_shape == self._app_context.TOOL_SHAPE_BRUSH
+                    or self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH
                 ):
                     self.yaw_deg += dx * 0.4
                     self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
                     self.update()
+            if self._brush_stroke_active:
+                self._continue_brush_stroke(pos, event.modifiers())
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -553,7 +558,9 @@ class GLViewportWidget(QOpenGLWidget):
 
     def mouseReleaseEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
-            if (
+            if self._brush_stroke_active:
+                self._end_brush_stroke()
+            elif (
                 self._app_context is not None
                 and self._app_context.voxel_tool_shape in (
                     self._app_context.TOOL_SHAPE_BOX,
@@ -655,6 +662,89 @@ class GLViewportWidget(QOpenGLWidget):
             color_index = self._app_context.active_color_index
             self._app_context.command_stack.do(PaintVoxelCommand(x, y, z, color_index), self._app_context)
             self.voxel_edit_applied.emit(f"Paint: ({x}, {y}, {z}) color {color_index}")
+        self.update()
+
+    def _resolve_brush_target(
+        self,
+        pos: QPointF,
+        modifiers: Qt.KeyboardModifier,
+    ) -> tuple[tuple[int, int, int], bool] | None:
+        if self._app_context is None:
+            return None
+        temporary_erase = bool(modifiers & Qt.ShiftModifier)
+        mode = self._app_context.voxel_tool_mode
+        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+        ray = self._screen_to_world_ray(pos.x(), pos.y())
+        if ray is None:
+            return None
+        origin, direction = ray
+        plane_cell = self._screen_to_plane_cell(pos) if not should_erase else None
+        target = resolve_brush_target_cell(
+            self._app_context.current_project.voxels,
+            (origin.x(), origin.y(), origin.z()),
+            (direction.x(), direction.y(), direction.z()),
+            erase_mode=should_erase,
+            plane_fallback_cell=plane_cell,
+        )
+        if target is None:
+            return None
+        return target[0], should_erase
+
+    def _begin_brush_stroke_if_applicable(
+        self,
+        pos: QPointF,
+        modifiers: Qt.KeyboardModifier,
+    ) -> None:
+        if self._app_context is None:
+            return
+        if self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH:
+            return
+        if self._active_part_is_locked():
+            return
+        self._brush_stroke_active = True
+        self._brush_stroke_last_cell = None
+        self._app_context.command_stack.begin_transaction("Brush Stroke")
+        self._continue_brush_stroke(pos, modifiers)
+
+    def _continue_brush_stroke(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
+        if self._app_context is None or not self._brush_stroke_active:
+            return
+        resolved = self._resolve_brush_target(pos, modifiers)
+        if resolved is None:
+            return
+        current_cell, should_erase = resolved
+
+        from core.commands.demo_commands import (
+            PaintVoxelCommand,
+            RemoveVoxelCommand,
+            rasterize_brush_stroke_segment,
+        )
+
+        if self._brush_stroke_last_cell is None:
+            segment_cells = [current_cell]
+        else:
+            segment_cells = rasterize_brush_stroke_segment(self._brush_stroke_last_cell, current_cell)
+
+        for x, y, z in segment_cells:
+            if should_erase:
+                self._app_context.command_stack.do(RemoveVoxelCommand(x, y, z), self._app_context)
+            else:
+                self._app_context.command_stack.do(
+                    PaintVoxelCommand(x, y, z, self._app_context.active_color_index),
+                    self._app_context,
+                )
+        self._brush_stroke_last_cell = current_cell
+        self.voxel_edit_applied.emit(f"Brush {'erase' if should_erase else 'paint'} stroke")
+        self.update()
+
+    def _end_brush_stroke(self) -> None:
+        if self._app_context is None:
+            return
+        if not self._brush_stroke_active:
+            return
+        self._brush_stroke_active = False
+        self._brush_stroke_last_cell = None
+        self._app_context.command_stack.end_transaction()
         self.update()
 
     def _update_hover_preview(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:

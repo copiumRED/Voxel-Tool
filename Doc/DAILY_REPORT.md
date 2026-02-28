@@ -145,6 +145,19 @@
 - Issues noticed:
   - Preset schema is intentionally simple (`{"palette":[[r,g,b],...]}`); no metadata/version field yet.
 
+### Roadmap 12: Brush Stroke Drag Paint (Continuous)
+- What was done:
+  - Added continuous brush drag painting by resolving and applying brush targets during mouse movement.
+  - Added brush stroke segment rasterization helper for contiguous cell coverage between drag points.
+  - Grouped each stroke into a single command-stack transaction so one undo reverts the whole stroke.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Set tool to Brush/Paint, click-drag across plane and verify continuous painted voxels.
+  - Press Undo once and verify full stroke reverts.
+  - Run: `pytest -q` (current: `56 passed`)
+- Issues noticed:
+  - Left-drag in brush mode now prioritizes painting over camera orbit; camera orbit remains available through non-brush workflows/right-drag pan.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

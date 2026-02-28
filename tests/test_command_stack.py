@@ -10,6 +10,7 @@ from core.commands.demo_commands import (
     PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
+    rasterize_brush_stroke_segment,
 )
 from core.project import Project
 
@@ -208,3 +209,25 @@ def test_drag_style_commands_remain_single_undo_with_mirrors_enabled() -> None:
     assert len(stack.undo_stack) == 1
     stack.undo(ctx)
     assert ctx.current_project.voxels.get(0, 0, 0) == 1
+
+
+def test_rasterize_brush_stroke_segment_returns_contiguous_cells() -> None:
+    cells = rasterize_brush_stroke_segment((0, 0, 0), (3, 1, 0))
+    assert cells[0] == (0, 0, 0)
+    assert cells[-1] == (3, 1, 0)
+    assert len(cells) >= 4
+
+
+def test_brush_stroke_transaction_undoes_as_single_step() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    cells = rasterize_brush_stroke_segment((0, 0, 0), (3, 0, 0))
+
+    ctx.command_stack.begin_transaction("Brush Stroke")
+    for x, y, z in cells:
+        ctx.command_stack.do(PaintVoxelCommand(x, y, z, 4), ctx)
+    ctx.command_stack.end_transaction()
+
+    assert len(ctx.command_stack.undo_stack) == 1
+    assert ctx.current_project.voxels.count() == 4
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.count() == 0

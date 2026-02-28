@@ -65,23 +65,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Verified palette index mapping stability for current palette set with automated test coverage.
 
 ### Task 11: Palette Management v1 (Save/Load Presets)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `9c600c5`
 - Added palette preset save/load IO helpers with schema validation and roundtrip support.
 - Added Palette panel Save/Load preset actions and status feedback in the main window.
 - Ensured active color index is clamped after palette load and covered by automated tests.
 
-## Remaining Tasks
+### Task 12: Brush Stroke Drag Paint (Continuous)
+- Commit: `COMMIT_HASH_PENDING`
+- Added continuous brush stroke painting across drag movement with contiguous segment rasterization.
+- Grouped each brush stroke into a single command transaction so one undo reverts the full stroke.
+- Added command tests for stroke segment rasterization and single-step undo behavior.
 
-## Task 12: Brush Stroke Drag Paint (Continuous)
-- Goal: move from click-only brush to continuous drag painting.
-- Files/modules likely touched:
-  - `src/app/viewport/gl_widget.py`
-  - `src/core/commands/demo_commands.py`
-- Acceptance criteria:
-  - Dragging paints contiguous voxels.
-  - Undo reverts one stroke transaction.
-- Tests required:
-  - Command tests for stroke cell set + undo behavior.
+## Remaining Tasks
 
 ## Task 13: Fill Tool Constraints + Safety Guards
 - Goal: prevent accidental heavy fill operations in large regions.

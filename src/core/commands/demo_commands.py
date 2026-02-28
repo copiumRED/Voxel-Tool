@@ -259,6 +259,31 @@ class FillVoxelCommand(Command):
                 voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
 
 
+def rasterize_brush_stroke_segment(
+    start: tuple[int, int, int],
+    end: tuple[int, int, int],
+) -> list[tuple[int, int, int]]:
+    x0, y0, z0 = start
+    x1, y1, z1 = end
+    dx = x1 - x0
+    dy = y1 - y0
+    dz = z1 - z0
+    steps = max(abs(dx), abs(dy), abs(dz))
+    if steps == 0:
+        return [start]
+
+    cells: list[tuple[int, int, int]] = []
+    for step in range(steps + 1):
+        t = step / steps
+        x = int(round(x0 + dx * t))
+        y = int(round(y0 + dy * t))
+        z = int(round(z0 + dz * t))
+        cell = (x, y, z)
+        if not cells or cells[-1] != cell:
+            cells.append(cell)
+    return cells
+
+
 def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
     points: list[tuple[int, int]] = []
     x0, y0, x1, y1 = start_x, start_y, end_x, end_y
