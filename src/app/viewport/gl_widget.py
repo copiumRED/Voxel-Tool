@@ -375,17 +375,20 @@ class GLViewportWidget(QOpenGLWidget):
         x = int(round(hit.x()))
         y = int(round(hit.y()))
         z = 0
+        temporary_erase = modifiers & Qt.ShiftModifier
+        mode = self._app_context.voxel_tool_mode
+        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
 
-        if modifiers & Qt.ShiftModifier:
+        if should_erase:
             from core.commands.demo_commands import RemoveVoxelCommand
 
             self._app_context.command_stack.do(RemoveVoxelCommand(x, y, z), self._app_context)
-            self.voxel_edit_applied.emit(f"Remove: ({x}, {y}, {z})")
+            self.voxel_edit_applied.emit(f"Erase: ({x}, {y}, {z})")
         else:
-            from core.commands.demo_commands import AddVoxelCommand
+            from core.commands.demo_commands import PaintVoxelCommand
 
             color_index = self._app_context.active_color_index
-            self._app_context.command_stack.do(AddVoxelCommand(x, y, z, color_index), self._app_context)
+            self._app_context.command_stack.do(PaintVoxelCommand(x, y, z, color_index), self._app_context)
             self.voxel_edit_applied.emit(f"Paint: ({x}, {y}, {z}) color {color_index}")
         self.update()
 

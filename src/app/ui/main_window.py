@@ -10,9 +10,9 @@ from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindo
 from app.app_context import AppContext
 from app.settings import get_settings
 from core.commands.demo_commands import (
-    AddVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    PaintVoxelCommand,
     RenameProjectCommand,
 )
 from core.export.obj_exporter import export_voxels_to_obj
@@ -39,7 +39,10 @@ class MainWindow(QMainWindow):
         self.viewport.viewport_ready.connect(self._on_viewport_ready)
         self.viewport.viewport_error.connect(self._on_viewport_error)
         self.setCentralWidget(self.viewport)
-        self.tools_dock = self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
+        self.tools_panel = ToolsPanel(self)
+        self.tools_panel.set_context(self.context)
+        self.tools_panel.tool_mode_changed.connect(self._on_tool_mode_changed)
+        self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
         self.inspector_panel.part_selection_changed.connect(self._on_part_selection_changed)
@@ -251,7 +254,7 @@ class MainWindow(QMainWindow):
         y = random.randint(-5, 5)
         z = random.randint(-5, 5)
         color_index = self.context.active_color_index
-        self.context.command_stack.do(AddVoxelCommand(x, y, z, color_index), self.context)
+        self.context.command_stack.do(PaintVoxelCommand(x, y, z, color_index), self.context)
         self._show_voxel_status(f"Added voxel: ({x}, {y}, {z}) color {color_index}")
         self._refresh_ui_state()
 
@@ -266,6 +269,7 @@ class MainWindow(QMainWindow):
         self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
         self.palette_panel.refresh()
         self.inspector_panel.refresh()
+        self.tools_panel.refresh()
         self.viewport.update()
         if self.undo_action is not None:
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
@@ -276,8 +280,9 @@ class MainWindow(QMainWindow):
         count = self.context.current_project.voxels.count()
         active = self.context.active_color_index
         part_name = self.context.active_part.name
+        mode = self.context.voxel_tool_mode
         self.statusBar().showMessage(
-            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active}",
+            f"{message} | Part: {part_name} | Voxels: {count} | Active Color: {active} | Tool: {mode}",
             5000,
         )
 
@@ -302,6 +307,10 @@ class MainWindow(QMainWindow):
     def _on_part_selection_changed(self, part_id: str) -> None:
         self._show_voxel_status(f"Active part: {self.context.active_part.name} ({part_id})")
         self.viewport.frame_to_voxels()
+        self._refresh_ui_state()
+
+    def _on_tool_mode_changed(self, mode: str) -> None:
+        self._show_voxel_status(f"Tool mode: {mode}")
         self._refresh_ui_state()
 
     def _on_create_test_voxels(self) -> None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.app_context import AppContext
-from core.commands.demo_commands import AddVoxelCommand
+from core.commands.demo_commands import PaintVoxelCommand
 from core.project import Project
 from core.scene import Scene
 
@@ -19,12 +19,12 @@ def test_active_part_switch_changes_voxel_authority_for_commands() -> None:
     first_part = ctx.active_part
     second_part = ctx.current_project.scene.add_part("Part 2")
 
-    ctx.command_stack.do(AddVoxelCommand(1, 2, 3, 4), ctx)
+    ctx.command_stack.do(PaintVoxelCommand(1, 2, 3, 4), ctx)
     assert first_part.voxels.count() == 1
     assert second_part.voxels.count() == 0
 
     ctx.set_active_part(second_part.part_id)
-    ctx.command_stack.do(AddVoxelCommand(-1, 0, 5, 2), ctx)
+    ctx.command_stack.do(PaintVoxelCommand(-1, 0, 5, 2), ctx)
     assert first_part.voxels.count() == 1
     assert second_part.voxels.count() == 1
     assert ctx.current_project.voxels.get(-1, 0, 5) == 2

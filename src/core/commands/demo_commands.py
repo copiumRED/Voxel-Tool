@@ -24,7 +24,7 @@ class RenameProjectCommand(Command):
         ctx.current_project.name = self._old_name
 
 
-class AddVoxelCommand(Command):
+class PaintVoxelCommand(Command):
     def __init__(self, x: int, y: int, z: int, color_index: int) -> None:
         self.x = x
         self.y = y
@@ -35,7 +35,7 @@ class AddVoxelCommand(Command):
 
     @property
     def name(self) -> str:
-        return "Add Voxel"
+        return "Paint Voxel"
 
     def do(self, ctx) -> None:
         previous = ctx.current_project.voxels.get(self.x, self.y, self.z)
@@ -60,7 +60,7 @@ class RemoveVoxelCommand(Command):
 
     @property
     def name(self) -> str:
-        return "Remove Voxel"
+        return "Erase Voxel"
 
     def do(self, ctx) -> None:
         previous = ctx.current_project.voxels.get(self.x, self.y, self.z)
@@ -110,3 +110,10 @@ class CreateTestVoxelsCommand(Command):
 
     def undo(self, ctx) -> None:
         ctx.current_project.voxels = VoxelGrid.from_list(self._snapshot)
+
+
+# Backward-compatible names retained while call sites migrate to paint/erase wording.
+class AddVoxelCommand(PaintVoxelCommand):
+    @property
+    def name(self) -> str:
+        return "Add Voxel"

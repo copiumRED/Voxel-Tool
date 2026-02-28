@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from app.app_context import AppContext
 from core.commands.demo_commands import (
-    AddVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
 )
@@ -34,7 +34,7 @@ def test_rename_project_command_undo_redo() -> None:
 def test_voxel_commands_undo_redo_counts() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
 
-    add_command = AddVoxelCommand(1, 2, 3, 5)
+    add_command = PaintVoxelCommand(1, 2, 3, 5)
     ctx.command_stack.do(add_command, ctx)
     assert ctx.current_project.voxels.count() == 1
 
@@ -55,7 +55,7 @@ def test_add_voxel_overwrite_undo_restores_previous_color() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.current_project.voxels.set(1, 2, 0, 3)
 
-    ctx.command_stack.do(AddVoxelCommand(1, 2, 0, 7), ctx)
+    ctx.command_stack.do(PaintVoxelCommand(1, 2, 0, 7), ctx)
     assert ctx.current_project.voxels.get(1, 2, 0) == 7
 
     ctx.command_stack.undo(ctx)
@@ -87,3 +87,17 @@ def test_create_test_voxels_command_undo_redo_counts() -> None:
 
     ctx.command_stack.redo(ctx)
     assert ctx.current_project.voxels.count() == 7
+
+
+def test_paint_and_erase_commands_overwrite_semantics() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.current_project.voxels.set(3, 3, 0, 1)
+
+    ctx.command_stack.do(PaintVoxelCommand(3, 3, 0, 6), ctx)
+    assert ctx.current_project.voxels.get(3, 3, 0) == 6
+
+    ctx.command_stack.do(RemoveVoxelCommand(3, 3, 0), ctx)
+    assert ctx.current_project.voxels.get(3, 3, 0) is None
+
+    ctx.command_stack.undo(ctx)
+    assert ctx.current_project.voxels.get(3, 3, 0) == 6
