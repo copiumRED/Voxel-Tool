@@ -93,6 +93,16 @@ class MainWindow(QMainWindow):
     def _build_view_menu(self) -> None:
         view_menu = self.menuBar().addMenu("&View")
 
+        reset_camera_action = QAction("Reset Camera", self)
+        reset_camera_action.triggered.connect(self._on_reset_camera)
+        view_menu.addAction(reset_camera_action)
+
+        frame_voxels_action = QAction("Frame Voxels", self)
+        frame_voxels_action.triggered.connect(self._on_frame_voxels)
+        view_menu.addAction(frame_voxels_action)
+
+        view_menu.addSeparator()
+
         debug_overlay_action = QAction("Toggle Debug Overlay", self)
         debug_overlay_action.setCheckable(True)
         debug_overlay_action.setChecked(self.viewport.debug_overlay_enabled)
@@ -214,6 +224,12 @@ class MainWindow(QMainWindow):
     def _on_toggle_debug_overlay(self, enabled: bool) -> None:
         self.viewport.debug_overlay_enabled = enabled
         self.viewport.update()
+
+    def _on_reset_camera(self) -> None:
+        self.viewport.reset_camera()
+
+    def _on_frame_voxels(self) -> None:
+        self.viewport.frame_to_voxels()
 
     def _restore_layout_settings(self) -> None:
         settings = get_settings()

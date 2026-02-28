@@ -22,6 +22,9 @@ class GLViewportWidget(QOpenGLWidget):
     _GL_FLOAT = 0x1406
     _GL_DEPTH_TEST = 0x0B71
     _GL_ARRAY_BUFFER = 0x8892
+    _DEFAULT_YAW_DEG = 45.0
+    _DEFAULT_PITCH_DEG = -30.0
+    _DEFAULT_DISTANCE = 25.0
 
     _PALETTE: tuple[tuple[float, float, float], ...] = (
         (0.95, 0.35, 0.35),
@@ -40,9 +43,9 @@ class GLViewportWidget(QOpenGLWidget):
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
         self.debug_overlay_enabled = True
-        self.yaw_deg = 45.0
-        self.pitch_deg = -30.0
-        self.distance = 25.0
+        self.yaw_deg = self._DEFAULT_YAW_DEG
+        self.pitch_deg = self._DEFAULT_PITCH_DEG
+        self.distance = self._DEFAULT_DISTANCE
         self.target = QVector3D(0.0, 0.0, 0.0)
         self._last_mouse_pos: tuple[float, float] | None = None
 
@@ -51,17 +54,20 @@ class GLViewportWidget(QOpenGLWidget):
         self.frame_to_voxels()
         self.update()
 
+    def reset_camera(self) -> None:
+        self.yaw_deg = self._DEFAULT_YAW_DEG
+        self.pitch_deg = self._DEFAULT_PITCH_DEG
+        self.distance = self._DEFAULT_DISTANCE
+        self.target = QVector3D(0.0, 0.0, 0.0)
+        self.update()
+
     def frame_to_voxels(self) -> None:
         if self._app_context is None:
             return
 
         voxel_rows = self._app_context.current_project.voxels.to_list()
         if not voxel_rows:
-            self.yaw_deg = 45.0
-            self.pitch_deg = -30.0
-            self.distance = 25.0
-            self.target = QVector3D(0.0, 0.0, 0.0)
-            self.update()
+            self.reset_camera()
             return
 
         xs = [row[0] for row in voxel_rows]
@@ -205,13 +211,13 @@ class GLViewportWidget(QOpenGLWidget):
         painter.end()
 
     def mousePressEvent(self, event) -> None:
-        if event.button() == Qt.LeftButton:
+        if event.button() in (Qt.LeftButton, Qt.RightButton):
             pos = event.position()
             self._last_mouse_pos = (pos.x(), pos.y())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
-        if self._last_mouse_pos is None or not (event.buttons() & Qt.LeftButton):
+        if self._last_mouse_pos is None:
             super().mouseMoveEvent(event)
             return
         pos = event.position()
@@ -219,13 +225,21 @@ class GLViewportWidget(QOpenGLWidget):
         dy = pos.y() - self._last_mouse_pos[1]
         self._last_mouse_pos = (pos.x(), pos.y())
 
-        self.yaw_deg += dx * 0.4
-        self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
-        self.update()
+        if event.buttons() & Qt.LeftButton:
+            self.yaw_deg += dx * 0.4
+            self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+            self.update()
+        elif event.buttons() & Qt.RightButton:
+            _, _, right, up = self._camera_vectors()
+            pan_scale = self.distance * 0.0025
+            offset = (right * (-dx * pan_scale)) + (up * (dy * pan_scale))
+            self.target += offset
+            self.update()
+
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event) -> None:
-        if event.button() == Qt.LeftButton:
+        if event.button() in (Qt.LeftButton, Qt.RightButton):
             self._last_mouse_pos = None
         super().mouseReleaseEvent(event)
 
@@ -239,3 +253,17 @@ class GLViewportWidget(QOpenGLWidget):
     @staticmethod
     def _clamp(value: float, min_value: float, max_value: float) -> float:
         return max(min_value, min(max_value, value))
+
+    def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
+        yaw = radians(self.yaw_deg)
+        pitch = radians(self.pitch_deg)
+        eye = QVector3D(
+            self.target.x() + self.distance * cos(pitch) * cos(yaw),
+            self.target.y() + self.distance * sin(pitch),
+            self.target.z() + self.distance * cos(pitch) * sin(yaw),
+        )
+        forward = (self.target - eye).normalized()
+        world_up = QVector3D(0.0, 1.0, 0.0)
+        right = QVector3D.crossProduct(forward, world_up).normalized()
+        up = QVector3D.crossProduct(right, forward).normalized()
+        return eye, forward, right, up
