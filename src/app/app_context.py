@@ -30,6 +30,10 @@ class AppContext:
     brush_size: int = 1
     brush_shape: str = "cube"
     pick_mode: str = PICK_MODE_PLANE_LOCK
+    grid_visible: bool = True
+    grid_spacing: int = 1
+    camera_snap_enabled: bool = False
+    camera_snap_degrees: int = 15
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False

@@ -126,6 +126,21 @@
 - Issues noticed:
   - `git pull` still blocked by network restrictions.
 
+### Roadmap 10 (Next Workday): Grid Controls + Camera Snap Settings
+- What was done:
+  - Added View menu controls for grid visibility and grid spacing.
+  - Added camera snap toggle and configurable snap-angle settings.
+  - Applied camera snap behavior during orbit updates when enabled.
+  - Added editor-state save/load support for grid and camera snap settings.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Toggle `View -> Show Grid`, change `Set Grid Spacing`, and verify viewport grid updates.
+  - Enable `View -> Camera Snap`, set snap degrees, and orbit to verify snapped camera movement.
+  - Save/open once and confirm settings persist.
+  - Run: `pytest -q` (current: `71 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by network restrictions.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

@@ -61,22 +61,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added View menu preset actions with shortcuts (`Ctrl+1` to `Ctrl+6`).
 - Added status feedback for preset switches while preserving existing orbit/zoom/pan interaction.
 
-## Remaining Tasks
-
 ### Task 10: Grid Controls + Camera Snap Settings
-- Goal:
-  - Expose grid visibility/spacing and camera snap controls.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/app/viewport/gl_widget.py`
-  - `src/app/settings.py`
-- Acceptance criteria (human-testable):
-  - User can toggle grid and adjust spacing.
-  - Snap setting changes camera behavior consistently.
-  - Settings persist across relaunch.
-- Tests required:
-  - Settings persistence tests.
-  - Manual viewport behavior smoke.
+- Commit: `COMMIT_PENDING`
+- Added View menu controls for grid visibility toggle and adjustable grid spacing.
+- Added camera snap toggle and snap-angle setting with state applied during orbit interaction.
+- Added editor-state persistence for grid/snap settings so values survive save/open workflows.
+
+## Remaining Tasks
 
 ### Task 11: VOX Import v1 (Single-Part Path)
 - Goal:

@@ -226,6 +226,27 @@ class MainWindow(QMainWindow):
             presets_menu.addAction(action)
 
         view_menu.addSeparator()
+        toggle_grid_action = QAction("Show Grid", self)
+        toggle_grid_action.setCheckable(True)
+        toggle_grid_action.setChecked(self.context.grid_visible)
+        toggle_grid_action.toggled.connect(self._on_toggle_grid_visible)
+        view_menu.addAction(toggle_grid_action)
+
+        grid_spacing_action = QAction("Set Grid Spacing", self)
+        grid_spacing_action.triggered.connect(self._on_set_grid_spacing)
+        view_menu.addAction(grid_spacing_action)
+
+        camera_snap_action = QAction("Camera Snap", self)
+        camera_snap_action.setCheckable(True)
+        camera_snap_action.setChecked(self.context.camera_snap_enabled)
+        camera_snap_action.toggled.connect(self._on_toggle_camera_snap)
+        view_menu.addAction(camera_snap_action)
+
+        camera_snap_angle_action = QAction("Set Camera Snap Degrees", self)
+        camera_snap_angle_action.triggered.connect(self._on_set_camera_snap_degrees)
+        view_menu.addAction(camera_snap_angle_action)
+
+        view_menu.addSeparator()
 
         debug_overlay_action = QAction("Toggle Debug Overlay", self)
         debug_overlay_action.setCheckable(True)
@@ -574,6 +595,46 @@ class MainWindow(QMainWindow):
         self.viewport.set_view_preset(preset)
         self._show_voxel_status(f"View preset: {preset}")
 
+    def _on_toggle_grid_visible(self, enabled: bool) -> None:
+        self.context.grid_visible = enabled
+        self._show_voxel_status(f"Grid: {'on' if enabled else 'off'}")
+        self.viewport.update()
+
+    def _on_set_grid_spacing(self) -> None:
+        value, accepted = QInputDialog.getInt(
+            self,
+            "Grid Spacing",
+            "Grid spacing (voxels):",
+            self.context.grid_spacing,
+            1,
+            10,
+            1,
+        )
+        if not accepted:
+            return
+        self.context.grid_spacing = int(value)
+        self._show_voxel_status(f"Grid spacing: {value}")
+        self.viewport.update()
+
+    def _on_toggle_camera_snap(self, enabled: bool) -> None:
+        self.context.camera_snap_enabled = enabled
+        self._show_voxel_status(f"Camera snap: {'on' if enabled else 'off'}")
+
+    def _on_set_camera_snap_degrees(self) -> None:
+        value, accepted = QInputDialog.getInt(
+            self,
+            "Camera Snap Degrees",
+            "Snap degrees:",
+            self.context.camera_snap_degrees,
+            1,
+            90,
+            1,
+        )
+        if not accepted:
+            return
+        self.context.camera_snap_degrees = int(value)
+        self._show_voxel_status(f"Camera snap degrees: {value}")
+
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
         self._show_voxel_status(message)
         self._refresh_ui_state()
@@ -653,6 +714,10 @@ class MainWindow(QMainWindow):
             "brush_size": self.context.brush_size,
             "brush_shape": self.context.brush_shape,
             "pick_mode": self.context.pick_mode,
+            "grid_visible": self.context.grid_visible,
+            "grid_spacing": self.context.grid_spacing,
+            "camera_snap_enabled": self.context.camera_snap_enabled,
+            "camera_snap_degrees": self.context.camera_snap_degrees,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
             "mirror_z_enabled": self.context.mirror_z_enabled,
@@ -686,6 +751,15 @@ class MainWindow(QMainWindow):
         pick_mode = str(state.get("pick_mode", self.context.pick_mode)).strip().lower()
         if pick_mode in (AppContext.PICK_MODE_SURFACE, AppContext.PICK_MODE_PLANE_LOCK):
             self.context.pick_mode = pick_mode
+        self.context.grid_visible = bool(state.get("grid_visible", self.context.grid_visible))
+        self.context.grid_spacing = max(1, int(state.get("grid_spacing", self.context.grid_spacing)))
+        self.context.camera_snap_enabled = bool(
+            state.get("camera_snap_enabled", self.context.camera_snap_enabled)
+        )
+        self.context.camera_snap_degrees = max(
+            1,
+            int(state.get("camera_snap_degrees", self.context.camera_snap_degrees)),
+        )
 
         self.context.mirror_x_enabled = bool(state.get("mirror_x_enabled", self.context.mirror_x_enabled))
         self.context.mirror_y_enabled = bool(state.get("mirror_y_enabled", self.context.mirror_y_enabled))

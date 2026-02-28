@@ -281,9 +281,16 @@ class GLViewportWidget(QOpenGLWidget):
         line_vertices.extend((0.0, 0.0, 0.0, 0.2, 1.0, 0.2, 0.0, axis_len, 0.0, 0.2, 1.0, 0.2))
         line_vertices.extend((0.0, 0.0, 0.0, 0.2, 0.5, 1.0, 0.0, 0.0, axis_len, 0.2, 0.5, 1.0))
 
+        if self._app_context is not None and not self._app_context.grid_visible:
+            self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
+            return
+
+        spacing = 1
+        if self._app_context is not None:
+            spacing = max(1, int(self._app_context.grid_spacing))
         grid_min = -20
         grid_max = 20
-        for i in range(grid_min, grid_max + 1):
+        for i in range(grid_min, grid_max + 1, spacing):
             shade = 0.45 if i == 0 else 0.30
             line_vertices.extend((float(i), 0.0, float(grid_min), shade, shade, shade))
             line_vertices.extend((float(i), 0.0, float(grid_max), shade, shade, shade))
@@ -593,6 +600,14 @@ class GLViewportWidget(QOpenGLWidget):
                 ):
                     self.yaw_deg += dx * 0.4
                     self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                    if (
+                        self._app_context is not None
+                        and self._app_context.camera_snap_enabled
+                        and self._app_context.camera_snap_degrees > 0
+                    ):
+                        step = float(self._app_context.camera_snap_degrees)
+                        self.yaw_deg = round(self.yaw_deg / step) * step
+                        self.pitch_deg = round(self.pitch_deg / step) * step
                     self.update()
             if self._brush_stroke_active:
                 self._continue_brush_stroke(pos, event.modifiers())
