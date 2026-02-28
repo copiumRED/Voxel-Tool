@@ -11,44 +11,67 @@
 - 5. Plane Tools v1 - Brush Paint/Erase (Stabilization)
 - 6. Plane Tools v1 - Box Fill/Box Erase
 - 7. Plane Tools v1 - Line Tool
+- 8. Plane Tools v1 - Flood Fill (bounded)
+- 9. Mirror Modes (X/Y/Z) for Voxel Tools
+- 10. Full 3D Picking v1
+- 11. Solidify v1 - Surface Extraction Mesh
+- 12. Solidify v1 - Greedy Meshing
+- 13. Export Pipeline Expansion (OBJ settings + glTF)
+- 14. Analysis Panel v1 (scene/object stats)
+- 15. Windows Packaging Milestone
 
 ## What Changed (High Level)
-- Reworked viewport voxel rendering to explicit voxel line geometry + point centers for stronger visibility across drivers.
-- Added manual reproducibility checklist for Task 1 (`MANUAL_CHECKLIST_TASK_01_VIEWPORT_VISIBILITY.md`).
-- Introduced scene graph primitives: `Scene`, `Part`, active-part selection, and active-part-aware project voxel authority.
-- Evolved project JSON IO to persist `scene.parts` and `active_part_id`, with backward compatibility for legacy root `voxels`.
-- Added part list management in Inspector panel (add/rename/select active part).
-- Added explicit voxel tool state in app context:
-  - shape: `brush`, `box`, `line`
-  - mode: `paint`, `erase`
-- Implemented command-backed plane tools:
-  - single-cell brush paint/erase
-  - drag box fill/erase (single undo per rectangle)
-  - drag line paint/erase using integer rasterization (single undo per line)
-- Expanded tests for scene behavior, persistence, and command semantics.
+- Hardened viewport rendering visibility (explicit voxel edge lines + point centers).
+- Added scene/part domain model and active-part voxel authority.
+- Added scene-part persistence in project JSON with legacy compatibility.
+- Implemented part list UI in inspector (add/rename/select active part).
+- Implemented voxel tool system:
+  - shapes: brush, box, line, fill
+  - actions: paint/erase
+  - mirror toggles: X/Y/Z
+- Added 3D voxel surface picking for brush paint/erase.
+- Added surface extraction and greedy meshing pipeline under `src/core/meshing`.
+- Expanded export pipeline:
+  - OBJ options (`ObjExportOptions`)
+  - glTF export (`File -> Export glTF`)
+- Added analysis/stats core module and live scene/object stats panel.
+- Added Windows packaging assets:
+  - functional `tools/build_pyinstaller.spec`
+  - `tools/package_windows.ps1`
+  - `PACKAGING_CHECKLIST.md`
+- Extended automated tests across commands, meshing, raycast, exporters, mirrors, and stats.
 
 ## Quick Test Checklist
-- Run app: `python src/app/main.py` (launches without crash).
-- Run tests: `pytest -q` (currently passing: `21 passed`).
-- In app: `Debug -> Create Test Voxels (Cross)`, then `View -> Frame Voxels`.
-- In Inspector panel: add/select/rename parts; verify painting affects selected part only.
-- In Tools panel: switch between Brush/Box/Line and Paint/Erase; verify one undo per drag op for Box/Line.
-- Save and reopen a project; verify part list and active part persist.
-- Export OBJ once from `File -> Export OBJ` as smoke check.
+- Launch app: `python src/app/main.py`
+- Run tests: `pytest -q` (latest: `36 passed`)
+- In app: `Debug -> Create Test Voxels (Cross)` then `View -> Frame Voxels`
+- Verify tools: Brush/Box/Line/Fill with Paint/Erase and Undo/Redo
+- Verify mirror toggles X/Y/Z affect edits as expected
+- Verify part switching in Inspector isolates edits by active part
+- Verify export smoke:
+  - `File -> Export OBJ`
+  - `File -> Export glTF`
+- Packaging smoke:
+  - `powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`
+  - launch `dist\VoxelTool\VoxelTool.exe`
 
 ## Known Issues / Risks
-- Viewport-dependent acceptance for visibility and plane tools has been smoke-tested by launch and command/test coverage, but not fully human-verified in this headless run.
-- Camera orbit currently uses left-drag only in Brush mode; Box/Line left-drag is reserved for tool operations by design.
-- Scene part IDs are process-generated (`part-N`) and not globally unique across independent sessions/files.
+- Duplicate source trees still exist (`src/app` and `src/voxel_tool`), which increases maintenance ambiguity.
+- Mirror behavior is currently origin-reflection based (`x -> -x`, etc.), without custom mirror plane offset.
+- GLTF exporter currently writes positions/indices only (no normals/materials/UVs yet).
+- Task 12 history includes a revert/reapply correction due an accidental direct commit on `stable` before branch merge; final `stable` content is correct and tested.
 
 ## Next Recommended Task
-- Task 8: Plane Tools v1 - Flood Fill (bounded)
+- Roadmap 1-15 complete. Next recommendation: begin hardening/polish pass (manual QA + packaging validation on clean Windows machine).
 
 ## Screenshot Notes
-- Viewport behavior changed in Tasks 1, 5, 6, and 7:
-  - Voxels are now rendered with explicit line geometry and center points.
-  - Tool interactions now depend on selected shape (`brush`/`box`/`line`) and mode (`paint`/`erase`).
-  - Recommended screenshots for operator validation:
-    1. Test voxel cross framed in viewport.
-    2. Box paint result on `z=0`.
-    3. Line paint result on `z=0`.
+- Viewport/tool behavior changed materially in tasks 1, 5-10:
+  - visible voxel edges/points
+  - 3D brush picking
+  - box/line/fill plane operations
+  - mirror edits
+- Suggested screenshots:
+  1. Test cross framed and clearly visible in viewport
+  2. Mirror X+Y line draw result
+  3. Fill operation result and post-undo state
+  4. Stats panel showing scene/object totals
