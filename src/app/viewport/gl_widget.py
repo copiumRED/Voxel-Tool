@@ -157,6 +157,7 @@ class GLViewportWidget(QOpenGLWidget):
 
         mvp = self._build_view_projection_matrix()
         voxel_rows = self._app_context.current_project.voxels.to_list()
+        self._draw_world_grid(funcs, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
         if voxel_rows:
@@ -178,7 +179,7 @@ class GLViewportWidget(QOpenGLWidget):
                 self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
 
         if self.debug_overlay_enabled:
-            self._draw_debug_overlay(funcs, mvp, len(voxel_rows))
+            self._draw_overlay_text(len(voxel_rows))
 
     def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> int:
         if self._program is None or self._buffer is None or len(vertex_data) == 0:
@@ -206,7 +207,7 @@ class GLViewportWidget(QOpenGLWidget):
         self._buffer.release()
         return count
 
-    def _draw_debug_overlay(self, funcs, mvp: QMatrix4x4, voxel_count: int) -> None:
+    def _draw_world_grid(self, funcs, mvp: QMatrix4x4) -> None:
         line_vertices = array("f")
 
         axis_len = 20.0
@@ -225,6 +226,7 @@ class GLViewportWidget(QOpenGLWidget):
 
         self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
 
+    def _draw_overlay_text(self, voxel_count: int) -> None:
         painter = QPainter(self)
         painter.setPen(QColor(230, 230, 230))
         painter.drawText(12, 20, f"Voxels: {voxel_count}")
@@ -396,15 +398,25 @@ class GLViewportWidget(QOpenGLWidget):
             (origin.x(), origin.y(), origin.z()),
             (direction.x(), direction.y(), direction.z()),
         )
+        hit_cell: tuple[int, int, int] | None
+        previous_cell: tuple[int, int, int] | None
         if hit_result is None:
-            return
-        hit_cell, previous_cell = hit_result
+            hit_cell = None
+            previous_cell = None
+        else:
+            hit_cell, previous_cell = hit_result
         if should_erase:
+            if hit_cell is None:
+                return
             x, y, z = hit_cell
         else:
-            if previous_cell is None:
-                return
-            x, y, z = previous_cell
+            if previous_cell is not None:
+                x, y, z = previous_cell
+            else:
+                plane_cell = self._screen_to_plane_cell(pos)
+                if plane_cell is None:
+                    return
+                x, y, z = plane_cell
 
         if should_erase:
             from core.commands.demo_commands import RemoveVoxelCommand

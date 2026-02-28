@@ -18,6 +18,7 @@ from core.commands.demo_commands import (
 from core.analysis.stats import compute_scene_stats
 from core.export.obj_exporter import export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
+from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -101,6 +102,10 @@ class MainWindow(QMainWindow):
         export_gltf_action = QAction("Export glTF", self)
         export_gltf_action.triggered.connect(self._on_export_gltf)
         file_menu.addAction(export_gltf_action)
+
+        export_vox_action = QAction("Export VOX", self)
+        export_vox_action.triggered.connect(self._on_export_vox)
+        file_menu.addAction(export_vox_action)
 
         file_menu.addSeparator()
 
@@ -247,6 +252,25 @@ class MainWindow(QMainWindow):
             return
         self.statusBar().showMessage(
             f"Exported glTF: {path} | Vertices: {stats.vertex_count} | Triangles: {stats.triangle_count}",
+            5000,
+        )
+
+    def _on_export_vox(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export VOX",
+            "",
+            "VOX (*.vox);;All Files (*)",
+        )
+        if not path:
+            return
+        stats = export_voxels_to_vox(self.context.current_project.voxels, self.context.palette, path)
+        if stats.voxel_count == 0:
+            self.statusBar().showMessage(f"No voxels to export | Exported VOX: {path}", 5000)
+            return
+        sx, sy, sz = stats.size
+        self.statusBar().showMessage(
+            f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz}",
             5000,
         )
 
