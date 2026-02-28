@@ -40,6 +40,7 @@ class MainWindow(QMainWindow):
         self.viewport.set_context(self.context)
         self.viewport.voxel_edit_applied.connect(self._on_viewport_voxel_edit_applied)
         self.viewport.viewport_ready.connect(self._on_viewport_ready)
+        self.viewport.viewport_diagnostics.connect(self._on_viewport_diagnostics)
         self.viewport.viewport_error.connect(self._on_viewport_error)
         self.setCentralWidget(self.viewport)
         self.tools_panel = ToolsPanel(self)
@@ -63,7 +64,7 @@ class MainWindow(QMainWindow):
         self._build_view_menu()
         self._build_voxels_menu()
         self._build_debug_menu()
-        self.statusBar().showMessage("Ready")
+        self.statusBar().showMessage("Viewport: INITIALIZING | Shader: unknown | OpenGL: unknown")
         self._restore_layout_settings()
         self._refresh_ui_state()
 
@@ -407,6 +408,9 @@ class MainWindow(QMainWindow):
     def _on_viewport_ready(self, gl_info: str) -> None:
         logging.getLogger("voxel_tool").info("Viewport ready | OpenGL: %s", gl_info)
         self.statusBar().showMessage(f"Viewport ready | OpenGL: {gl_info}", 8000)
+
+    def _on_viewport_diagnostics(self, message: str) -> None:
+        self.statusBar().showMessage(message, 10000)
 
     def _on_viewport_error(self, message: str) -> None:
         QMessageBox.critical(

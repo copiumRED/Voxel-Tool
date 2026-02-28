@@ -3,6 +3,19 @@
 - Date: 2026-02-28
 - Programmer: Codex
 
+## Task Updates (Today)
+### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
+- What was done:
+  - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.
+  - Moved diagnostics emit to post-pipeline init success and added explicit unavailable diagnostics on init failure.
+  - Made render pipeline failure text always visible in-viewport (independent from debug overlay toggle).
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Confirm status bar shows `Viewport: READY | Shader: ... | OpenGL: ...` on startup.
+  - Run: `pytest -q` (current: `38 passed`)
+- Issues noticed:
+  - `git pull` could not be completed in-session due to blocked network access to GitHub; work proceeded from local `main`.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

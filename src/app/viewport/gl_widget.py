@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 class GLViewportWidget(QOpenGLWidget):
     voxel_edit_applied = Signal(str)
     viewport_ready = Signal(str)
+    viewport_diagnostics = Signal(str)
     viewport_error = Signal(str)
 
     _GL_COLOR_BUFFER_BIT = 0x00004000
@@ -122,7 +123,6 @@ class GLViewportWidget(QOpenGLWidget):
             renderer = self._gl_string(funcs, self._GL_RENDERER)
             version = self._gl_string(funcs, self._GL_VERSION)
             self.last_gl_info = f"{version} | {vendor} | {renderer}"
-            self.viewport_ready.emit(self.last_gl_info)
 
             program, shader_profile = self._create_shader_program()
             if program is None:
@@ -140,8 +140,11 @@ class GLViewportWidget(QOpenGLWidget):
             self._init_error_text = None
             self._logged_pipeline_missing = False
             self._logger.info("Viewport GL pipeline initialized (shader=%s).", self._shader_profile)
+            self.viewport_ready.emit(self.last_gl_info)
+            self.viewport_diagnostics.emit(self._viewport_status_message(readiness="ready"))
         except Exception as exc:  # pragma: no cover
             self._init_error_text = str(exc)
+            self.viewport_diagnostics.emit(self._viewport_status_message(readiness="unavailable"))
             self.viewport_error.emit(str(exc))
             self._logger.exception("OpenGL initialization failed")
 
@@ -160,11 +163,10 @@ class GLViewportWidget(QOpenGLWidget):
                     self._vao is not None,
                 )
                 self._logged_pipeline_missing = True
-            if self.debug_overlay_enabled:
-                self._draw_overlay_text(
-                    len(voxel_rows),
-                    error_text=self._init_error_text or "Viewport render pipeline not initialized.",
-                )
+            self._draw_overlay_text(
+                len(voxel_rows),
+                error_text=self._init_error_text or "Viewport render pipeline unavailable. Check OpenGL status.",
+            )
             return
 
         mvp = self._build_view_projection_matrix()
@@ -273,6 +275,9 @@ class GLViewportWidget(QOpenGLWidget):
             painter.setPen(QColor(255, 180, 90))
             painter.drawText(12, 74, error_text)
         painter.end()
+
+    def _viewport_status_message(self, readiness: str) -> str:
+        return f"Viewport: {readiness.upper()} | Shader: {self._shader_profile} | OpenGL: {self.last_gl_info}"
 
     def _create_shader_program(self) -> tuple[QOpenGLShaderProgram | None, str]:
         candidates = (

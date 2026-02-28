@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **58%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **60%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -17,6 +17,7 @@ Reasoning:
 - Correction 1: Yesterday report showed roadmap 1-15 complete, which is true at a feature milestone level, but usability-critical regressions (viewport render compatibility and empty-scene brush bootstrap) were still discovered and fixed afterward.
 - Correction 2: Yesterday checklist cited `36 passed`; current baseline is `38 passed`.
 - Correction 3: Runtime entry consistency improved (`run.ps1` now points to `src/app/main.py`), reducing launch-path ambiguity.
+- Correction 4: Startup diagnostics now report explicit viewport readiness + shader profile in status bar; pipeline-unavailable state now renders clear in-viewport error text.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -39,7 +40,7 @@ Reasoning:
 
 ## Top 10 Risks / Blockers (Ranked) + Mitigations
 1. Runtime viewport regressions on specific GPU/driver profiles
-- Mitigation: add startup render self-check + fallback mode toggle + GPU matrix QA checklist.
+- Mitigation: startup diagnostics and in-viewport error surfacing are implemented; next is fallback mode toggle + GPU matrix QA checklist.
 
 2. Tool confidence gap (user cannot tell where edits will land)
 - Mitigation: add hovered-cell/face preview and operation ghosting for brush/box/line/fill.

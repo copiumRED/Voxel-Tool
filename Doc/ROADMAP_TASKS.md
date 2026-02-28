@@ -2,18 +2,15 @@
 
 This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usability), with each task sized for one atomic 1-2-3-4 cycle.
 
-## Task 01: Viewport Health Overlay + Startup Diagnostics
-- Goal: make viewport failure modes immediately visible to users and logs.
-- Files/modules likely touched:
-  - `src/app/viewport/gl_widget.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria:
-  - On launch, status bar shows shader profile + GL readiness state.
-  - If viewport render pipeline is unavailable, clear in-viewport error text appears.
-- Tests required:
-  - Manual smoke only.
-- Stop if risky:
-  - Stop if fallback changes introduce crashes in stable GPU path.
+## Completed Today
+
+### Task 01: Viewport Health Overlay + Startup Diagnostics
+- Commit: `COMMIT_HASH_PENDING`
+- Added explicit viewport diagnostics status messaging (`READY`/`UNAVAILABLE`) including shader profile and OpenGL info in startup/status bar flow.
+- Ensured viewport pipeline failures always display clear in-viewport error text, even when debug overlay is toggled off.
+- Verified startup smoke and full automated tests (`pytest -q`) remained green.
+
+## Remaining Tasks
 
 ## Task 02: First-Voxel UX Preview (Hover Cell/Face)
 - Goal: show where brush will paint/erase before click.
