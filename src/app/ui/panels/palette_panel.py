@@ -3,10 +3,20 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QFileDialog, QGridLayout, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from core.io.palette_io import load_palette_preset, save_palette_preset
-from core.palette import clamp_active_color_index
+from core.palette import add_palette_color, clamp_active_color_index, remove_palette_color, swap_palette_colors
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -22,8 +32,35 @@ class PalettePanel(QWidget):
         self._buttons: list[QPushButton] = []
 
         root_layout = QVBoxLayout(self)
-        grid = QGridLayout()
-        root_layout.addLayout(grid)
+        self.grid = QGridLayout()
+        root_layout.addLayout(self.grid)
+
+        rgb_row = QHBoxLayout()
+        self.r_spin = QSpinBox(self)
+        self.g_spin = QSpinBox(self)
+        self.b_spin = QSpinBox(self)
+        for spin, label in ((self.r_spin, "R"), (self.g_spin, "G"), (self.b_spin, "B")):
+            spin.setRange(0, 255)
+            spin.valueChanged.connect(self._on_rgb_changed)
+            rgb_row.addWidget(QLabel(label, self))
+            rgb_row.addWidget(spin)
+        root_layout.addLayout(rgb_row)
+
+        edit_row = QHBoxLayout()
+        self.add_color_button = QPushButton("Add", self)
+        self.add_color_button.clicked.connect(self._on_add_color)
+        edit_row.addWidget(self.add_color_button)
+        self.remove_color_button = QPushButton("Remove", self)
+        self.remove_color_button.clicked.connect(self._on_remove_color)
+        edit_row.addWidget(self.remove_color_button)
+        self.swap_prev_button = QPushButton("Swap <-", self)
+        self.swap_prev_button.clicked.connect(lambda: self._on_swap_color(-1))
+        edit_row.addWidget(self.swap_prev_button)
+        self.swap_next_button = QPushButton("Swap ->", self)
+        self.swap_next_button.clicked.connect(lambda: self._on_swap_color(1))
+        edit_row.addWidget(self.swap_next_button)
+        root_layout.addLayout(edit_row)
+
         actions_row = QHBoxLayout()
         self.save_palette_button = QPushButton("Save Preset", self)
         self.save_palette_button.clicked.connect(self._on_save_palette)
@@ -34,14 +71,7 @@ class PalettePanel(QWidget):
         root_layout.addLayout(actions_row)
         root_layout.addStretch(1)
 
-        for idx in range(8):
-            button = QPushButton("")
-            button.setFixedSize(28, 28)
-            button.clicked.connect(lambda _checked=False, i=idx: self._on_color_clicked(i))
-            row = idx // 4
-            col = idx % 4
-            grid.addWidget(button, row, col)
-            self._buttons.append(button)
+        self._rebuild_color_buttons()
 
     def set_context(self, ctx: "AppContext") -> None:
         self._context = ctx
@@ -50,6 +80,8 @@ class PalettePanel(QWidget):
     def refresh(self) -> None:
         if self._context is None:
             return
+        if len(self._buttons) != len(self._context.palette):
+            self._rebuild_color_buttons()
         for idx, button in enumerate(self._buttons):
             rgb = self._context.palette[idx]
             selected = idx == self._context.active_color_index
@@ -57,6 +89,16 @@ class PalettePanel(QWidget):
             button.setStyleSheet(
                 f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); border: {border};"
             )
+        active = self._context.palette[self._context.active_color_index]
+        self.r_spin.blockSignals(True)
+        self.g_spin.blockSignals(True)
+        self.b_spin.blockSignals(True)
+        self.r_spin.setValue(active[0])
+        self.g_spin.setValue(active[1])
+        self.b_spin.setValue(active[2])
+        self.r_spin.blockSignals(False)
+        self.g_spin.blockSignals(False)
+        self.b_spin.blockSignals(False)
 
     def _on_color_clicked(self, idx: int) -> None:
         if self._context is None:
@@ -106,3 +148,68 @@ class PalettePanel(QWidget):
         self.refresh()
         self.active_color_changed.emit(self._context.active_color_index)
         self.palette_status_message.emit(f"Loaded palette preset: {path}")
+
+    def _on_rgb_changed(self, _value: int) -> None:
+        if self._context is None:
+            return
+        idx = self._context.active_color_index
+        self._context.palette[idx] = (self.r_spin.value(), self.g_spin.value(), self.b_spin.value())
+        self.refresh()
+        self.palette_status_message.emit(f"Edited color slot {idx}")
+
+    def _on_add_color(self) -> None:
+        if self._context is None:
+            return
+        base = self._context.palette[self._context.active_color_index]
+        insert_at = self._context.active_color_index + 1
+        self._context.palette = add_palette_color(self._context.palette, base, index=insert_at)
+        self._context.active_color_index = insert_at
+        self.refresh()
+        self.active_color_changed.emit(self._context.active_color_index)
+        self.palette_status_message.emit("Added palette color")
+
+    def _on_remove_color(self) -> None:
+        if self._context is None:
+            return
+        try:
+            self._context.palette = remove_palette_color(self._context.palette, self._context.active_color_index)
+        except ValueError as exc:
+            QMessageBox.information(self, "Remove Color", str(exc))
+            return
+        self._context.active_color_index = clamp_active_color_index(
+            self._context.active_color_index,
+            len(self._context.palette),
+        )
+        self.refresh()
+        self.active_color_changed.emit(self._context.active_color_index)
+        self.palette_status_message.emit("Removed palette color")
+
+    def _on_swap_color(self, direction: int) -> None:
+        if self._context is None:
+            return
+        src = self._context.active_color_index
+        dst = src + direction
+        if dst < 0 or dst >= len(self._context.palette):
+            return
+        self._context.palette = swap_palette_colors(self._context.palette, src, dst)
+        self._context.active_color_index = dst
+        self.refresh()
+        self.active_color_changed.emit(self._context.active_color_index)
+        self.palette_status_message.emit("Swapped palette colors")
+
+    def _rebuild_color_buttons(self) -> None:
+        while self.grid.count():
+            item = self.grid.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        self._buttons = []
+        swatch_count = 8 if self._context is None else len(self._context.palette)
+        for idx in range(swatch_count):
+            button = QPushButton("")
+            button.setFixedSize(28, 28)
+            button.clicked.connect(lambda _checked=False, i=idx: self._on_color_clicked(i))
+            row = idx // 8
+            col = idx % 8
+            self.grid.addWidget(button, row, col)
+            self._buttons.append(button)

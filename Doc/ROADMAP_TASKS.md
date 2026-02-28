@@ -43,21 +43,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added group visibility/lock propagation so group toggles update member part visibility/lock flags.
 - Added Inspector group controls and project IO persistence with regression tests for group membership/state roundtrip.
 
-## Remaining Tasks
-
 ### Task 07: Palette Editing v1 (Add/Remove/Edit/Swap Colors)
-- Goal:
-  - Enable in-app palette edits, not just preset load/save.
-- Files/modules likely touched:
-  - `src/app/ui/panels/palette_panel.py`
-  - `src/core/palette.py`
-  - `src/app/app_context.py`
-- Acceptance criteria (human-testable):
-  - User can add/remove/edit/swap palette colors.
-  - Active color remains valid after edits.
-- Tests required:
-  - Palette normalization and clamping tests.
-  - UI-level behavior tests for palette mutations.
+- Commit: `COMMIT_PENDING`
+- Added palette helper APIs for add/remove/swap color operations with validation.
+- Added Palette panel editing controls for RGB channel editing, add/remove color, and adjacent swap actions.
+- Updated swatch UI to rebuild dynamically with palette size changes and added helper regression tests.
+
+## Remaining Tasks
 
 ### Task 08: Palette Quick Hotkeys (1-0)
 - Goal:

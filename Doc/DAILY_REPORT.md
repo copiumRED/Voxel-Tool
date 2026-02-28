@@ -86,6 +86,20 @@
 - Issues noticed:
   - `git pull` still blocked by restricted network access; local branch workflow continued.
 
+### Roadmap 07 (Next Workday): Palette Editing v1 (Add/Remove/Edit/Swap Colors)
+- What was done:
+  - Added core palette helper operations for add/remove/swap with validation.
+  - Added Palette panel RGB edit controls for active swatch.
+  - Added add/remove/swap palette actions in panel and dynamic swatch-grid rebuilding on palette-size changes.
+  - Added regression tests for helper operations.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Palette panel, edit RGB values, add/remove colors, and swap active color left/right.
+  - Verify active color remains valid and paint uses updated colors.
+  - Run: `pytest -q` (current: `71 passed`)
+- Issues noticed:
+  - `git pull` remained blocked by restricted network access to GitHub.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

@@ -31,3 +31,43 @@ def clamp_active_color_index(index: int, palette_size: int) -> int:
     if palette_size <= 0:
         raise ValueError("Palette size must be positive.")
     return max(0, min(index, palette_size - 1))
+
+
+def add_palette_color(
+    palette: list[tuple[int, int, int]],
+    color: tuple[int, int, int],
+    *,
+    index: int | None = None,
+) -> list[tuple[int, int, int]]:
+    next_palette = normalize_palette(list(palette))
+    validated_color = normalize_palette([color])[0]
+    if index is None:
+        next_palette.append(validated_color)
+    else:
+        insert_at = max(0, min(int(index), len(next_palette)))
+        next_palette.insert(insert_at, validated_color)
+    return next_palette
+
+
+def remove_palette_color(
+    palette: list[tuple[int, int, int]],
+    index: int,
+) -> list[tuple[int, int, int]]:
+    next_palette = normalize_palette(list(palette))
+    if len(next_palette) <= 1:
+        raise ValueError("Palette must contain at least one color.")
+    remove_at = clamp_active_color_index(index, len(next_palette))
+    del next_palette[remove_at]
+    return next_palette
+
+
+def swap_palette_colors(
+    palette: list[tuple[int, int, int]],
+    first_index: int,
+    second_index: int,
+) -> list[tuple[int, int, int]]:
+    next_palette = normalize_palette(list(palette))
+    i = clamp_active_color_index(first_index, len(next_palette))
+    j = clamp_active_color_index(second_index, len(next_palette))
+    next_palette[i], next_palette[j] = next_palette[j], next_palette[i]
+    return next_palette
