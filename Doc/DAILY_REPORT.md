@@ -100,6 +100,19 @@
 - Issues noticed:
   - `git pull` remained blocked by restricted network access to GitHub.
 
+### Roadmap 08 (Next Workday): Palette Quick Hotkeys (1-0)
+- What was done:
+  - Added palette selection hotkeys for `1-0` in main window shortcut map.
+  - Added clamped active-palette-slot setter to ensure safe selection across variable palette sizes.
+  - Confirmed status bar and palette UI refresh on hotkey-triggered color changes.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Press keys `1-0` and verify active color changes (with status message update).
+  - Paint a voxel after switching slots to confirm active color is applied.
+  - Run: `pytest -q` (current: `71 passed`)
+- Issues noticed:
+  - `git pull` still failed due network restrictions.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

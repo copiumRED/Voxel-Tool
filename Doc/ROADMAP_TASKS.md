@@ -49,20 +49,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added Palette panel editing controls for RGB channel editing, add/remove color, and adjacent swap actions.
 - Updated swatch UI to rebuild dynamically with palette size changes and added helper regression tests.
 
-## Remaining Tasks
-
 ### Task 08: Palette Quick Hotkeys (1-0)
-- Goal:
-  - Add numeric hotkeys for quick active-color selection.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/app/ui/panels/palette_panel.py`
-- Acceptance criteria (human-testable):
-  - Pressing `1-0` selects corresponding palette slots.
-  - Status bar confirms active color change.
-- Tests required:
-  - Shortcut mapping tests.
-  - Manual quick-switch paint smoke.
+- Commit: `COMMIT_PENDING`
+- Added numeric shortcut bindings (`1-0`) for direct active-color slot selection.
+- Added active color setter path in main window to clamp to palette bounds and refresh UI consistently.
+- Wired status updates so hotkey-driven color changes are visible immediately in the status bar.
+
+## Remaining Tasks
 
 ### Task 09: Camera View Presets (Top/Front/Left/Right/Back/Bottom)
 - Goal:

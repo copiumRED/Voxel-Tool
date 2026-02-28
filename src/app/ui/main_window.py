@@ -254,6 +254,16 @@ class MainWindow(QMainWindow):
         self._register_shortcut("F", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_FILL))
         self._register_shortcut("P", lambda: self._set_tool_mode(AppContext.TOOL_MODE_PAINT))
         self._register_shortcut("E", lambda: self._set_tool_mode(AppContext.TOOL_MODE_ERASE))
+        self._register_shortcut("1", lambda: self._set_active_palette_slot(0))
+        self._register_shortcut("2", lambda: self._set_active_palette_slot(1))
+        self._register_shortcut("3", lambda: self._set_active_palette_slot(2))
+        self._register_shortcut("4", lambda: self._set_active_palette_slot(3))
+        self._register_shortcut("5", lambda: self._set_active_palette_slot(4))
+        self._register_shortcut("6", lambda: self._set_active_palette_slot(5))
+        self._register_shortcut("7", lambda: self._set_active_palette_slot(6))
+        self._register_shortcut("8", lambda: self._set_active_palette_slot(7))
+        self._register_shortcut("9", lambda: self._set_active_palette_slot(8))
+        self._register_shortcut("0", lambda: self._set_active_palette_slot(9))
         self._register_shortcut("Shift+F", self._on_frame_voxels)
         self._register_shortcut("Shift+R", self._on_reset_camera)
 
@@ -267,6 +277,14 @@ class MainWindow(QMainWindow):
 
     def _set_tool_mode(self, mode: str) -> None:
         self.tools_panel.set_tool_mode(mode)
+
+    def _set_active_palette_slot(self, index: int) -> None:
+        if not self.context.palette:
+            return
+        slot = max(0, min(index, len(self.context.palette) - 1))
+        self.context.active_color_index = slot
+        self._show_voxel_status(f"Active Color: {slot}")
+        self._refresh_ui_state()
 
     def _on_new_project(self) -> None:
         self.context.current_project = Project(name="Untitled")
