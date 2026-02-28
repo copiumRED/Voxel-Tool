@@ -182,6 +182,18 @@
 - Issues noticed:
   - Mesh cache is runtime-only and intentionally not persisted in project files yet.
 
+### Roadmap 15: Bounds + Unit-Aware Stats Display
+- What was done:
+  - Added bounds-in-meters metrics to part analysis output.
+  - Updated stats panel formatting to show bounds in voxels and meters.
+  - Extended stats tests to validate unit-aware bounds values and scene totals stability.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Add/edit multiple parts and verify object stats show `bounds ... vox | ... m`.
+  - Run: `pytest -q` (current: `59 passed`)
+- Issues noticed:
+  - Unit conversion currently assumes `1 voxel = 1.0 m` baseline.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

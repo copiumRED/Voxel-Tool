@@ -7,6 +7,9 @@ from core.part import Part
 from core.project import Project
 
 
+VOXEL_SIZE_METERS = 1.0
+
+
 @dataclass(slots=True)
 class PartStats:
     part_id: str
@@ -16,6 +19,7 @@ class PartStats:
     edges: int
     vertices: int
     bounds_size: tuple[int, int, int]
+    bounds_meters: tuple[float, float, float]
     materials_used: int
 
 
@@ -59,6 +63,7 @@ def _compute_part_stats(part: Part) -> PartStats:
         edges=len(unique_edges),
         vertices=len(unique_vertices),
         bounds_size=_voxel_bounds_size(part),
+        bounds_meters=_bounds_meters(_voxel_bounds_size(part)),
         materials_used=len(_part_materials(part)),
     )
 
@@ -75,3 +80,8 @@ def _voxel_bounds_size(part: Part) -> tuple[int, int, int]:
     ys = [row[1] for row in rows]
     zs = [row[2] for row in rows]
     return (max(xs) - min(xs) + 1, max(ys) - min(ys) + 1, max(zs) - min(zs) + 1)
+
+
+def _bounds_meters(bounds_size: tuple[int, int, int]) -> tuple[float, float, float]:
+    bx, by, bz = bounds_size
+    return (bx * VOXEL_SIZE_METERS, by * VOXEL_SIZE_METERS, bz * VOXEL_SIZE_METERS)

@@ -28,10 +28,12 @@ class StatsPanel(QWidget):
             self.object_label.setText("Object: -")
         else:
             bx, by, bz = active_part.bounds_size
+            mx, my, mz = active_part.bounds_meters
             self.object_label.setText(
                 "Object: "
                 f"{active_part.part_name} | tris {active_part.triangles} | faces {active_part.faces} | "
-                f"edges {active_part.edges} | verts {active_part.vertices} | bounds {bx}x{by}x{bz} | "
+                f"edges {active_part.edges} | verts {active_part.vertices} | bounds {bx}x{by}x{bz} vox | "
+                f"{mx:.2f}x{my:.2f}x{mz:.2f} m | "
                 f"materials {active_part.materials_used}"
             )
         self.voxel_count_label.setText(f"Active Voxel Count: {active_voxel_count}")

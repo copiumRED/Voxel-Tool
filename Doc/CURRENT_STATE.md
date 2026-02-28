@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **89%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **91%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -32,6 +32,7 @@ Reasoning:
 - Correction 16: Continuous brush drag painting is implemented with one-step stroke undo transactions.
 - Correction 17: Fill safety threshold is implemented with explicit user feedback for blocked oversized fills.
 - Correction 18: Explicit solidify/rebuild action now refreshes active-part mesh cache used by stats/export paths.
+- Correction 19: Stats panel now shows unit-aware bounds (voxels + meters) for active part analysis.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

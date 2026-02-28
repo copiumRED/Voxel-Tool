@@ -83,23 +83,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added unit test coverage for threshold-blocked fill behavior.
 
 ### Task 14: Solidify UI Action + Mesh Cache Refresh
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `2813f10`
 - Added explicit `Voxels -> Solidify/Rebuild Mesh` action that rebuilds and caches the active part mesh.
 - Added per-part mesh cache plumbing and cache invalidation on voxel edits.
 - Updated stats/export paths to consume refreshed mesh buffers consistently when cache is present.
 
-## Remaining Tasks
+### Task 15: Bounds + Unit-Aware Stats Display
+- Commit: `COMMIT_HASH_PENDING`
+- Added unit-aware part bounds metrics (`bounds_meters`) in analysis stats output.
+- Updated stats panel object display to show both voxel bounds and metric bounds (`m`) clearly.
+- Extended stats tests to assert bounds values remain accurate in both voxel and meter units.
 
-## Task 15: Bounds + Unit-Aware Stats Display
-- Goal: improve scene/object analysis usefulness for production constraints.
-- Files/modules likely touched:
-  - `src/core/analysis/stats.py`
-  - `src/app/ui/panels/stats_panel.py`
-- Acceptance criteria:
-  - Stats panel shows per-part bounds in editor units clearly.
-  - Scene totals remain accurate with multi-part scenes.
-- Tests required:
-  - Unit tests for bounds and totals.
+## Remaining Tasks
 
 ## Task 16: Save/Open Workflow Hardening
 - Goal: reduce data-loss risk and improve reliability.

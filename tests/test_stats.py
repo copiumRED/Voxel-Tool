@@ -28,6 +28,8 @@ def test_compute_scene_stats_part_and_scene_totals() -> None:
     second = next(part for part in stats.parts if part.part_id == part_b.part_id)
     assert first.bounds_size == (2, 1, 1)
     assert second.bounds_size == (1, 2, 1)
+    assert first.bounds_meters == (2.0, 1.0, 1.0)
+    assert second.bounds_meters == (1.0, 2.0, 1.0)
 
 
 def test_rebuild_mesh_refreshes_stats_from_cache() -> None:
