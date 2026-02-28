@@ -10,6 +10,7 @@ from PySide6.QtCore import QPointF, Qt, Signal
 from PySide6.QtGui import QColor, QMatrix4x4, QPainter, QVector3D
 from PySide6.QtOpenGL import QOpenGLBuffer, QOpenGLShader, QOpenGLShaderProgram
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from core.voxels.raycast import raycast_voxel_surface
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -382,13 +383,28 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_left_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None:
             return
-        hit_cell = self._screen_to_plane_cell(pos)
-        if hit_cell is None:
-            return
-        x, y, z = hit_cell
         temporary_erase = modifiers & Qt.ShiftModifier
         mode = self._app_context.voxel_tool_mode
         should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+
+        ray = self._screen_to_world_ray(pos.x(), pos.y())
+        if ray is None:
+            return
+        origin, direction = ray
+        hit_result = raycast_voxel_surface(
+            self._app_context.current_project.voxels,
+            (origin.x(), origin.y(), origin.z()),
+            (direction.x(), direction.y(), direction.z()),
+        )
+        if hit_result is None:
+            return
+        hit_cell, previous_cell = hit_result
+        if should_erase:
+            x, y, z = hit_cell
+        else:
+            if previous_cell is None:
+                return
+            x, y, z = previous_cell
 
         if should_erase:
             from core.commands.demo_commands import RemoveVoxelCommand
