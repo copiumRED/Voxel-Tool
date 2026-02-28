@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **81%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **83%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -28,6 +28,7 @@ Reasoning:
 - Correction 12: Export options dialog flow is implemented with session-persisted options and OBJ greedy/triangulate controls.
 - Correction 13: VOX exporter validation tests were expanded for deterministic palette/chunk behavior.
 - Correction 14: External VOX interoperability was confirmed via Qubicle import (operator test).
+- Correction 15: Palette preset save/load flow is implemented with active-color validity protection.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -38,7 +39,7 @@ Reasoning:
 | Box/line/fill tools | Core productivity tools | Implemented | Needs better preview/selection affordance and edge-case polish | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
-| Palette workflow | Fast color iteration | Basic palette + active color implemented | Missing richer palette mgmt (save/load/swap/hotkeys) | P1 |
+| Palette workflow | Fast color iteration | Save/load presets implemented with active color safety | Remaining gap: palette swap/hotkeys/preset metadata polish | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
 | Import/export breadth | Robust interop | OBJ + glTF + VOX export + options panel v1 + VOX Qubicle validation implemented | Remaining gap: deeper format parity + VOX import | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |

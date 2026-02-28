@@ -132,6 +132,19 @@
 - Issues noticed:
   - Interoperability is confirmed in Qubicle; broader external-tool coverage can still be expanded later.
 
+### Roadmap 11: Palette Management v1 (Save/Load Presets)
+- What was done:
+  - Added `core/io/palette_io.py` for palette preset save/load with JSON schema validation.
+  - Added palette normalization and active-color clamping helpers in `core/palette.py`.
+  - Added Save Preset / Load Preset actions in Palette panel with status feedback.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Palette panel, save a preset to disk, then load it back.
+  - Verify selected active color remains valid after loading.
+  - Run: `pytest -q` (current: `54 passed`)
+- Issues noticed:
+  - Preset schema is intentionally simple (`{"palette":[[r,g,b],...]}`); no metadata/version field yet.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

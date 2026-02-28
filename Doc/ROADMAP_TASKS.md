@@ -59,24 +59,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Added scale preset placeholder option surfaced for OBJ/glTF/VOX and persisted during the session.
 
 ### Task 10: VOX Export Compatibility Validation Pass
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `aaa8935`
 - Hardened VOX exporter validation with deterministic palette-index mapping helper and expanded binary structure tests.
 - Confirmed manual interoperability by importing exported `.vox` into Qubicle without corruption.
 - Verified palette index mapping stability for current palette set with automated test coverage.
 
-## Remaining Tasks
+### Task 11: Palette Management v1 (Save/Load Presets)
+- Commit: `COMMIT_HASH_PENDING`
+- Added palette preset save/load IO helpers with schema validation and roundtrip support.
+- Added Palette panel Save/Load preset actions and status feedback in the main window.
+- Ensured active color index is clamped after palette load and covered by automated tests.
 
-## Task 11: Palette Management v1 (Save/Load Presets)
-- Goal: improve color workflow parity.
-- Files/modules likely touched:
-  - `src/app/ui/panels/palette_panel.py`
-  - `src/core/palette.py`
-  - `src/core/io/`
-- Acceptance criteria:
-  - User can save and load palette presets from disk.
-  - Active color remains valid after palette changes.
-- Tests required:
-  - Serialization tests for palette preset roundtrip.
+## Remaining Tasks
 
 ## Task 12: Brush Stroke Drag Paint (Continuous)
 - Goal: move from click-only brush to continuous drag painting.

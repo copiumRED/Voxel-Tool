@@ -117,6 +117,7 @@ class MainWindow(QMainWindow):
         self.palette_panel = PalettePanel(self)
         self.palette_panel.set_context(self.context)
         self.palette_panel.active_color_changed.connect(self._on_active_color_changed)
+        self.palette_panel.palette_status_message.connect(self._on_palette_status_message)
         self.palette_dock = self._add_dock("Palette", self.palette_panel, Qt.RightDockWidgetArea)
         self.stats_panel = StatsPanel(self)
         self.stats_dock = self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
@@ -485,6 +486,10 @@ class MainWindow(QMainWindow):
 
     def _on_active_color_changed(self, index: int) -> None:
         self._show_voxel_status(f"Active Color: {index}")
+        self._refresh_ui_state()
+
+    def _on_palette_status_message(self, message: str) -> None:
+        self._show_voxel_status(message)
         self._refresh_ui_state()
 
     def _on_toggle_debug_overlay(self, enabled: bool) -> None:
