@@ -33,6 +33,7 @@ class GLViewportWidget(QOpenGLWidget):
     _DEFAULT_YAW_DEG = 45.0
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
+    _VOXEL_HALF_EXTENT = 0.45
 
     _PALETTE: tuple[tuple[float, float, float], ...] = (
         (0.95, 0.35, 0.35),
@@ -156,20 +157,24 @@ class GLViewportWidget(QOpenGLWidget):
         mvp = self._build_view_projection_matrix()
         voxel_rows = self._app_context.current_project.voxels.to_list()
         if hasattr(funcs, "glPointSize"):
-            funcs.glPointSize(12.0)
+            funcs.glPointSize(8.0)
         if voxel_rows:
             funcs.glDisable(self._GL_DEPTH_TEST)
-            voxel_vertices = array("f")
+            voxel_point_vertices = array("f")
             for x, y, z, color_index in voxel_rows:
                 color = self._PALETTE[color_index % len(self._PALETTE)]
-                voxel_vertices.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
-            draw_count = self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
+                voxel_point_vertices.extend((float(x), float(y), float(z), color[0], color[1], color[2]))
+
+            voxel_line_vertices = self._build_voxel_line_vertices(voxel_rows)
+            self._draw_colored_vertices(funcs, voxel_line_vertices, self._GL_LINES, mvp)
+            draw_count = self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
             funcs.glEnable(self._GL_DEPTH_TEST)
             if draw_count == 0:
                 self._logger.warning("Voxel draw count was zero; rebuilding GL buffer.")
                 self._buffer.destroy()
                 self._buffer.create()
-                self._draw_colored_vertices(funcs, voxel_vertices, self._GL_POINTS, mvp)
+                self._draw_colored_vertices(funcs, voxel_line_vertices, self._GL_LINES, mvp)
+                self._draw_colored_vertices(funcs, voxel_point_vertices, self._GL_POINTS, mvp)
 
         if self.debug_overlay_enabled:
             self._draw_debug_overlay(funcs, mvp, len(voxel_rows))
@@ -229,6 +234,47 @@ class GLViewportWidget(QOpenGLWidget):
             f"Target: {self.target.x():.2f} {self.target.y():.2f} {self.target.z():.2f}",
         )
         painter.end()
+
+    def _build_voxel_line_vertices(self, voxel_rows: list[list[int]]) -> array:
+        half = self._VOXEL_HALF_EXTENT
+        edges = (
+            ((-half, -half, -half), (half, -half, -half)),
+            ((half, -half, -half), (half, half, -half)),
+            ((half, half, -half), (-half, half, -half)),
+            ((-half, half, -half), (-half, -half, -half)),
+            ((-half, -half, half), (half, -half, half)),
+            ((half, -half, half), (half, half, half)),
+            ((half, half, half), (-half, half, half)),
+            ((-half, half, half), (-half, -half, half)),
+            ((-half, -half, -half), (-half, -half, half)),
+            ((half, -half, -half), (half, -half, half)),
+            ((half, half, -half), (half, half, half)),
+            ((-half, half, -half), (-half, half, half)),
+        )
+        vertices = array("f")
+        for x, y, z, color_index in voxel_rows:
+            color = self._PALETTE[color_index % len(self._PALETTE)]
+            fx = float(x)
+            fy = float(y)
+            fz = float(z)
+            for start, end in edges:
+                vertices.extend(
+                    (
+                        fx + start[0],
+                        fy + start[1],
+                        fz + start[2],
+                        color[0],
+                        color[1],
+                        color[2],
+                        fx + end[0],
+                        fy + end[1],
+                        fz + end[2],
+                        color[0],
+                        color[1],
+                        color[2],
+                    )
+                )
+        return vertices
 
     def mousePressEvent(self, event) -> None:
         if event.button() in (Qt.LeftButton, Qt.RightButton):
