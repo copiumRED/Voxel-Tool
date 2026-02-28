@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 
 from core.project import Project
+from core.voxels.voxel_grid import VoxelGrid
 
-_REQUIRED_KEYS = {"name", "created_utc", "modified_utc", "version"}
+_REQUIRED_BASE_KEYS = {"name", "created_utc", "modified_utc", "version"}
+_REQUIRED_KEYS = _REQUIRED_BASE_KEYS | {"voxels"}
 
 
 def save_project(project: Project, path: str) -> None:
@@ -13,6 +15,7 @@ def save_project(project: Project, path: str) -> None:
         "created_utc": project.created_utc,
         "modified_utc": project.modified_utc,
         "version": project.version,
+        "voxels": project.voxels.to_list(),
     }
     with open(path, "w", encoding="utf-8") as file_obj:
         json.dump(payload, file_obj, indent=2)
@@ -26,19 +29,24 @@ def load_project(path: str) -> Project:
         raise ValueError("Project file must contain a JSON object.")
 
     keys = set(payload.keys())
-    if keys != _REQUIRED_KEYS:
-        missing = sorted(_REQUIRED_KEYS - keys)
-        extra = sorted(keys - _REQUIRED_KEYS)
+    missing = _REQUIRED_KEYS - keys
+    extra = keys - _REQUIRED_KEYS
+    if extra or (missing and missing != {"voxels"}):
+        missing_sorted = sorted(missing)
+        extra_sorted = sorted(extra)
         details = []
-        if missing:
-            details.append(f"missing keys: {', '.join(missing)}")
-        if extra:
-            details.append(f"unexpected keys: {', '.join(extra)}")
+        if missing_sorted:
+            details.append(f"missing keys: {', '.join(missing_sorted)}")
+        if extra_sorted:
+            details.append(f"unexpected keys: {', '.join(extra_sorted)}")
         raise ValueError(f"Invalid project schema ({'; '.join(details)}).")
+
+    voxels = VoxelGrid.from_list(payload.get("voxels", []))
 
     return Project(
         name=str(payload["name"]),
         created_utc=str(payload["created_utc"]),
         modified_utc=str(payload["modified_utc"]),
         version=int(payload["version"]),
+        voxels=voxels,
     )

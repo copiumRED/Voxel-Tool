@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import random
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow
 
 from app.app_context import AppContext
 from app.settings import get_settings
-from core.commands.demo_commands import RenameProjectCommand
+from core.commands.demo_commands import AddVoxelCommand, ClearVoxelsCommand, RenameProjectCommand
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -28,9 +30,11 @@ class MainWindow(QMainWindow):
         self._add_dock("Tools", ToolsPanel(self), Qt.LeftDockWidgetArea)
         self._add_dock("Inspector", InspectorPanel(self), Qt.RightDockWidgetArea)
         self._add_dock("Palette", PalettePanel(self), Qt.RightDockWidgetArea)
-        self._add_dock("Stats", StatsPanel(self), Qt.BottomDockWidgetArea)
+        self.stats_panel = StatsPanel(self)
+        self._add_dock("Stats", self.stats_panel, Qt.BottomDockWidgetArea)
         self._build_file_menu()
         self._build_edit_menu()
+        self._build_voxels_menu()
         self.statusBar().showMessage("Ready")
         self._restore_layout_settings()
         self._refresh_ui_state()
@@ -83,11 +87,22 @@ class MainWindow(QMainWindow):
         self.redo_action.triggered.connect(self._on_redo)
         edit_menu.addAction(self.redo_action)
 
+    def _build_voxels_menu(self) -> None:
+        voxels_menu = self.menuBar().addMenu("&Voxels")
+
+        add_voxel_action = QAction("Demo: Add Random Voxel", self)
+        add_voxel_action.triggered.connect(self._on_demo_add_random_voxel)
+        voxels_menu.addAction(add_voxel_action)
+
+        clear_voxels_action = QAction("Demo: Clear Voxels", self)
+        clear_voxels_action.triggered.connect(self._on_demo_clear_voxels)
+        voxels_menu.addAction(clear_voxels_action)
+
     def _on_new_project(self) -> None:
         self.context.current_project = Project(name="Untitled")
         self.context.current_path = None
         self.context.command_stack.clear()
-        self.statusBar().showMessage("New project created: Untitled", 4000)
+        self._show_voxel_status("New project created: Untitled")
         self._refresh_ui_state()
 
     def _on_open_project(self) -> None:
@@ -103,7 +118,7 @@ class MainWindow(QMainWindow):
         self.context.current_project = project
         self.context.current_path = path
         self.context.command_stack.clear()
-        self.statusBar().showMessage(f"Loaded: {path}", 5000)
+        self._show_voxel_status(f"Loaded: {path}")
         self._refresh_ui_state()
 
     def _on_save_project(self) -> None:
@@ -141,25 +156,44 @@ class MainWindow(QMainWindow):
             return
 
         self.context.command_stack.do(RenameProjectCommand(new_name), self.context)
-        self.statusBar().showMessage(f"Renamed project: {new_name}", 4000)
+        self._show_voxel_status(f"Renamed project: {new_name}")
         self._refresh_ui_state()
 
     def _on_undo(self) -> None:
         self.context.command_stack.undo(self.context)
-        self.statusBar().showMessage("Undo", 3000)
+        self._show_voxel_status("Undo")
         self._refresh_ui_state()
 
     def _on_redo(self) -> None:
         self.context.command_stack.redo(self.context)
-        self.statusBar().showMessage("Redo", 3000)
+        self._show_voxel_status("Redo")
+        self._refresh_ui_state()
+
+    def _on_demo_add_random_voxel(self) -> None:
+        x = random.randint(-5, 5)
+        y = random.randint(-5, 5)
+        z = random.randint(-5, 5)
+        color_index = random.randint(0, 7)
+        self.context.command_stack.do(AddVoxelCommand(x, y, z, color_index), self.context)
+        self._show_voxel_status(f"Added voxel: ({x}, {y}, {z}) color {color_index}")
+        self._refresh_ui_state()
+
+    def _on_demo_clear_voxels(self) -> None:
+        self.context.command_stack.do(ClearVoxelsCommand(), self.context)
+        self._show_voxel_status("Cleared voxels")
         self._refresh_ui_state()
 
     def _refresh_ui_state(self) -> None:
         self.setWindowTitle(f"Voxel Tool - Phase 0 - {self.context.current_project.name}")
+        self.stats_panel.set_voxel_count(self.context.current_project.voxels.count())
         if self.undo_action is not None:
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
         if self.redo_action is not None:
             self.redo_action.setEnabled(self.context.command_stack.can_redo)
+
+    def _show_voxel_status(self, message: str) -> None:
+        count = self.context.current_project.voxels.count()
+        self.statusBar().showMessage(f"{message} | Voxels: {count}", 5000)
 
     def _restore_layout_settings(self) -> None:
         settings = get_settings()
