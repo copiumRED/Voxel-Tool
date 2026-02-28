@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtWidgets import QDockWidget, QFileDialog, QInputDialog, QMainWindow
 
 from app.app_context import AppContext
+from app.settings import get_settings
 from core.commands.demo_commands import RenameProjectCommand
 from core.io.project_io import load_project, save_project
 from core.project import Project, utc_now_iso
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         self._build_file_menu()
         self._build_edit_menu()
         self.statusBar().showMessage("Ready")
+        self._restore_layout_settings()
         self._refresh_ui_state()
 
     def _add_dock(self, title: str, widget, area: Qt.DockWidgetArea) -> None:
@@ -158,4 +160,19 @@ class MainWindow(QMainWindow):
             self.undo_action.setEnabled(self.context.command_stack.can_undo)
         if self.redo_action is not None:
             self.redo_action.setEnabled(self.context.command_stack.can_redo)
+
+    def _restore_layout_settings(self) -> None:
+        settings = get_settings()
+        geometry = settings.value("main_window/geometry")
+        state = settings.value("main_window/state")
+        if geometry is not None:
+            self.restoreGeometry(geometry)
+        if state is not None:
+            self.restoreState(state)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        settings = get_settings()
+        settings.setValue("main_window/geometry", self.saveGeometry())
+        settings.setValue("main_window/state", self.saveState())
+        super().closeEvent(event)
 
