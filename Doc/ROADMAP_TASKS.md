@@ -19,22 +19,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added viewport drag ghost previews for line and box tools, including mirror-aware preview cell expansion.
 - Added fill hover target preview and tests validating preview-generation helper outputs for line/box paths.
 
-## Remaining Tasks
-
 ### Task 03: Pick Mode Toggle (Surface vs Plane Lock)
-- Goal:
-  - Add explicit pick mode control for surface-only or plane-locked targeting.
-- Files/modules likely touched:
-  - `src/app/app_context.py`
-  - `src/app/ui/panels/tools_panel.py`
-  - `src/app/viewport/gl_widget.py`
-- Acceptance criteria (human-testable):
-  - Toggle is visible in Tools panel.
-  - Surface mode edits only on detected voxel surfaces.
-  - Plane-lock mode allows predictable empty-space editing.
-- Tests required:
-  - Raycast mode tests for both pick modes.
-  - Manual test across empty and dense scene.
+- Commit: `COMMIT_PENDING`
+- Added pick mode state to `AppContext` with explicit `surface` vs `plane_lock` validation and persisted editor-state support.
+- Added Tools panel pick mode selector (brush workflow) with status updates and quick-help hint integration.
+- Updated brush targeting so surface mode disables plane fallback while plane-lock mode preserves empty-scene placement behavior.
+
+## Remaining Tasks
 
 ### Task 04: Part Transform Controls (Position/Rotation/Scale)
 - Goal:

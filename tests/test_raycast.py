@@ -60,6 +60,18 @@ def test_resolve_brush_target_uses_plane_fallback_when_no_surface_hit() -> None:
     assert result == ((4, 5, 0), "plane-fallback")
 
 
+def test_resolve_brush_target_without_plane_fallback_returns_none() -> None:
+    voxels = VoxelGrid()
+    result = resolve_brush_target_cell(
+        voxels,
+        origin=(0.0, 3.0, 2.0),
+        direction=(1.0, 0.0, 0.0),
+        erase_mode=False,
+        plane_fallback_cell=None,
+    )
+    assert result is None
+
+
 def test_resolve_brush_target_in_erase_mode_requires_surface_hit() -> None:
     voxels = VoxelGrid()
     voxels.set(0, 0, 0, 2)

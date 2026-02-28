@@ -31,6 +31,20 @@
 - Issues noticed:
   - `git pull` remained blocked by network restrictions; work continued on local branch baseline.
 
+### Roadmap 03 (Next Workday): Pick Mode Toggle (Surface vs Plane Lock)
+- What was done:
+  - Added `pick_mode` support to app context and editor-state persistence.
+  - Added brush pick mode selector (`Plane Lock` / `Surface`) in Tools panel with status messaging.
+  - Updated brush target resolution to disable plane fallback in surface mode while keeping erase surface-only behavior.
+  - Added raycast regression coverage for no-fallback (surface-mode equivalent) targeting.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Brush mode, set pick mode `Surface` and click in empty space (no voxel should be painted).
+  - Switch to `Plane Lock` and click empty space (voxel should place on plane).
+  - Run: `pytest -q` (current: `68 passed`)
+- Issues noticed:
+  - `git pull` continued to fail due network restrictions; task was completed on local branch baseline.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.

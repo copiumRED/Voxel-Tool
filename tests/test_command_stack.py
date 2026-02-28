@@ -297,3 +297,9 @@ def test_build_box_plane_cells_for_preview_generation() -> None:
 def test_build_line_plane_cells_for_preview_generation() -> None:
     cells = build_line_plane_cells(0, 0, 3, 2, 0)
     assert cells == {(0, 0, 0), (1, 1, 0), (2, 1, 0), (3, 2, 0)}
+
+
+def test_app_context_pick_mode_validation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_pick_mode("surface")
+    assert ctx.pick_mode == AppContext.PICK_MODE_SURFACE

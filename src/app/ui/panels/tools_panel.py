@@ -22,6 +22,7 @@ class ToolsPanel(QWidget):
     mirror_changed = Signal(str, bool)
     mirror_offset_changed = Signal(str, int)
     brush_profile_changed = Signal(int, str)
+    pick_mode_changed = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -56,6 +57,10 @@ class ToolsPanel(QWidget):
         self.brush_shape_combo.addItems(["Cube", "Sphere"])
         self.brush_shape_combo.currentTextChanged.connect(self._on_brush_profile_changed)
         layout.addWidget(self.brush_shape_combo)
+        self.pick_mode_combo = QComboBox(self)
+        self.pick_mode_combo.addItems(["Plane Lock", "Surface"])
+        self.pick_mode_combo.currentTextChanged.connect(self._on_pick_mode_changed)
+        layout.addWidget(self.pick_mode_combo)
         layout.addWidget(QLabel("Action"))
 
         self.paint_radio = QRadioButton("Paint", self)
@@ -130,6 +135,7 @@ class ToolsPanel(QWidget):
         self.mirror_z_offset.blockSignals(True)
         self.brush_size_spin.blockSignals(True)
         self.brush_shape_combo.blockSignals(True)
+        self.pick_mode_combo.blockSignals(True)
         self.paint_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_PAINT)
         self.erase_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_ERASE)
         self.brush_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH)
@@ -144,6 +150,8 @@ class ToolsPanel(QWidget):
         self.mirror_z_offset.setValue(self._context.mirror_z_offset)
         self.brush_size_spin.setValue(self._context.brush_size)
         self.brush_shape_combo.setCurrentText(self._context.brush_shape.capitalize())
+        pick_mode_label = "Plane Lock" if self._context.pick_mode == AppContext.PICK_MODE_PLANE_LOCK else "Surface"
+        self.pick_mode_combo.setCurrentText(pick_mode_label)
         self.paint_radio.blockSignals(False)
         self.erase_radio.blockSignals(False)
         self.brush_shape_radio.blockSignals(False)
@@ -158,9 +166,11 @@ class ToolsPanel(QWidget):
         self.mirror_z_offset.blockSignals(False)
         self.brush_size_spin.blockSignals(False)
         self.brush_shape_combo.blockSignals(False)
+        self.pick_mode_combo.blockSignals(False)
         is_brush = self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH
         self.brush_size_spin.setEnabled(is_brush)
         self.brush_shape_combo.setEnabled(is_brush)
+        self.pick_mode_combo.setEnabled(is_brush)
         self.hints_label.setText(self._build_hint_text())
 
     def _on_mode_toggled(self, checked: bool) -> None:
@@ -208,6 +218,13 @@ class ToolsPanel(QWidget):
         self._context.set_brush_shape(value.lower())
         self.brush_profile_changed.emit(self._context.brush_size, self._context.brush_shape)
 
+    def _on_pick_mode_changed(self, value: str) -> None:
+        if self._context is None:
+            return
+        mode = AppContext.PICK_MODE_PLANE_LOCK if value == "Plane Lock" else AppContext.PICK_MODE_SURFACE
+        self._context.set_pick_mode(mode)
+        self.pick_mode_changed.emit(mode)
+
     def set_tool_shape(self, shape: str) -> None:
         if shape == AppContext.TOOL_SHAPE_BRUSH:
             self.brush_shape_radio.setChecked(True)
@@ -238,10 +255,11 @@ class ToolsPanel(QWidget):
         tool_hint = ""
         if shape == AppContext.TOOL_SHAPE_BRUSH:
             brush_kind = self._context.brush_shape.capitalize()
+            pick_label = "Plane Lock" if self._context.pick_mode == AppContext.PICK_MODE_PLANE_LOCK else "Surface"
             tool_hint = (
                 "Brush: click-drag to paint continuously. "
                 f"Profile: {brush_kind} size {self._context.brush_size}. "
-                "Hold Shift for temporary erase."
+                f"Pick: {pick_label}. Hold Shift for temporary erase."
             )
         elif shape == AppContext.TOOL_SHAPE_BOX:
             tool_hint = "Box: click-drag to fill/erase a rectangle on the edit plane."

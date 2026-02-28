@@ -651,25 +651,10 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_left_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None or self._active_part_is_locked():
             return
-        temporary_erase = modifiers & Qt.ShiftModifier
-        mode = self._app_context.voxel_tool_mode
-        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
-
-        ray = self._screen_to_world_ray(pos.x(), pos.y())
-        if ray is None:
+        resolved = self._resolve_brush_target(pos, modifiers)
+        if resolved is None:
             return
-        origin, direction = ray
-        plane_cell = self._screen_to_plane_cell(pos) if not should_erase else None
-        target = resolve_brush_target_cell(
-            self._app_context.current_project.voxels,
-            (origin.x(), origin.y(), origin.z()),
-            (direction.x(), direction.y(), direction.z()),
-            erase_mode=should_erase,
-            plane_fallback_cell=plane_cell,
-        )
-        if target is None:
-            return
-        (x, y, z), _ = target
+        (x, y, z), should_erase = resolved
 
         if should_erase:
             from core.commands.demo_commands import RemoveVoxelCommand
@@ -694,11 +679,14 @@ class GLViewportWidget(QOpenGLWidget):
         temporary_erase = bool(modifiers & Qt.ShiftModifier)
         mode = self._app_context.voxel_tool_mode
         should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+        allow_plane_fallback = (
+            not should_erase and self._app_context.pick_mode == self._app_context.PICK_MODE_PLANE_LOCK
+        )
         ray = self._screen_to_world_ray(pos.x(), pos.y())
         if ray is None:
             return None
         origin, direction = ray
-        plane_cell = self._screen_to_plane_cell(pos) if not should_erase else None
+        plane_cell = self._screen_to_plane_cell(pos) if allow_plane_fallback else None
         target = resolve_brush_target_cell(
             self._app_context.current_project.voxels,
             (origin.x(), origin.y(), origin.z()),
@@ -805,7 +793,10 @@ class GLViewportWidget(QOpenGLWidget):
         temporary_erase = bool(modifiers & Qt.ShiftModifier)
         mode = self._app_context.voxel_tool_mode
         should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
-        plane_cell = self._screen_to_plane_cell(pos) if not should_erase else None
+        allow_plane_fallback = (
+            not should_erase and self._app_context.pick_mode == self._app_context.PICK_MODE_PLANE_LOCK
+        )
+        plane_cell = self._screen_to_plane_cell(pos) if allow_plane_fallback else None
         target = resolve_brush_target_cell(
             self._app_context.current_project.voxels,
             (origin.x(), origin.y(), origin.z()),

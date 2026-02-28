@@ -110,6 +110,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.mirror_changed.connect(self._on_mirror_changed)
         self.tools_panel.mirror_offset_changed.connect(self._on_mirror_offset_changed)
         self.tools_panel.brush_profile_changed.connect(self._on_brush_profile_changed)
+        self.tools_panel.pick_mode_changed.connect(self._on_pick_mode_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -570,6 +571,10 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Brush profile: {shape}{size}")
         self._refresh_ui_state()
 
+    def _on_pick_mode_changed(self, mode: str) -> None:
+        self._show_voxel_status(f"Pick mode: {mode}")
+        self._refresh_ui_state()
+
     def _on_create_test_voxels(self) -> None:
         center_color = self.context.active_color_index
         arm_color = (center_color + 3) % len(self.context.palette)
@@ -610,6 +615,7 @@ class MainWindow(QMainWindow):
             "voxel_tool_shape": self.context.voxel_tool_shape,
             "brush_size": self.context.brush_size,
             "brush_shape": self.context.brush_shape,
+            "pick_mode": self.context.pick_mode,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
             "mirror_z_enabled": self.context.mirror_z_enabled,
@@ -640,6 +646,9 @@ class MainWindow(QMainWindow):
         self.context.brush_size = max(1, min(3, int(state.get("brush_size", self.context.brush_size))))
         brush_shape = str(state.get("brush_shape", self.context.brush_shape)).strip().lower()
         self.context.brush_shape = brush_shape if brush_shape in {"cube", "sphere"} else "cube"
+        pick_mode = str(state.get("pick_mode", self.context.pick_mode)).strip().lower()
+        if pick_mode in (AppContext.PICK_MODE_SURFACE, AppContext.PICK_MODE_PLANE_LOCK):
+            self.context.pick_mode = pick_mode
 
         self.context.mirror_x_enabled = bool(state.get("mirror_x_enabled", self.context.mirror_x_enabled))
         self.context.mirror_y_enabled = bool(state.get("mirror_y_enabled", self.context.mirror_y_enabled))

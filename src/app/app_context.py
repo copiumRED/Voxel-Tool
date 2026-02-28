@@ -15,6 +15,8 @@ class AppContext:
     TOOL_SHAPE_BOX = "box"
     TOOL_SHAPE_LINE = "line"
     TOOL_SHAPE_FILL = "fill"
+    PICK_MODE_SURFACE = "surface"
+    PICK_MODE_PLANE_LOCK = "plane_lock"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
     _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX, TOOL_SHAPE_LINE, TOOL_SHAPE_FILL}
 
@@ -27,6 +29,7 @@ class AppContext:
     voxel_tool_shape: str = TOOL_SHAPE_BRUSH
     brush_size: int = 1
     brush_shape: str = "cube"
+    pick_mode: str = PICK_MODE_PLANE_LOCK
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
@@ -35,6 +38,7 @@ class AppContext:
     mirror_z_offset: int = 0
     fill_max_cells: int = 5000
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
+    _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
 
     @property
     def active_part(self) -> Part:
@@ -68,6 +72,12 @@ class AppContext:
         if shape_value not in self._VALID_BRUSH_SHAPES:
             raise ValueError(f"Unsupported brush shape: {shape_value}")
         self.brush_shape = shape_value
+
+    def set_pick_mode(self, mode: str) -> None:
+        mode_value = str(mode).strip().lower()
+        if mode_value not in self._VALID_PICK_MODES:
+            raise ValueError(f"Unsupported pick mode: {mode_value}")
+        self.pick_mode = mode_value
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":

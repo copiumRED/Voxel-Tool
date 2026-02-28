@@ -40,6 +40,7 @@ Reasoning:
 - Correction 24: Phase 1 QA gate pass completed (run/tests/save-open/export/packaged-launch smoke).
 - Correction 25: Brush profile controls (size + cube/sphere shape) are implemented, including multi-cell hover preview and command-level footprint application.
 - Correction 26: Non-brush tool ghost previews are now implemented for line/box drags, and fill hover target preview is visible with mirror-aware preview parity.
+- Correction 27: Brush pick mode toggle (`Surface` vs `Plane Lock`) is now implemented and persisted in editor state, improving targeting control in sparse scenes.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -51,7 +52,7 @@ Reasoning:
 | Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Save/load presets implemented with active color safety | Remaining gap: palette swap/hotkeys/preset metadata polish | P1 |
-| Picking behavior | Intuitive paint/erase targeting | 3D surface pick added | Needs accuracy tuning and fallback hints | P0 |
+| Picking behavior | Intuitive paint/erase targeting | 3D surface pick + explicit surface/plane-lock mode implemented | Needs accuracy tuning and richer face-normal hinting | P0 |
 | Import/export breadth | Robust interop | Export paths consume refreshed mesh cache + options panel v1 + VOX Qubicle validation | Remaining gap: deeper format parity + VOX import | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
