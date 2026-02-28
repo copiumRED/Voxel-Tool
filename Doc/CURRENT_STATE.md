@@ -5,7 +5,7 @@ Branch baseline: `stable`
 
 ## Phase Completion Estimates
 - Phase 0 (foundation shell + runnable editor + save/load + basic export): **92%**
-- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **85%**
+- Phase 1 (Voxel MVP + qubicle-like usability + robust export/stats): **87%**
 - Phase 2 (Blender-like mesh editing layer): **7%**
 
 Reasoning:
@@ -30,6 +30,7 @@ Reasoning:
 - Correction 14: External VOX interoperability was confirmed via Qubicle import (operator test).
 - Correction 15: Palette preset save/load flow is implemented with active-color validity protection.
 - Correction 16: Continuous brush drag painting is implemented with one-step stroke undo transactions.
+- Correction 17: Fill safety threshold is implemented with explicit user feedback for blocked oversized fills.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -37,7 +38,7 @@ Reasoning:
 | Viewport reliability | Consistent visible voxel render on launch | Mostly fixed, modern shader fallback added | Need wider GPU/manual validation matrix + stronger fallback UX | P0 |
 | First-voxel workflow | Immediate paint in empty scene | Plane fallback + brush hover preview implemented | Remaining gap is richer ghosting for box/line/fill tools | P0 |
 | Brush/erase usability | Fast, predictable | Continuous brush drag paint implemented with one-step undo | Remaining gap: stroke smoothing + advanced brush options | P1 |
-| Box/line/fill tools | Core productivity tools | Implemented | Needs better preview/selection affordance and edge-case polish | P1 |
+| Box/line/fill tools | Core productivity tools | Fill safety threshold + feedback implemented | Remaining gap: preview/selection affordance and threshold tuning UX | P1 |
 | Mirror editing | Easy symmetry toggles | XYZ toggles + visual gizmos + per-axis offsets implemented | Remaining gap: mesh-mode symmetry parity (Phase 2 scope) | P1 |
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock implemented | Remaining gap: optional reorder polish | P1 |
 | Palette workflow | Fast color iteration | Save/load presets implemented with active color safety | Remaining gap: palette swap/hotkeys/preset metadata polish | P1 |

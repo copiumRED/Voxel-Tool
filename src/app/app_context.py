@@ -31,6 +31,7 @@ class AppContext:
     mirror_x_offset: int = 0
     mirror_y_offset: int = 0
     mirror_z_offset: int = 0
+    fill_max_cells: int = 5000
 
     @property
     def active_part(self) -> Part:

@@ -862,10 +862,17 @@ class GLViewportWidget(QOpenGLWidget):
         from core.commands.demo_commands import FillVoxelCommand
 
         color_index = self._app_context.active_color_index if command_mode == "paint" else None
+        command = FillVoxelCommand(x=x, y=y, z=z, mode=command_mode, color_index=color_index)
         self._app_context.command_stack.do(
-            FillVoxelCommand(x=x, y=y, z=z, mode=command_mode, color_index=color_index),
+            command,
             self._app_context,
         )
+        if command.aborted_by_threshold:
+            self.voxel_edit_applied.emit(
+                f"Fill blocked: region exceeded limit ({command.aborted_threshold_limit} cells)"
+            )
+            self.update()
+            return
         self.voxel_edit_applied.emit(f"Fill {command_mode}: ({x}, {y}, {z})")
         self.update()
 

@@ -158,6 +158,18 @@
 - Issues noticed:
   - Left-drag in brush mode now prioritizes painting over camera orbit; camera orbit remains available through non-brush workflows/right-drag pan.
 
+### Roadmap 13: Fill Tool Constraints + Safety Guards
+- What was done:
+  - Added max-region threshold for fill operations via `fill_max_cells`.
+  - Added command abort metadata for threshold-blocked fills.
+  - Added user-facing status feedback when fill is blocked due to size limit.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create a large connected region, run Fill, and confirm blocked message appears when threshold is exceeded.
+  - Run: `pytest -q` (current: `57 passed`)
+- Issues noticed:
+  - Current threshold is static (`5000`) and not yet exposed as a user setting.
+
 ## Completed ROADMAP Tasks
 - 1. Viewport Visibility Lockdown
 - 2. Multi-Part Scene Core

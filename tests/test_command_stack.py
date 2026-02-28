@@ -167,6 +167,24 @@ def test_fill_erase_clears_connected_region_only() -> None:
     assert voxels.get(2, 2, 0) == 4
 
 
+def test_fill_threshold_blocks_large_region() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.fill_max_cells = 2
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 1)
+    voxels.set(1, 0, 0, 1)
+    voxels.set(2, 0, 0, 1)
+
+    command = FillVoxelCommand(0, 0, 0, mode="erase")
+    ctx.command_stack.do(command, ctx)
+
+    assert command.aborted_by_threshold is True
+    assert command.aborted_threshold_limit == 2
+    assert voxels.get(0, 0, 0) == 1
+    assert voxels.get(1, 0, 0) == 1
+    assert voxels.get(2, 0, 0) == 1
+
+
 def test_command_stack_transaction_groups_commands_into_one_undo_step() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     stack = ctx.command_stack

@@ -71,23 +71,18 @@ This roadmap is optimized for Phase 1 execution (Voxel MVP + Qubicle-like usabil
 - Ensured active color index is clamped after palette load and covered by automated tests.
 
 ### Task 12: Brush Stroke Drag Paint (Continuous)
-- Commit: `COMMIT_HASH_PENDING`
+- Commit: `4b38dc3`
 - Added continuous brush stroke painting across drag movement with contiguous segment rasterization.
 - Grouped each brush stroke into a single command transaction so one undo reverts the full stroke.
 - Added command tests for stroke segment rasterization and single-step undo behavior.
 
-## Remaining Tasks
+### Task 13: Fill Tool Constraints + Safety Guards
+- Commit: `COMMIT_HASH_PENDING`
+- Added bounded fill threshold (`fill_max_cells`) to prevent oversized fill operations from freezing interaction.
+- Added explicit fill abort signaling and user-visible status feedback when threshold is exceeded.
+- Added unit test coverage for threshold-blocked fill behavior.
 
-## Task 13: Fill Tool Constraints + Safety Guards
-- Goal: prevent accidental heavy fill operations in large regions.
-- Files/modules likely touched:
-  - `src/core/commands/demo_commands.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria:
-  - Fill operation has bounded safety threshold with user feedback.
-  - No UI freeze on large connected regions.
-- Tests required:
-  - Unit tests for threshold behavior.
+## Remaining Tasks
 
 ## Task 14: Solidify UI Action + Mesh Cache Refresh
 - Goal: expose explicit “Solidify/Rebuild Mesh” control.

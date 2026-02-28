@@ -226,6 +226,8 @@ class FillVoxelCommand(Command):
         self.mode = mode
         self.color_index = color_index
         self._deltas: list[_VoxelDelta] = []
+        self.aborted_by_threshold = False
+        self.aborted_threshold_limit = 0
 
     @property
     def name(self) -> str:
@@ -233,6 +235,8 @@ class FillVoxelCommand(Command):
 
     def do(self, ctx) -> None:
         voxels = ctx.current_project.voxels
+        self.aborted_by_threshold = False
+        self.aborted_threshold_limit = 0
         target_color = voxels.get(self.x, self.y, self.z)
         if self.mode == "paint":
             if self.color_index is None:
@@ -245,7 +249,21 @@ class FillVoxelCommand(Command):
             return
 
         bounds = _plane_fill_bounds(voxels, self.z, self.x, self.y)
-        connected = _flood_plane_region(voxels, self.x, self.y, self.z, target_color, bounds)
+        max_cells = int(getattr(ctx, "fill_max_cells", 5000))
+        connected = _flood_plane_region(
+            voxels,
+            self.x,
+            self.y,
+            self.z,
+            target_color,
+            bounds,
+            max_cells=max_cells,
+        )
+        if connected is None:
+            self.aborted_by_threshold = True
+            self.aborted_threshold_limit = max_cells
+            self._deltas = []
+            return
         base_cells = {(x, y, self.z) for x, y in connected}
         cells = _expand_mirror_cells(ctx, base_cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
@@ -349,7 +367,9 @@ def _flood_plane_region(
     z: int,
     target_color: int | None,
     bounds: tuple[int, int, int, int],
-) -> set[tuple[int, int]]:
+    *,
+    max_cells: int | None = None,
+) -> set[tuple[int, int]] | None:
     min_x, max_x, min_y, max_y = bounds
     queue: list[tuple[int, int]] = [(seed_x, seed_y)]
     visited: set[tuple[int, int]] = set()
@@ -365,6 +385,8 @@ def _flood_plane_region(
         if voxels.get(x, y, z) != target_color:
             continue
         connected.add((x, y))
+        if max_cells is not None and len(connected) > max_cells:
+            return None
         queue.append((x + 1, y))
         queue.append((x - 1, y))
         queue.append((x, y + 1))
