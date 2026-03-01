@@ -766,3 +766,4 @@
   - Run: `pytest -q` (current: `96 passed`)
 - Risks/issues:
   - Legacy IDs are intentionally preserved; no automatic migration rewrite is performed.
+- Process deviation note (Task 09): commit `cba9626` was made directly on `main` due branch context error; code/tests are green and no functional regression observed.

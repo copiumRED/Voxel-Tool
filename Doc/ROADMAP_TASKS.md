@@ -291,7 +291,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`95 passed`)
 
 ### Task 09: Scene IDs Migration to UUID
-- Commit: `COMMIT_PENDING`
+- Commit: `cba9626`
 - Replaced counter-based part ID generation with UUID-backed IDs for newly created parts.
 - Replaced counter-based group ID generation with UUID-backed IDs for newly created groups.
 - Preserved compatibility with legacy scene files that already contain counter-style IDs.
