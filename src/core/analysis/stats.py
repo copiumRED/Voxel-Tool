@@ -23,6 +23,8 @@ class PartStats:
     materials_used: int
     degenerate_quads: int
     non_manifold_edge_hints: int
+    incremental_rebuild_attempts: int
+    incremental_rebuild_fallbacks: int
 
 
 @dataclass(slots=True)
@@ -81,6 +83,8 @@ def _compute_part_stats(part: Part) -> PartStats:
         materials_used=len(_part_materials(part)),
         degenerate_quads=degenerate_quads,
         non_manifold_edge_hints=non_manifold_edge_hints,
+        incremental_rebuild_attempts=part.incremental_rebuild_attempts,
+        incremental_rebuild_fallbacks=part.incremental_rebuild_fallbacks,
     )
 
 

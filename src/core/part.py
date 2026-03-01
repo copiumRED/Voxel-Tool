@@ -21,6 +21,8 @@ class Part:
     locked: bool = False
     mesh_cache: "SurfaceMesh | None" = None
     dirty_bounds: tuple[int, int, int, int, int, int] | None = None
+    incremental_rebuild_attempts: int = 0
+    incremental_rebuild_fallbacks: int = 0
 
     def mark_dirty_cells(self, cells: set[tuple[int, int, int]]) -> None:
         if not cells:

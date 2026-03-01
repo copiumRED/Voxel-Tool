@@ -1438,3 +1438,16 @@
   - Run: `pytest -q` (current: `161 passed`).
 - Risks/issues:
   - Incremental rebuild telemetry remains pending Task 26.
+
+### Roadmap 26 (Day-Cycle 40): Incremental Rebuild Telemetry
+- What was done:
+  - Added per-part incremental rebuild telemetry counters (attempts and fallbacks).
+  - Wired counter updates in solidify rebuild path for incremental attempts and fallback cases.
+  - Exposed telemetry in scene stats and displayed it in Stats panel object diagnostics.
+  - Added test assertions that incremental edit flows increase attempt counters.
+- How to test quickly:
+  - Perform several local voxel edits that trigger mesh rebuilds.
+  - Open Stats panel and confirm `inc tries` and `inc fallbacks` values update over time.
+  - Run: `pytest -q` (current: `161 passed`).
+- Risks/issues:
+  - Dense-scene stress harness remains pending Task 27.

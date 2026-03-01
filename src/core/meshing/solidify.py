@@ -17,6 +17,7 @@ def rebuild_part_mesh(part: Part, *, greedy: bool = True) -> SurfaceMesh:
     if part.mesh_cache is not None and part.dirty_bounds is not None:
         dirty_bounds = _expand_bounds(part.dirty_bounds, pad=1)
         if _bounds_volume(dirty_bounds) <= 4096:
+            part.incremental_rebuild_attempts += 1
             incremental = _incremental_rebuild(part, dirty_bounds, greedy=greedy)
             full = build_solid_mesh(part.voxels, greedy=greedy)
             mesh = (
@@ -24,9 +25,12 @@ def rebuild_part_mesh(part: Part, *, greedy: bool = True) -> SurfaceMesh:
                 if _mesh_signature(incremental) == _mesh_signature(full)
                 else full
             )
+            if mesh is full:
+                part.incremental_rebuild_fallbacks += 1
             part.mesh_cache = mesh
             part.dirty_bounds = None
             return mesh
+        part.incremental_rebuild_fallbacks += 1
     mesh = build_solid_mesh(part.voxels, greedy=greedy)
     part.mesh_cache = mesh
     part.dirty_bounds = None

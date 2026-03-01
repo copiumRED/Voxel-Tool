@@ -22,6 +22,7 @@ def test_incremental_rebuild_matches_full_rebuild_for_local_edit() -> None:
 
     assert _mesh_signature(incremental) == _mesh_signature(full)
     assert part.dirty_bounds is None
+    assert part.incremental_rebuild_attempts >= 1
 
 
 def _mesh_signature(mesh) -> set[tuple[tuple[float, float, float], ...]]:
@@ -57,3 +58,4 @@ def test_incremental_rebuild_randomized_local_edit_sequences_match_full_rebuild(
             incremental = rebuild_part_mesh(part, greedy=True)
             full = build_solid_mesh(part.voxels, greedy=True)
             assert _mesh_signature(incremental) == _mesh_signature(full)
+        assert part.incremental_rebuild_attempts >= 1

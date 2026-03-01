@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 26: Incremental Rebuild Telemetry
-- Goal: Track and display incremental fallback frequency.
-- Likely files/modules touched: `src/core/meshing/solidify.py`, `src/app/ui/panels/stats_panel.py`.
-- Acceptance criteria (human-testable): User can see when incremental path falls back to full rebuild.
-- Tests required: Add telemetry counter tests and UI formatting tests.
-- Risk/rollback note: Keep telemetry lightweight.
-
 ### Task 27: Dense Scene Stress Harness (64/96/128)
 - Goal: Add repeatable dense-scene perf harness for key operations.
 - Likely files/modules touched: `tests/test_perf_baseline.py`, `tests/perf_baseline.json`.
@@ -559,7 +552,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`160 passed`)
 
 ### Task 25: Solidify QA Diagnostics
-- Commit: `COMMIT_PENDING`
+- Commit: `6ada55d`
 - Added mesh QA diagnostic fields to part stats (`degenerate_quads`, `non_manifold_edge_hints`).
 - Added degenerate-quad detection in stats analysis (quads with fewer than 4 unique vertices).
 - Added non-manifold edge risk hint counter (edges referenced by more than two quads).
@@ -573,6 +566,25 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Kept implementation scoped to diagnostics; no export/tool behavior changes.
 - Avoided introducing any new dependencies.
 - Maintained existing compute_scene_stats public API shape aside from additive fields.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`161 passed`)
+
+### Task 26: Incremental Rebuild Telemetry
+- Commit: `COMMIT_PENDING`
+- Added incremental rebuild telemetry fields to part model (`incremental_rebuild_attempts`, `incremental_rebuild_fallbacks`).
+- Added attempt counter increments when incremental rebuild path is executed.
+- Added fallback counter increments when incremental candidate falls back to full rebuild.
+- Added fallback counter increments when dirty volume exceeds incremental threshold.
+- Exposed telemetry counters through part stats in analysis layer.
+- Updated stats panel object line to display incremental attempt/fallback counters.
+- Kept telemetry non-blocking and lightweight (simple integer counters).
+- Preserved existing mesh rebuild behavior and correctness checks.
+- Preserved existing runtime metrics emission behavior.
+- Added regression assertions ensuring incremental attempts are recorded on local edit rebuilds.
+- Added regression assertions ensuring attempts are recorded across randomized local edit sequences.
+- Kept implementation scoped to telemetry and display only.
+- No new dependencies or schema changes introduced.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`161 passed`)

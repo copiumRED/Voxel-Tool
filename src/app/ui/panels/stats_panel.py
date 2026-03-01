@@ -55,7 +55,9 @@ class StatsPanel(QWidget):
                 f"edges {active_part.edges} | verts {active_part.vertices} | bounds {bx}x{by}x{bz} vox | "
                 f"{mx:.2f}x{my:.2f}x{mz:.2f} m | "
                 f"materials {active_part.materials_used} | "
-                f"deg quads {active_part.degenerate_quads} | nm-edge hints {active_part.non_manifold_edge_hints}"
+                f"deg quads {active_part.degenerate_quads} | nm-edge hints {active_part.non_manifold_edge_hints} | "
+                f"inc tries {active_part.incremental_rebuild_attempts} | "
+                f"inc fallbacks {active_part.incremental_rebuild_fallbacks}"
             )
         self.voxel_count_label.setText(f"Active Part Voxels: {active_voxel_count}")
 
