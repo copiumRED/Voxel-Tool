@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 18: glTF UV Export
-- Goal: Emit `TEXCOORD_0` in glTF export.
-- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
-- Acceptance criteria (human-testable): Exported glTF contains valid UV accessor and attribute binding.
-- Tests required: Add glTF structure tests for UV accessor count/type.
-- Risk/rollback note: Keep fallback path for geometry-only export if UV generation fails.
-
 ### Task 19: glTF Vertex Color Export
 - Goal: Emit `COLOR_0` in glTF export.
 - Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
@@ -463,7 +456,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`152 passed`)
 
 ### Task 17: Palette Browser and Quick Filter
-- Commit: `COMMIT_PENDING`
+- Commit: `dac7964`
 - Added palette preset browser section to palette panel with filter input and preset list.
 - Added one-click load path (`Load Selected`) and double-click load behavior for browser entries.
 - Added preset browser directory helper rooted at app temp (`palette_presets`) with auto-create behavior.
@@ -477,6 +470,25 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Added regression test for preset quick-filter helper behavior and stable sorting output.
 - Kept implementation panel-scoped without introducing dependencies.
 - Maintained compatibility with direct file dialog load/save fallback.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`153 passed`)
+
+### Task 18: glTF UV Export
+- Commit: `COMMIT_PENDING`
+- Added UV generation path for glTF export (`_build_vertex_uvs`) derived from normalized X/Z bounds.
+- Added per-vertex UV buffer serialization (`<2f`) and 4-byte alignment handling.
+- Added dedicated glTF bufferView for UV data with array-buffer target.
+- Added dedicated glTF accessor for UVs (`componentType=FLOAT`, `type=VEC2`).
+- Updated primitive attributes to include `TEXCOORD_0` binding.
+- Updated primitive index accessor wiring to account for inserted UV accessor.
+- Preserved existing position and normal export paths unchanged.
+- Preserved existing empty-mesh export path behavior.
+- Kept UV generation deterministic and dependency-free.
+- Added regression assertions for `TEXCOORD_0` attribute index and UV accessor type/count.
+- Added regression assertion for index accessor shift after UV insertion.
+- Maintained backward-compatible glTF structure for viewers expecting POSITION/NORMAL.
+- Kept scope strictly to UV emission (material/color tasks remain separate).
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`153 passed`)

@@ -1327,3 +1327,16 @@
   - Run: `pytest -q` (current: `153 passed`).
 - Risks/issues:
   - glTF UV export parity remains pending Task 18.
+
+### Roadmap 18 (Day-Cycle 40): glTF UV Export
+- What was done:
+  - Added UV generation and `TEXCOORD_0` emission in glTF exporter.
+  - Added UV bufferView + accessor wiring and updated primitive attribute/index references.
+  - Added regression checks for UV accessor type/count and attribute binding.
+- How to test quickly:
+  - Export a non-empty scene as glTF.
+  - Open exported `.gltf` JSON and verify primitive has `TEXCOORD_0`.
+  - Verify UV accessor type is `VEC2` and count matches vertex count.
+  - Run: `pytest -q` (current: `153 passed`).
+- Risks/issues:
+  - glTF vertex color parity remains pending Task 19.

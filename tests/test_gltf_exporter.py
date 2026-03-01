@@ -25,8 +25,12 @@ def test_export_gltf_smoke_non_empty_mesh_and_counts() -> None:
         primitive = payload["meshes"][0]["primitives"][0]
         assert "NORMAL" in primitive["attributes"]
         assert primitive["attributes"]["NORMAL"] == 1
+        assert primitive["attributes"]["TEXCOORD_0"] == 2
         assert primitive["mode"] == 4
         assert payload["accessors"][1]["count"] == payload["accessors"][0]["count"]
+        assert payload["accessors"][2]["type"] == "VEC2"
+        assert payload["accessors"][2]["count"] == payload["accessors"][0]["count"]
+        assert payload["accessors"][3]["type"] == "SCALAR"
     finally:
         path.unlink(missing_ok=True)
 
