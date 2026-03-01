@@ -1534,3 +1534,17 @@
   - Run: `pytest -q` (current: `171 passed`).
 - Risks/issues:
   - Command palette quick search remains pending Task 33.
+
+### Roadmap 33 (Day-Cycle 40): Interface Polish - Command Palette (Quick Search)
+- What was done:
+  - Added command palette dialog with live filter and command selection.
+  - Added `Edit -> Command Palette` action and `Ctrl+Shift+P` shortcut.
+  - Added command registry/dispatcher in main window to execute existing actions by command id.
+  - Added regression test for command-palette entry filtering behavior.
+- How to test quickly:
+  - Launch app and press `Ctrl+Shift+P`.
+  - Type partial command text (for example `export`), pick an item, and execute it.
+  - Verify executed behavior matches the equivalent menu action.
+  - Run: `pytest -q` (current: `172 passed`).
+- Risks/issues:
+  - Dock layout presets remain pending Task 34.

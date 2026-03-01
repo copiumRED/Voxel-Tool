@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 
 from app.app_context import AppContext
 from app.settings import get_settings
+from app.ui.dialogs.command_palette_dialog import CommandPaletteDialog
 from core.commands.demo_commands import (
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
@@ -184,6 +185,13 @@ def _quick_toolbar_action_labels() -> tuple[str, ...]:
     )
 
 
+def _filter_command_palette_entries(entries: list[tuple[str, str]], query: str) -> list[tuple[str, str]]:
+    q = str(query).strip().lower()
+    if not q:
+        return sorted(entries, key=lambda item: item[1].lower())
+    return sorted([entry for entry in entries if q in entry[1].lower()], key=lambda item: item[1].lower())
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -332,6 +340,10 @@ class MainWindow(QMainWindow):
         shortcut_help_action = QAction("Shortcut Help", self)
         shortcut_help_action.triggered.connect(self._on_show_shortcut_help)
         edit_menu.addAction(shortcut_help_action)
+
+        command_palette_action = QAction("Command Palette", self)
+        command_palette_action.triggered.connect(self._on_open_command_palette)
+        edit_menu.addAction(command_palette_action)
 
     def _build_quick_toolbar(self) -> None:
         toolbar = QToolBar("Quick Actions", self)
@@ -512,6 +524,7 @@ class MainWindow(QMainWindow):
         self._register_shortcut("Shift+F", self._on_frame_voxels)
         self._register_shortcut("Shift+R", self._on_reset_camera)
         self._register_shortcut("]", self._cycle_brush_size)
+        self._register_shortcut("Ctrl+Shift+P", self._on_open_command_palette)
 
     def _register_shortcut(self, sequence: str, callback) -> None:
         shortcut = QShortcut(QKeySequence(sequence), self)
@@ -908,6 +921,73 @@ class MainWindow(QMainWindow):
             "Camera: Shift+F frame, Shift+R reset\n"
             "Views: Ctrl+1..Ctrl+6",
         )
+
+    def _command_palette_entries(self) -> list[tuple[str, str]]:
+        return [
+            ("new_project", "New Project"),
+            ("open_project", "Open Project"),
+            ("save_project", "Save Project"),
+            ("save_project_as", "Save Project As"),
+            ("import_vox", "Import VOX"),
+            ("import_qb", "Import QB"),
+            ("export_obj", "Export OBJ"),
+            ("export_gltf", "Export glTF"),
+            ("export_vox", "Export VOX"),
+            ("export_qb", "Export QB"),
+            ("undo", "Undo"),
+            ("redo", "Redo"),
+            ("solidify", "Solidify Rebuild Mesh"),
+            ("frame_voxels", "Frame Voxels"),
+            ("reset_camera", "Reset Camera"),
+            ("create_test_voxels", "Create Test Voxels (Cross)"),
+            ("shortcut_help", "Shortcut Help"),
+        ]
+
+    def _on_open_command_palette(self) -> None:
+        dialog = CommandPaletteDialog(self)
+        dialog.set_entries(_filter_command_palette_entries(self._command_palette_entries(), ""))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        command_id = dialog.selected_command_id()
+        if command_id is None:
+            return
+        self._execute_command_palette_action(command_id)
+
+    def _execute_command_palette_action(self, command_id: str) -> None:
+        if command_id == "new_project":
+            self._on_new_project()
+        elif command_id == "open_project":
+            self._on_open_project()
+        elif command_id == "save_project":
+            self._on_save_project()
+        elif command_id == "save_project_as":
+            self._on_save_project_as()
+        elif command_id == "import_vox":
+            self._on_import_vox()
+        elif command_id == "import_qb":
+            self._on_import_qb()
+        elif command_id == "export_obj":
+            self._on_export_obj()
+        elif command_id == "export_gltf":
+            self._on_export_gltf()
+        elif command_id == "export_vox":
+            self._on_export_vox()
+        elif command_id == "export_qb":
+            self._on_export_qb()
+        elif command_id == "undo":
+            self._on_undo()
+        elif command_id == "redo":
+            self._on_redo()
+        elif command_id == "solidify":
+            self._on_solidify_rebuild_mesh()
+        elif command_id == "frame_voxels":
+            self._on_frame_voxels()
+        elif command_id == "reset_camera":
+            self._on_reset_camera()
+        elif command_id == "create_test_voxels":
+            self._on_create_test_voxels()
+        elif command_id == "shortcut_help":
+            self._on_show_shortcut_help()
 
     def _on_demo_add_random_voxel(self) -> None:
         x = random.randint(-5, 5)

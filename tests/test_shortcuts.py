@@ -4,6 +4,7 @@ from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import (
     _next_brush_size,
+    _filter_command_palette_entries,
     _project_io_error_detail,
     _quick_toolbar_action_labels,
     _vox_import_group_name,
@@ -170,3 +171,13 @@ def test_hud_badges_reflect_core_editing_state() -> None:
     assert "Mirror:X" in badges
     assert "Proj:orthographic" in badges
     assert "Nav:blender_mix" in badges
+
+
+def test_command_palette_filter_returns_sorted_matches() -> None:
+    entries = [
+        ("export_obj", "Export OBJ"),
+        ("open_project", "Open Project"),
+        ("export_gltf", "Export glTF"),
+    ]
+    filtered = _filter_command_palette_entries(entries, "export")
+    assert [label for _id, label in filtered] == ["Export glTF", "Export OBJ"]

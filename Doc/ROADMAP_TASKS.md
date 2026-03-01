@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 33: Interface Polish - Command Palette (Quick Search)
-- Goal: Add command palette for fast action search/execute.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/ui/dialogs/`.
-- Acceptance criteria (human-testable): Press shortcut, search command name, execute action.
-- Tests required: Add command registry/filter tests.
-- Risk/rollback note: Keep all actions reachable via existing UI paths.
-
 ### Task 34: Interface Polish - Dock Layout Presets
 - Goal: Add save/restore UI dock layout presets.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/settings.py`.
@@ -642,7 +635,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`170 passed`)
 
 ### Task 32: Interface Polish - Status HUD Badges
-- Commit: `COMMIT_PENDING`
+- Commit: `253bc50`
 - Added viewport HUD badge formatter for core editing context state.
 - Added badges for tool/mode, pick mode, edit plane, mirror axes, projection, and navigation preset.
 - Rendered HUD badges in overlay with distinct color styling for quick glance readability.
@@ -659,3 +652,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`171 passed`)
+
+### Task 33: Interface Polish - Command Palette (Quick Search)
+- Commit: `COMMIT_PENDING`
+- Added new command palette dialog (`app/ui/dialogs/command_palette_dialog.py`).
+- Added command palette launch action in Edit menu.
+- Added command palette shortcut binding (`Ctrl+Shift+P`).
+- Added command registry in main window with common project/import/export/edit/view actions.
+- Added command execution dispatcher to invoke existing handlers from selected command id.
+- Added palette filtering helper for case-insensitive quick search with sorted results.
+- Kept all commands reachable through original menus and shortcuts (no path removal).
+- Added dialogs package init file for explicit module packaging.
+- Kept command palette non-destructive; it reuses existing action handlers.
+- Added regression test for command palette filter behavior.
+- Preserved shortcut help and existing shortcut registration behavior.
+- Maintained no-dependency implementation with native Qt widgets.
+- Kept integration scoped to UI layer only.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`172 passed`)
