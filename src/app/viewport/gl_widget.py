@@ -713,7 +713,24 @@ class GLViewportWidget(QOpenGLWidget):
         width = max(1, self.width())
         height = max(1, self.height())
         mvp = QMatrix4x4()
-        mvp.perspective(45.0, width / height, 0.1, 200.0)
+        use_ortho = (
+            self._app_context is not None
+            and self._app_context.camera_projection == self._app_context.CAMERA_PROJECTION_ORTHOGRAPHIC
+        )
+        if use_ortho:
+            aspect = width / height
+            ortho_half_height = max(2.0, self.distance * 0.5)
+            ortho_half_width = ortho_half_height * aspect
+            mvp.ortho(
+                -ortho_half_width,
+                ortho_half_width,
+                -ortho_half_height,
+                ortho_half_height,
+                0.1,
+                500.0,
+            )
+        else:
+            mvp.perspective(45.0, width / height, 0.1, 200.0)
         eye, _, _, _ = self._camera_vectors()
         mvp.lookAt(eye, self.target, QVector3D(0.0, 1.0, 0.0))
         return mvp

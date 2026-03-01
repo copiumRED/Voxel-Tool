@@ -24,6 +24,7 @@ def test_project_save_load_roundtrip() -> None:
         "voxel_tool_mode": "erase",
         "mirror_x_enabled": True,
         "edit_plane": "yz",
+        "camera_projection": "orthographic",
     }
     first_part_id = project.active_part_id
     second_part = project.scene.add_part("Part 2")

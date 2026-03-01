@@ -335,6 +335,12 @@ def test_app_context_edit_plane_validation() -> None:
     assert ctx.edit_plane == AppContext.EDIT_PLANE_YZ
 
 
+def test_app_context_camera_projection_validation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_camera_projection("orthographic")
+    assert ctx.camera_projection == AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
+
+
 def test_command_stack_respects_max_undo_depth_cap() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.command_stack.set_max_undo_steps(2)

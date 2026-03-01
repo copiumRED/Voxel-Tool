@@ -305,6 +305,13 @@ class MainWindow(QMainWindow):
         camera_snap_angle_action = QAction("Set Camera Snap Degrees", self)
         camera_snap_angle_action.triggered.connect(self._on_set_camera_snap_degrees)
         view_menu.addAction(camera_snap_angle_action)
+        orthographic_action = QAction("Orthographic Projection", self)
+        orthographic_action.setCheckable(True)
+        orthographic_action.setChecked(
+            self.context.camera_projection == AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
+        )
+        orthographic_action.toggled.connect(self._on_toggle_orthographic_projection)
+        view_menu.addAction(orthographic_action)
 
         view_menu.addSeparator()
 
@@ -778,6 +785,16 @@ class MainWindow(QMainWindow):
         self.context.camera_snap_degrees = int(value)
         self._show_voxel_status(f"Camera snap degrees: {value}")
 
+    def _on_toggle_orthographic_projection(self, enabled: bool) -> None:
+        projection = (
+            AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
+            if enabled
+            else AppContext.CAMERA_PROJECTION_PERSPECTIVE
+        )
+        self.context.set_camera_projection(projection)
+        self._show_voxel_status(f"Projection: {projection}")
+        self.viewport.update()
+
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
         self._show_voxel_status(message)
         self._refresh_ui_state()
@@ -876,6 +893,7 @@ class MainWindow(QMainWindow):
             "grid_spacing": self.context.grid_spacing,
             "camera_snap_enabled": self.context.camera_snap_enabled,
             "camera_snap_degrees": self.context.camera_snap_degrees,
+            "camera_projection": self.context.camera_projection,
             "undo_depth": self.context.command_stack.max_undo_steps,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
@@ -926,6 +944,12 @@ class MainWindow(QMainWindow):
             1,
             int(state.get("camera_snap_degrees", self.context.camera_snap_degrees)),
         )
+        projection = str(state.get("camera_projection", self.context.camera_projection)).strip().lower()
+        if projection in (
+            AppContext.CAMERA_PROJECTION_PERSPECTIVE,
+            AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC,
+        ):
+            self.context.camera_projection = projection
         self.context.command_stack.set_max_undo_steps(
             int(state.get("undo_depth", self.context.command_stack.max_undo_steps))
         )

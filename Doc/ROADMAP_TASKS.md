@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 11: Orthographic Camera Mode v1
-- Goal: Add orthographic projection toggle for precision modeling.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`, `src/app/app_context.py`.
-- Acceptance criteria (human-testable): User can toggle ortho/perspective and continue editing without tool breakage.
-- Tests required: Add editor-state persistence test for projection mode.
-- Risk/rollback note: If orbit feels unusable, add orthographic pan/zoom-only fallback behavior.
-
 ### Task 12: Camera Preset + Plane Selector Integration
 - Goal: Align view presets with active edit plane and improve orientation feedback.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/viewport/gl_widget.py`.
@@ -316,3 +309,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`98 passed`)
+
+### Task 11: Orthographic Camera Mode v1
+- Commit: `61a34d1`
+- Added camera projection state to `AppContext` with validation (`perspective` / `orthographic`).
+- Added View menu toggle for orthographic projection mode.
+- Wired projection toggle through MainWindow to update viewport rendering immediately.
+- Added editor-state persistence for camera projection mode.
+- Updated editor-state restore logic to apply persisted projection mode safely.
+- Extended viewport projection matrix builder to support orthographic projection path.
+- Kept existing perspective camera behavior unchanged as default mode.
+- Added app-context validation test for camera projection setter.
+- Extended project IO editor_state roundtrip test with `camera_projection`.
+- Preserved tool behavior and input interactions while changing projection math only.
+- Implementation remained dependency-free and roadmap-scoped.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`99 passed`)

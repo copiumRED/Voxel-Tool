@@ -20,6 +20,8 @@ class AppContext:
     EDIT_PLANE_XY = "xy"
     EDIT_PLANE_YZ = "yz"
     EDIT_PLANE_XZ = "xz"
+    CAMERA_PROJECTION_PERSPECTIVE = "perspective"
+    CAMERA_PROJECTION_ORTHOGRAPHIC = "orthographic"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
     _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX, TOOL_SHAPE_LINE, TOOL_SHAPE_FILL}
 
@@ -38,6 +40,7 @@ class AppContext:
     grid_spacing: int = 1
     camera_snap_enabled: bool = False
     camera_snap_degrees: int = 15
+    camera_projection: str = CAMERA_PROJECTION_PERSPECTIVE
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
@@ -48,6 +51,7 @@ class AppContext:
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
     _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
     _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
+    _VALID_CAMERA_PROJECTIONS = {CAMERA_PROJECTION_PERSPECTIVE, CAMERA_PROJECTION_ORTHOGRAPHIC}
 
     @property
     def active_part(self) -> Part:
@@ -93,6 +97,12 @@ class AppContext:
         if plane_value not in self._VALID_EDIT_PLANES:
             raise ValueError(f"Unsupported edit plane: {plane_value}")
         self.edit_plane = plane_value
+
+    def set_camera_projection(self, projection: str) -> None:
+        projection_value = str(projection).strip().lower()
+        if projection_value not in self._VALID_CAMERA_PROJECTIONS:
+            raise ValueError(f"Unsupported camera projection: {projection_value}")
+        self.camera_projection = projection_value
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":

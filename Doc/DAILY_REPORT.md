@@ -779,3 +779,17 @@
   - Run: `pytest -q` (current: `98 passed`)
 - Risks/issues:
   - Orthographic precision workflow remains pending Task 11.
+
+### Roadmap 11 (Day-Cycle 30): Orthographic Camera Mode v1
+- What was done:
+  - Added camera projection mode state (`perspective`/`orthographic`) to app context.
+  - Added View menu toggle for orthographic projection.
+  - Updated viewport projection matrix logic to render in ortho mode when enabled.
+  - Persisted projection mode in editor state and added coverage tests.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Toggle `View -> Orthographic Projection` on/off and verify viewport updates.
+  - Save/open project and verify projection mode persists.
+  - Run: `pytest -q` (current: `99 passed`)
+- Risks/issues:
+  - Camera preset/plane-selector orientation polish is still pending Task 12.

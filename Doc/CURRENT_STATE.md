@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **86%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **87%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Orthographic viewport mode is still missing
-- Symptoms: users cannot switch to ortho for precision blockout/edit workflows.
-- Suspected root cause: viewport projection pipeline currently uses perspective-only path.
-- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`.
-- Fastest confirmation: check View menu; no ortho toggle is available.
+1. Camera preset orientation feedback still needs integration polish with edit-plane selection
+- Symptoms: preset switches work, but users may not get immediate directional context relative to active edit plane.
+- Suspected root cause: no explicit coupling/hinting between view preset actions and edit-plane state.
+- Exact files: `src/app/ui/main_window.py`, `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
+- Fastest confirmation: switch presets and edit planes repeatedly; orientation context remains implicit.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
