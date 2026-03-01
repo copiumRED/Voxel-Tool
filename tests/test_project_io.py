@@ -137,3 +137,25 @@ def test_project_load_rejects_non_object_editor_state() -> None:
             load_project(str(path))
     finally:
         path.unlink(missing_ok=True)
+
+
+def test_project_load_allows_unknown_top_level_keys() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"test-project-forward-compat-{uuid.uuid4().hex}.json"
+    payload = {
+        "name": "Forward Compat",
+        "created_utc": "2026-02-28T00:00:00+00:00",
+        "modified_utc": "2026-02-28T00:00:00+00:00",
+        "version": 1,
+        "custom_metadata": {"author": "operator", "note": "future field"},
+        "scene": {
+            "active_part_id": "part-1",
+            "parts": [{"part_id": "part-1", "name": "Part 1", "voxels": []}],
+        },
+    }
+    try:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        loaded = load_project(str(path))
+        assert loaded.name == "Forward Compat"
+        assert loaded.active_part_id == "part-1"
+    finally:
+        path.unlink(missing_ok=True)

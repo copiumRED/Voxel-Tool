@@ -741,3 +741,15 @@
   - Run: `pytest -q` (current: `94 passed`)
 - Risks/issues:
   - glTF UV/material/color parity remains pending future tasks.
+
+### Roadmap 08 (Day-Cycle 30): Project IO Forward-Compatibility Loader
+- What was done:
+  - Removed strict unknown top-level key rejection in project loader.
+  - Preserved required-key/schema checks and existing parse behavior for known fields.
+  - Added regression test validating load succeeds with extra metadata keys.
+- How to test quickly:
+  - Add an extra top-level key to a saved project JSON.
+  - Open project in app; load should succeed.
+  - Run: `pytest -q` (current: `95 passed`)
+- Risks/issues:
+  - Unknown fields are currently tolerated on load but not explicitly preserved as first-class project metadata.

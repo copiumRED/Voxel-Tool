@@ -66,15 +66,6 @@ def load_project(path: str) -> Project:
         missing = sorted(_REQUIRED_BASE_KEYS - keys)
         raise ValueError(f"Invalid project schema (missing keys: {', '.join(missing)}).")
 
-    allowed = _REQUIRED_BASE_KEYS | {_SCENE_KEY, _LEGACY_VOXELS_KEY, _EDITOR_STATE_KEY}
-    extra = keys - allowed
-    if extra:
-        extra_sorted = sorted(extra)
-        details = []
-        if extra_sorted:
-            details.append(f"unexpected keys: {', '.join(extra_sorted)}")
-        raise ValueError(f"Invalid project schema ({'; '.join(details)}).")
-
     project = Project(
         name=str(payload["name"]),
         created_utc=str(payload["created_utc"]),

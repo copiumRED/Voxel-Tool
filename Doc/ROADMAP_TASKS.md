@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 08: Project IO Forward-Compatibility Loader
-- Goal: Allow unknown JSON keys without failing project load.
-- Likely files/modules touched: `src/core/io/project_io.py`.
-- Acceptance criteria (human-testable): Project with extra metadata opens successfully.
-- Tests required: Add project schema compatibility tests with unknown keys.
-- Risk/rollback note: Preserve strict validation for required structural keys.
-
 ### Task 09: Scene IDs Migration to UUID
 - Goal: Replace counter-based part/group IDs with UUID generation while loading legacy IDs.
 - Likely files/modules touched: `src/core/scene.py`, `src/core/io/project_io.py`, tests.
@@ -286,3 +279,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`94 passed`)
+
+### Task 08: Project IO Forward-Compatibility Loader
+- Commit: `7dd9f09`
+- Removed strict rejection of unknown top-level project JSON keys during load.
+- Preserved required-key validation and existing structural schema checks.
+- Kept scene/part/editor_state parsing behavior unchanged for known fields.
+- Added forward-compat regression test with extra top-level metadata.
+- Verified legacy schema pathways (`scene` missing / root `voxels`) remain intact.
+- Maintained explicit error behavior for invalid required-key scenarios.
+- Avoided introducing metadata pass-through persistence in this task (load tolerance only).
+- Kept JSON save format stable to avoid unplanned migration behavior.
+- Confirmed no impact to runtime editor-state capture/apply logic.
+- Scope remained atomic to project IO compatibility objective.
+- Implementation remained dependency-free and production-safe.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`95 passed`)

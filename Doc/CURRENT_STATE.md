@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **83%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **84%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Project loader still rejects unknown top-level keys
-- Symptoms: project files with harmless extra metadata fail to open.
-- Suspected root cause: strict unknown-key validation in JSON loader.
-- Exact files: `src/core/io/project_io.py`.
-- Fastest confirmation: add a custom top-level key and reopen the project.
+1. Scene part/group IDs are still counter-based (non-UUID)
+- Symptoms: IDs reset between runs and can collide in cross-session merges.
+- Suspected root cause: process-local counters generate IDs.
+- Exact files: `src/core/scene.py`.
+- Fastest confirmation: create fresh scenes across runs and inspect repeated `part-1` style IDs.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
