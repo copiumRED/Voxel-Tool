@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 12: Camera Preset + Plane Selector Integration
-- Goal: Align view presets with active edit plane and improve orientation feedback.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): Switching presets updates expected edit plane hints and remains intuitive.
-- Tests required: Add preset mapping unit tests.
-- Risk/rollback note: Keep existing preset values as fallback if mapping confusion appears.
-
 ### Task 13: Fill 3D Connectivity Mode (Optional Toggle)
 - Goal: Add fill mode toggle between plane-connected and full 3D-connected regions.
 - Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`.
@@ -326,3 +319,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`99 passed`)
+
+### Task 12: Camera Preset + Plane Selector Integration
+- Commit: `1489b01`
+- Added explicit view-preset to edit-plane mapping helper (`top/bottom->XZ`, `left/right->YZ`, `front/back->XY`).
+- Updated view preset action handler to apply mapped edit plane automatically.
+- Improved status messaging to include both selected view preset and resulting edit plane.
+- Triggered UI refresh after preset selection so Tools panel reflects updated plane state immediately.
+- Preserved camera preset orientation logic while integrating plane-selection context.
+- Kept edit-plane selector manual override available after preset-based updates.
+- Added unit tests for preset-to-plane mapping across all preset groups.
+- Maintained orthographic/perspective handling unchanged from Task 11.
+- Avoided changes to command execution and picking logic in this task.
+- Implementation remained dependency-free and isolated to UI/view-flow alignment.
+- Scope aligned to roadmap acceptance for orientation feedback polish.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`102 passed`)

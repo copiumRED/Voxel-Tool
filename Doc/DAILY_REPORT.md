@@ -793,3 +793,16 @@
   - Run: `pytest -q` (current: `99 passed`)
 - Risks/issues:
   - Camera preset/plane-selector orientation polish is still pending Task 12.
+
+### Roadmap 12 (Day-Cycle 30): Camera Preset + Plane Selector Integration
+- What was done:
+  - Added mapping from camera presets to default edit planes.
+  - Wired preset actions to auto-update active edit plane.
+  - Updated status feedback to include view preset + resulting edit plane.
+  - Added mapping unit tests.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Trigger presets (`Ctrl+1..Ctrl+6`) and verify edit plane updates consistently in Tools panel.
+  - Run: `pytest -q` (current: `102 passed`)
+- Risks/issues:
+  - 3D fill connectivity mode is still pending Task 13.

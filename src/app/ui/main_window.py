@@ -122,6 +122,15 @@ def _export_dialog_capabilities(format_name: str) -> dict[str, bool]:
     }
 
 
+def _edit_plane_for_view_preset(preset: str) -> str:
+    key = preset.strip().lower()
+    if key in {"top", "bottom"}:
+        return AppContext.EDIT_PLANE_XZ
+    if key in {"left", "right"}:
+        return AppContext.EDIT_PLANE_YZ
+    return AppContext.EDIT_PLANE_XY
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -743,7 +752,10 @@ class MainWindow(QMainWindow):
 
     def _on_view_preset(self, preset: str) -> None:
         self.viewport.set_view_preset(preset)
-        self._show_voxel_status(f"View preset: {preset}")
+        next_plane = _edit_plane_for_view_preset(preset)
+        self.context.set_edit_plane(next_plane)
+        self._show_voxel_status(f"View preset: {preset} | Edit plane: {next_plane.upper()}")
+        self._refresh_ui_state()
 
     def _on_toggle_grid_visible(self, enabled: bool) -> None:
         self.context.grid_visible = enabled

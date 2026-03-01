@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **87%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **88%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Camera preset orientation feedback still needs integration polish with edit-plane selection
-- Symptoms: preset switches work, but users may not get immediate directional context relative to active edit plane.
-- Suspected root cause: no explicit coupling/hinting between view preset actions and edit-plane state.
-- Exact files: `src/app/ui/main_window.py`, `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
-- Fastest confirmation: switch presets and edit planes repeatedly; orientation context remains implicit.
+1. Fill tool still lacks user-selectable 3D connectivity mode
+- Symptoms: fill operates with plane-connected assumptions and cannot be toggled to full 3D region connectivity.
+- Suspected root cause: fill command path has no connectivity mode setting.
+- Exact files: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`.
+- Fastest confirmation: inspect tools panel and fill command API; no connectivity toggle exists.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
