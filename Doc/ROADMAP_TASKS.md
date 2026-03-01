@@ -401,7 +401,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`113 passed`)
 
 ### Task 20: VOX Import Unsupported-Chunk Diagnostics
-- Commit: `TASK20_HASH_PENDING`
+- Commit: `8cca40f`
 - Added warning-capable VOX loader path (`load_vox_models_with_warnings`) that reports unsupported chunk IDs.
 - Kept existing `load_vox_models` API backward-compatible by delegating and discarding warnings.
 - Added unsupported chunk collection logic in parser while preserving permissive import behavior.
