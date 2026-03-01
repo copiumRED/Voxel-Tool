@@ -165,3 +165,15 @@ def test_resolve_shape_target_uses_plane_fallback_without_surface_hit() -> None:
         plane_fallback_cell=(3, 4, 0),
     )
     assert result == ((3, 4, 0), "plane-fallback")
+
+
+def test_resolve_shape_target_without_plane_fallback_returns_none() -> None:
+    voxels = VoxelGrid()
+    result = resolve_shape_target_cell(
+        voxels,
+        origin=(0.0, 10.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        erase_mode=False,
+        plane_fallback_cell=None,
+    )
+    assert result is None

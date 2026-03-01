@@ -769,6 +769,9 @@ class GLViewportWidget(QOpenGLWidget):
         temporary_erase = bool(modifiers & Qt.ShiftModifier)
         mode = self._app_context.voxel_tool_mode
         should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+        allow_plane_fallback = (
+            not should_erase and self._app_context.pick_mode == self._app_context.PICK_MODE_PLANE_LOCK
+        )
         ray = self._screen_to_world_ray(pos.x(), pos.y())
         if ray is None:
             return None
@@ -778,7 +781,7 @@ class GLViewportWidget(QOpenGLWidget):
             (origin.x(), origin.y(), origin.z()),
             (direction.x(), direction.y(), direction.z()),
             erase_mode=should_erase,
-            plane_fallback_cell=self._screen_to_plane_cell(pos),
+            plane_fallback_cell=self._screen_to_plane_cell(pos) if allow_plane_fallback else None,
         )
         if target is None:
             return None

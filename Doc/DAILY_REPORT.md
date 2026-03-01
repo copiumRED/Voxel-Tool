@@ -670,3 +670,17 @@
   - Run: `pytest -q` (current: `88 passed`)
 - Risks/issues:
   - Pick mode is not yet applied to non-brush tools (scheduled in Task 03).
+
+### Roadmap 03 (Day-Cycle 30): Apply Pick Mode to Line/Box/Fill
+- What was done:
+  - Wired pick mode semantics into non-brush target resolution path.
+  - `Plane Lock`: non-brush paint can use plane fallback when surface hit is absent.
+  - `Surface`: non-brush paint requires surface-derived target; no empty-space fallback.
+  - Added resolver regression test for no-fallback target behavior.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Switch pick mode to `Surface`, use line/box/fill in empty space (should not apply).
+  - Switch pick mode to `Plane Lock`, use line/box/fill in empty space (should apply on edit plane fallback).
+  - Run: `pytest -q` (current: `89 passed`)
+- Risks/issues:
+  - Edit-plane axis selection UX is still pending Task 04.

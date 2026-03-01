@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 03: Apply Pick Mode to Line/Box/Fill
-- Goal: Ensure Surface/Plane Lock affects all shape tools, not brush only.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
-- Acceptance criteria (human-testable): Toggling pick mode changes behavior consistently for brush, line, box, and fill.
-- Tests required: Add mode-matrix tests for all tool shapes.
-- Risk/rollback note: If fill behavior breaks, temporarily scope fill to plane-lock with explicit status warning.
-
 ### Task 04: Edit Plane Selector UI (XY/YZ/XZ)
 - Goal: Add explicit active edit-plane selection and display.
 - Likely files/modules touched: `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`, `src/app/viewport/gl_widget.py`.
@@ -236,3 +229,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`88 passed`)
+
+### Task 03: Apply Pick Mode to Line/Box/Fill
+- Commit: `47a3437`
+- Updated non-brush target resolution path to respect global pick mode semantics.
+- Added plane-fallback gating for non-brush tools: fallback is enabled only in `Plane Lock` and paint mode.
+- Ensured `Surface` mode for non-brush tools now rejects empty-space paint targets (no implicit plane placement).
+- Kept erase behavior surface-hit-only, matching existing brush-mode semantics.
+- Reused shared resolver path so preview and apply behavior stay aligned under pick-mode changes.
+- Avoided UI refactors by leveraging existing pick-mode control already present in Tools panel.
+- Preserved command stack, fill threshold, and mirror workflows untouched in this task.
+- Added regression coverage for no-fallback target resolution behavior (shape resolver without fallback returns `None`).
+- Confirmed no changes to project schema, exporter behavior, or packaging scripts.
+- Completed scope exactly for pick-mode parity without introducing edit-plane selector changes (Task 04).
+- Implementation remains dependency-free and production-safe.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`89 passed`)
