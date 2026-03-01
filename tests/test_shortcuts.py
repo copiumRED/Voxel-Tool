@@ -5,6 +5,7 @@ from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import (
     _next_brush_size,
     _project_io_error_detail,
+    _quick_toolbar_action_labels,
     _vox_import_group_name,
     _vox_import_part_name,
 )
@@ -143,3 +144,11 @@ def test_visible_render_signature_changes_when_voxel_revision_changes() -> None:
     ctx.current_project.voxels.set(0, 0, 0, 1)
     after = GLViewportWidget._compute_visible_render_signature(ctx)
     assert before != after
+
+
+def test_quick_toolbar_action_labels_include_expected_core_actions() -> None:
+    labels = _quick_toolbar_action_labels()
+    assert labels[:3] == ("New", "Open", "Save")
+    assert "Undo" in labels and "Redo" in labels
+    assert "Solidify" in labels
+    assert "Export OBJ" in labels and "Export glTF" in labels and "Export VOX" in labels

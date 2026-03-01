@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 31: Interface Polish - Top Toolbar Quick Actions
-- Goal: Add compact top toolbar for frequent actions (new/save/open/undo/redo/solidify/export).
-- Likely files/modules touched: `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Key actions available without menu diving.
-- Tests required: Add action wiring tests where feasible.
-- Risk/rollback note: Keep menu actions as source of truth.
-
 ### Task 32: Interface Polish - Status HUD Badges
 - Goal: Show active tool, pick mode, plane, mirror, projection, and nav preset in viewport HUD.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
@@ -619,7 +612,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`165 passed`)
 
 ### Task 30: End-to-End Correctness Sweep
-- Commit: `COMMIT_PENDING`
+- Commit: `bbfa6b6`
 - Added cross-feature command regression for selection move + duplicate with undo/redo sequencing.
 - Added extended project IO regression ensuring modern editor-state keys roundtrip cleanly.
 - Added VOX import regression combining transform mapping and unknown-chunk warning handling.
@@ -636,3 +629,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`169 passed`)
+
+### Task 31: Interface Polish - Top Toolbar Quick Actions
+- Commit: `COMMIT_PENDING`
+- Added top toolbar (`quick_actions_toolbar`) to main window for high-frequency actions.
+- Added quick actions for `New`, `Open`, `Save`.
+- Added quick actions for `Undo`, `Redo`.
+- Added quick action for `Solidify`.
+- Added quick export actions for `Export OBJ`, `Export glTF`, and `Export VOX`.
+- Wired quick-toolbar actions directly to existing main-window handlers.
+- Kept existing menu actions intact as source-of-truth pathways.
+- Added toolbar labels helper for lightweight regression validation.
+- Added regression test verifying expected quick-toolbar action set coverage.
+- Preserved existing shortcut behavior and menu layout.
+- Kept toolbar non-movable for stable top-level layout.
+- No dependency changes.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`170 passed`)

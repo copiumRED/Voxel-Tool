@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMainWindow,
     QMessageBox,
+    QToolBar,
 )
 
 from app.app_context import AppContext
@@ -169,6 +170,20 @@ def _vox_import_part_name(base_name: str, index: int, total: int) -> str:
     return f"{base} Part {int(index) + 1:0{width}d}"
 
 
+def _quick_toolbar_action_labels() -> tuple[str, ...]:
+    return (
+        "New",
+        "Open",
+        "Save",
+        "Undo",
+        "Redo",
+        "Solidify",
+        "Export OBJ",
+        "Export glTF",
+        "Export VOX",
+    )
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -227,6 +242,7 @@ class MainWindow(QMainWindow):
         self._build_view_menu()
         self._build_voxels_menu()
         self._build_debug_menu()
+        self._build_quick_toolbar()
         self._setup_shortcuts()
         self.statusBar().showMessage("Viewport: INITIALIZING | Shader: unknown | OpenGL: unknown")
         self._restore_layout_settings()
@@ -316,6 +332,46 @@ class MainWindow(QMainWindow):
         shortcut_help_action = QAction("Shortcut Help", self)
         shortcut_help_action.triggered.connect(self._on_show_shortcut_help)
         edit_menu.addAction(shortcut_help_action)
+
+    def _build_quick_toolbar(self) -> None:
+        toolbar = QToolBar("Quick Actions", self)
+        toolbar.setObjectName("quick_actions_toolbar")
+        toolbar.setMovable(False)
+        self.addToolBar(Qt.TopToolBarArea, toolbar)
+
+        new_action = QAction("New", self)
+        new_action.triggered.connect(self._on_new_project)
+        toolbar.addAction(new_action)
+        open_action = QAction("Open", self)
+        open_action.triggered.connect(self._on_open_project)
+        toolbar.addAction(open_action)
+        save_action = QAction("Save", self)
+        save_action.triggered.connect(self._on_save_project)
+        toolbar.addAction(save_action)
+        toolbar.addSeparator()
+
+        undo_action = QAction("Undo", self)
+        undo_action.triggered.connect(self._on_undo)
+        toolbar.addAction(undo_action)
+        redo_action = QAction("Redo", self)
+        redo_action.triggered.connect(self._on_redo)
+        toolbar.addAction(redo_action)
+        toolbar.addSeparator()
+
+        solidify_action = QAction("Solidify", self)
+        solidify_action.triggered.connect(self._on_solidify_rebuild_mesh)
+        toolbar.addAction(solidify_action)
+        toolbar.addSeparator()
+
+        export_obj_action = QAction("Export OBJ", self)
+        export_obj_action.triggered.connect(self._on_export_obj)
+        toolbar.addAction(export_obj_action)
+        export_gltf_action = QAction("Export glTF", self)
+        export_gltf_action.triggered.connect(self._on_export_gltf)
+        toolbar.addAction(export_gltf_action)
+        export_vox_action = QAction("Export VOX", self)
+        export_vox_action.triggered.connect(self._on_export_vox)
+        toolbar.addAction(export_vox_action)
 
     def _build_view_menu(self) -> None:
         view_menu = self.menuBar().addMenu("&View")

@@ -1507,3 +1507,17 @@
     - `pytest -q tests/test_gltf_exporter.py`
 - Risks/issues:
   - Interface polish sequence starts at Task 31.
+
+### Roadmap 31 (Day-Cycle 40): Interface Polish - Top Toolbar Quick Actions
+- What was done:
+  - Added top-level quick-actions toolbar for common workflows.
+  - Added toolbar actions for project/file ops, undo/redo, solidify, and exports.
+  - Reused existing handlers to keep behavior consistent with menu actions.
+  - Added regression test for expected quick-toolbar action label coverage.
+- How to test quickly:
+  - Launch app and confirm top toolbar is visible.
+  - Trigger `New/Open/Save`, `Undo/Redo`, `Solidify`, and export actions from toolbar.
+  - Verify behavior matches existing menu actions.
+  - Run: `pytest -q` (current: `170 passed`).
+- Risks/issues:
+  - Status HUD badges remain pending Task 32.
