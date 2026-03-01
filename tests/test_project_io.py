@@ -159,3 +159,27 @@ def test_project_load_allows_unknown_top_level_keys() -> None:
         assert loaded.active_part_id == "part-1"
     finally:
         path.unlink(missing_ok=True)
+
+
+def test_project_load_legacy_part_ids_and_add_new_uuid_part() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"test-project-legacy-id-mix-{uuid.uuid4().hex}.json"
+    payload = {
+        "name": "Legacy IDs",
+        "created_utc": "2026-02-28T00:00:00+00:00",
+        "modified_utc": "2026-02-28T00:00:00+00:00",
+        "version": 1,
+        "scene": {
+            "active_part_id": "part-1",
+            "parts": [{"part_id": "part-1", "name": "Part 1", "voxels": []}],
+        },
+    }
+    try:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        loaded = load_project(str(path))
+        assert loaded.active_part_id == "part-1"
+        new_part = loaded.scene.add_part("New")
+        assert new_part.part_id != "part-1"
+        assert new_part.part_id.startswith("part-")
+        assert len(new_part.part_id) > len("part-1234")
+    finally:
+        path.unlink(missing_ok=True)

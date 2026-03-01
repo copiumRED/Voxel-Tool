@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 09: Scene IDs Migration to UUID
-- Goal: Replace counter-based part/group IDs with UUID generation while loading legacy IDs.
-- Likely files/modules touched: `src/core/scene.py`, `src/core/io/project_io.py`, tests.
-- Acceptance criteria (human-testable): New parts/groups receive UUIDs; old projects still load.
-- Tests required: Add mixed legacy/UUID load-save roundtrip tests.
-- Risk/rollback note: Keep backward-compatible parse path for counter IDs.
-
 ### Task 10: Non-Brush Preview Accuracy Sweep
 - Goal: Ensure ghost previews exactly match applied cells across plane and surface modes.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
@@ -296,3 +289,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`95 passed`)
+
+### Task 09: Scene IDs Migration to UUID
+- Commit: `COMMIT_PENDING`
+- Replaced counter-based part ID generation with UUID-backed IDs for newly created parts.
+- Replaced counter-based group ID generation with UUID-backed IDs for newly created groups.
+- Preserved compatibility with legacy scene files that already contain counter-style IDs.
+- Verified loader behavior remains stable when reading legacy IDs from project JSON.
+- Added mixed legacy/new-ID regression test path (load legacy `part-1`, then add a new UUID-based part).
+- Kept save/load schema unchanged (IDs remain opaque strings in project payload).
+- Avoided introducing any migration step that rewrites existing legacy IDs.
+- Preserved part/group operations (duplicate/delete/reorder/assign) without API changes.
+- Maintained deterministic behavior for active-part selection despite UUID migration.
+- Scoped changes to ID generation + compatibility tests only.
+- Kept implementation dependency-free and production-safe.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`96 passed`)

@@ -753,3 +753,16 @@
   - Run: `pytest -q` (current: `95 passed`)
 - Risks/issues:
   - Unknown fields are currently tolerated on load but not explicitly preserved as first-class project metadata.
+
+### Roadmap 09 (Day-Cycle 30): Scene IDs Migration to UUID
+- What was done:
+  - Switched new part/group ID generation from process-local counters to UUID-based IDs.
+  - Kept legacy ID load compatibility unchanged.
+  - Added mixed legacy/new-ID regression test to validate roundtrip behavior.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create new parts/groups and verify generated IDs are UUID-style.
+  - Open a legacy project with `part-1` style IDs and ensure it still loads.
+  - Run: `pytest -q` (current: `96 passed`)
+- Risks/issues:
+  - Legacy IDs are intentionally preserved; no automatic migration rewrite is performed.

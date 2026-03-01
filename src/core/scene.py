@@ -1,21 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from itertools import count
+from uuid import uuid4
 
 from core.part import Part
 from core.voxels.voxel_grid import VoxelGrid
 
-_PART_ID_COUNTER = count(start=1)
-_GROUP_ID_COUNTER = count(start=1)
-
-
 def _next_part_id() -> str:
-    return f"part-{next(_PART_ID_COUNTER)}"
+    return f"part-{uuid4().hex}"
 
 
 def _next_group_id() -> str:
-    return f"group-{next(_GROUP_ID_COUNTER)}"
+    return f"group-{uuid4().hex}"
 
 
 @dataclass(slots=True)
