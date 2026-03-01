@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 07: Project Schema Version Handshake
-- Goal: Introduce explicit schema version check and migration hook scaffolding.
-- Likely files/modules touched: `src/core/io/project_io.py`, `src/core/project.py`, `tests/test_project_io.py`.
-- Acceptance criteria (human-testable): Older/newer project versions produce deterministic load behavior with clear messages.
-- Tests required: Add version mismatch and migration hook tests.
-- Risk/rollback note: Keep current valid project files fully loadable.
-
 ### Task 08: Save/Open Robustness Sweep
 - Goal: Harden save/open around invalid paths and permission failures.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/project_io.py`.
@@ -337,7 +330,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`130 passed`)
 
 ### Task 06: Recovery Diagnostic Report
-- Commit: `COMMIT_PENDING`
+- Commit: `21916d7`
 - Added dedicated recovery diagnostic file path helper in recovery IO module.
 - Added recovery diagnostic writer utility that records stage, error, snapshot path, and UTC timestamp.
 - Added JSON diagnostic payload schema for operator triage of recovery failures.
@@ -353,3 +346,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`131 passed`)
+
+### Task 07: Project Schema Version Handshake
+- Commit: `COMMIT_PENDING`
+- Added explicit project schema version constants for current and minimum supported versions.
+- Added load-time version type validation with clear error for non-integer schema versions.
+- Added deterministic rejection path for schema versions older than supported minimum.
+- Added deterministic rejection path for schema versions newer than supported runtime version.
+- Added migration hook scaffolding function to centralize future payload version upgrades.
+- Wired payload migration stage into project loading flow before model materialization.
+- Kept current schema happy-path behavior unchanged for version-1 project payloads.
+- Preserved legacy voxels fallback behavior under supported schema versions.
+- Added regression test for too-old schema version rejection behavior.
+- Added regression test for newer-than-supported schema version rejection behavior.
+- Kept save format stable and dependency footprint unchanged.
+- Implemented changes in IO layer only (no UI behavior regressions introduced).
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`133 passed`)

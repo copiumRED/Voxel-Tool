@@ -11,6 +11,8 @@ _REQUIRED_BASE_KEYS = {"name", "created_utc", "modified_utc", "version"}
 _SCENE_KEY = "scene"
 _LEGACY_VOXELS_KEY = "voxels"
 _EDITOR_STATE_KEY = "editor_state"
+CURRENT_PROJECT_SCHEMA_VERSION = 1
+MIN_SUPPORTED_PROJECT_SCHEMA_VERSION = 1
 
 
 def save_project(project: Project, path: str) -> None:
@@ -66,18 +68,36 @@ def load_project(path: str) -> Project:
         missing = sorted(_REQUIRED_BASE_KEYS - keys)
         raise ValueError(f"Invalid project schema (missing keys: {', '.join(missing)}).")
 
+    raw_version = payload["version"]
+    try:
+        payload_version = int(raw_version)
+    except (TypeError, ValueError):
+        raise ValueError("Invalid project schema (version must be an integer).")
+    if payload_version < MIN_SUPPORTED_PROJECT_SCHEMA_VERSION:
+        raise ValueError(
+            f"Project schema version {payload_version} is too old; minimum supported is "
+            f"{MIN_SUPPORTED_PROJECT_SCHEMA_VERSION}."
+        )
+    if payload_version > CURRENT_PROJECT_SCHEMA_VERSION:
+        raise ValueError(
+            f"Project schema version {payload_version} is newer than supported "
+            f"version {CURRENT_PROJECT_SCHEMA_VERSION}."
+        )
+
+    payload_migrated = _migrate_payload(payload, payload_version, CURRENT_PROJECT_SCHEMA_VERSION)
+
     project = Project(
-        name=str(payload["name"]),
-        created_utc=str(payload["created_utc"]),
-        modified_utc=str(payload["modified_utc"]),
-        version=int(payload["version"]),
+        name=str(payload_migrated["name"]),
+        created_utc=str(payload_migrated["created_utc"]),
+        modified_utc=str(payload_migrated["modified_utc"]),
+        version=int(payload_migrated["version"]),
     )
-    editor_state = payload.get(_EDITOR_STATE_KEY, {})
+    editor_state = payload_migrated.get(_EDITOR_STATE_KEY, {})
     if not isinstance(editor_state, dict):
         raise ValueError("Invalid project schema (editor_state must be an object).")
     project.editor_state = editor_state
 
-    scene_payload = payload.get(_SCENE_KEY)
+    scene_payload = payload_migrated.get(_SCENE_KEY)
     if isinstance(scene_payload, dict):
         parts_payload = scene_payload.get("parts")
         if not isinstance(parts_payload, list):
@@ -143,7 +163,7 @@ def load_project(path: str) -> Project:
 
         project.scene = scene
     else:
-        project.voxels = VoxelGrid.from_list(payload.get(_LEGACY_VOXELS_KEY, []))
+        project.voxels = VoxelGrid.from_list(payload_migrated.get(_LEGACY_VOXELS_KEY, []))
 
     return project
 
@@ -155,3 +175,16 @@ def _parse_vec3(value, *, default: tuple[float, float, float]) -> tuple[float, f
         return (float(value[0]), float(value[1]), float(value[2]))
     except (TypeError, ValueError):
         return default
+
+
+def _migrate_payload(
+    payload: dict[str, object],
+    from_version: int,
+    target_version: int,
+) -> dict[str, object]:
+    if from_version == target_version:
+        return payload
+    migrated = dict(payload)
+    # Migration scaffolding placeholder for future schema upgrades.
+    migrated["version"] = target_version
+    return migrated

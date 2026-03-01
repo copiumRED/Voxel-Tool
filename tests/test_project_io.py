@@ -87,6 +87,40 @@ def test_project_load_validates_required_keys() -> None:
         path.unlink(missing_ok=True)
 
 
+def test_project_load_rejects_older_than_supported_schema_version() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"test-project-old-version-{uuid.uuid4().hex}.json"
+    payload = {
+        "name": "Demo",
+        "created_utc": "2026-02-28T00:00:00+00:00",
+        "modified_utc": "2026-02-28T00:00:00+00:00",
+        "version": 0,
+        "voxels": [],
+    }
+    try:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match="too old"):
+            load_project(str(path))
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_project_load_rejects_newer_schema_version() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"test-project-new-version-{uuid.uuid4().hex}.json"
+    payload = {
+        "name": "Demo",
+        "created_utc": "2026-02-28T00:00:00+00:00",
+        "modified_utc": "2026-02-28T00:00:00+00:00",
+        "version": 999,
+        "voxels": [],
+    }
+    try:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match="newer than supported"):
+            load_project(str(path))
+    finally:
+        path.unlink(missing_ok=True)
+
+
 def test_project_load_older_schema_without_voxels() -> None:
     path = get_app_temp_dir("VoxelTool") / f"test-project-legacy-{uuid.uuid4().hex}.json"
     legacy_payload = {

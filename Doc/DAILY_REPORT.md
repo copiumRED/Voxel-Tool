@@ -1160,3 +1160,16 @@
   - Run: `pytest -q` (current: `131 passed`).
 - Risks/issues:
   - Project schema handshake/migration scaffolding remains pending Task 07.
+
+### Roadmap 07 (Day-Cycle 40): Project Schema Version Handshake
+- What was done:
+  - Added explicit schema version handshake checks in `load_project`.
+  - Added deterministic errors for too-old and newer-than-supported schema versions.
+  - Added migration-hook scaffolding (`_migrate_payload`) for future schema upgrades.
+  - Added regression tests covering old/new schema version rejection paths.
+- How to test quickly:
+  - Create project payload with `version: 0` and verify load fails with \"too old\" message.
+  - Create payload with `version: 999` and verify load fails with \"newer than supported\" message.
+  - Run: `pytest -q` (current: `133 passed`).
+- Risks/issues:
+  - Save/open robustness edge-case UX handling remains pending Task 08.
