@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **80%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **81%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Export options still expose format-mismatched controls
-- Symptoms: export dialogs can imply options that are not honored for some formats.
-- Suspected root cause: shared options model is partially format-agnostic.
-- Exact files: `src/app/ui/main_window.py`, `src/core/export/gltf_exporter.py`, `src/core/export/vox_exporter.py`.
-- Fastest confirmation: compare dialog options and output changes across OBJ/glTF/VOX.
+1. glTF export still lacks scale preset application
+- Symptoms: glTF output does not yet honor scale presets from export workflow.
+- Suspected root cause: glTF exporter has no scale-factor input path.
+- Exact files: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
+- Fastest confirmation: export same model with different presets and compare position magnitudes.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

@@ -76,12 +76,14 @@ class _ExportOptionsDialog(QDialog):
         self.scale_preset_combo = QComboBox(self)
         self.scale_preset_combo.addItems(["Unity (1m)", "Unreal (1cm)", "Custom (placeholder)"])
         self.scale_preset_combo.setCurrentText(options.scale_preset)
+        capabilities = _export_dialog_capabilities(format_name)
 
-        if format_name == "OBJ":
+        if capabilities["obj_controls"]:
             layout.addRow(self.obj_greedy_checkbox)
             layout.addRow(self.obj_triangulate_checkbox)
             layout.addRow("Pivot Mode", self.obj_pivot_combo)
-        layout.addRow("Scale Preset", self.scale_preset_combo)
+        if capabilities["scale_preset"]:
+            layout.addRow("Scale Preset", self.scale_preset_combo)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, parent=self)
         buttons.accepted.connect(self.accept)
@@ -93,12 +95,15 @@ class _ExportOptionsDialog(QDialog):
             obj_use_greedy_mesh=self._options.obj_use_greedy_mesh,
             obj_triangulate=self._options.obj_triangulate,
             obj_pivot_mode=self._options.obj_pivot_mode,
-            scale_preset=self.scale_preset_combo.currentText(),
+            scale_preset=self._options.scale_preset,
         )
-        if self._format_name == "OBJ":
+        capabilities = _export_dialog_capabilities(self._format_name)
+        if capabilities["obj_controls"]:
             next_options.obj_use_greedy_mesh = self.obj_greedy_checkbox.isChecked()
             next_options.obj_triangulate = self.obj_triangulate_checkbox.isChecked()
             next_options.obj_pivot_mode = self.obj_pivot_combo.currentText().strip().lower()
+        if capabilities["scale_preset"]:
+            next_options.scale_preset = self.scale_preset_combo.currentText()
         return next_options
 
 
@@ -107,6 +112,14 @@ def _scale_factor_from_preset(preset: str) -> float:
     if "unreal" in normalized:
         return 100.0
     return 1.0
+
+
+def _export_dialog_capabilities(format_name: str) -> dict[str, bool]:
+    normalized = format_name.strip().upper()
+    return {
+        "obj_controls": normalized == "OBJ",
+        "scale_preset": normalized == "OBJ",
+    }
 
 
 class MainWindow(QMainWindow):
@@ -532,14 +545,14 @@ class MainWindow(QMainWindow):
         )
         if stats.triangle_count == 0:
             self.statusBar().showMessage(
-                f"No voxels to export | Exported glTF: {path} | Scale: {export_options.scale_preset}",
+                f"No voxels to export | Exported glTF: {path}",
                 5000,
             )
             return
         self.statusBar().showMessage(
             (
                 f"Exported glTF: {path} | Vertices: {stats.vertex_count} | "
-                f"Triangles: {stats.triangle_count} | Scale: {export_options.scale_preset}"
+                f"Triangles: {stats.triangle_count}"
             ),
             5000,
         )
@@ -559,15 +572,14 @@ class MainWindow(QMainWindow):
         stats = export_voxels_to_vox(self.context.current_project.voxels, self.context.palette, path)
         if stats.voxel_count == 0:
             self.statusBar().showMessage(
-                f"No voxels to export | Exported VOX: {path} | Scale: {export_options.scale_preset}",
+                f"No voxels to export | Exported VOX: {path}",
                 5000,
             )
             return
         sx, sy, sz = stats.size
         self.statusBar().showMessage(
             (
-                f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz} | "
-                f"Scale: {export_options.scale_preset}"
+                f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz}"
             ),
             5000,
         )

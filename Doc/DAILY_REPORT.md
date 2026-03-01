@@ -699,3 +699,17 @@
   - Run: `pytest -q` (current: `90 passed`)
 - Risks/issues:
   - Orthographic projection mode for precision workflows is still pending Task 11.
+
+### Roadmap 05 (Day-Cycle 30): Export Options Truthfulness Pass
+- What was done:
+  - Added export-dialog capability mapping by format in main window.
+  - Restricted unsupported options from non-OBJ dialogs (glTF/VOX).
+  - Removed misleading scale text from glTF/VOX export status messages.
+  - Added tests validating OBJ vs glTF vs VOX dialog capability behavior.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Open `File -> Export glTF` and `File -> Export VOX`; confirm unsupported OBJ/scale controls are not shown.
+  - Open `File -> Export OBJ`; confirm OBJ controls remain available.
+  - Run: `pytest -q` (current: `93 passed`)
+- Risks/issues:
+  - glTF scale support itself is still pending Task 06.

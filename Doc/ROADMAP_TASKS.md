@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 05: Export Options Truthfulness Pass
-- Goal: Show only options that actually affect each export format.
-- Likely files/modules touched: `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): glTF/VOX dialogs no longer imply unsupported scale/material options.
-- Tests required: Add dialog option visibility tests by format.
-- Risk/rollback note: If dialog complexity increases, retain core options and defer advanced controls.
-
 ### Task 06: glTF Scale Preset Application
 - Goal: Apply export scale presets to glTF output positions.
 - Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
@@ -256,3 +249,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`90 passed`)
+
+### Task 05: Export Options Truthfulness Pass
+- Commit: `a13d94a`
+- Added explicit export-dialog capability mapping to control per-format option visibility.
+- Restricted OBJ-only controls (greedy/triangulate/pivot) to OBJ export dialog only.
+- Hid unsupported scale preset control for glTF and VOX dialogs.
+- Updated option serialization flow so non-supported controls are not applied to non-OBJ formats.
+- Updated glTF/VOX status messaging to remove misleading scale text.
+- Preserved existing OBJ behavior and session option persistence for supported controls.
+- Added focused tests for export-dialog capability mapping (OBJ vs glTF vs VOX).
+- Confirmed no changes to exporter geometry logic in this task (format truthfulness only).
+- Kept implementation in UI/options layer without dependency changes.
+- Preserved compatibility with upcoming Task 06 (glTF scale support) by centralizing capability mapping.
+- Maintained atomic scope and production-safe behavior.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`93 passed`)
