@@ -121,20 +121,11 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added periodic autosave timer in main window and startup recovery prompt flow.
 - Added recovery snapshot regression test covering save/load/clear behavior.
 
-## Remaining Tasks
-
 ### Task 20: Shortcut/Undo Depth Preferences + Day-End QA Gate
-- Goal:
-  - Finalize usability controls and run full gate before operator handoff.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/core/commands/command_stack.py`
-  - `src/app/settings.py`
-  - `Doc/DAILY_REPORT.md`
-- Acceptance criteria (human-testable):
-  - Undo depth preference is configurable and applied.
-  - Shortcut map additions are discoverable in UI/help.
-  - Full gate passes: launch, `pytest -q`, save/open, export OBJ/VOX, viewport interaction.
-- Tests required:
-  - Command stack cap tests.
-  - End-to-end smoke checklist execution.
+- Commit: `COMMIT_PENDING`
+- Added configurable undo-depth support in command stack with cap enforcement and trimming behavior.
+- Added `Edit -> Set Undo Depth` and `Edit -> Shortcut Help` actions, plus editor-state persistence for undo depth.
+- Completed day-end gate run: app launch smoke, full test suite, and save/open/export smoke script.
+
+## Remaining Tasks
+- None.

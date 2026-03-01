@@ -22,11 +22,12 @@ class _CompoundCommand(Command):
 
 
 class CommandStack:
-    def __init__(self) -> None:
+    def __init__(self, *, max_undo_steps: int = 200) -> None:
         self.undo_stack: list[Command] = []
         self.redo_stack: list[Command] = []
         self._transaction_commands: list[Command] | None = None
         self._transaction_label: str | None = None
+        self.max_undo_steps = max(1, int(max_undo_steps))
 
     @property
     def can_undo(self) -> bool:
@@ -42,6 +43,7 @@ class CommandStack:
             self._transaction_commands.append(command)
         else:
             self.undo_stack.append(command)
+            self._trim_undo_stack()
         self.redo_stack.clear()
 
     def undo(self, ctx) -> None:
@@ -62,6 +64,10 @@ class CommandStack:
         self.undo_stack.clear()
         self.redo_stack.clear()
 
+    def set_max_undo_steps(self, max_steps: int) -> None:
+        self.max_undo_steps = max(1, int(max_steps))
+        self._trim_undo_stack()
+
     def begin_transaction(self, label: str = "Transaction") -> None:
         if self._transaction_commands is not None:
             raise RuntimeError("A transaction is already active.")
@@ -80,5 +86,12 @@ class CommandStack:
             return
         if len(commands) == 1:
             self.undo_stack.append(commands[0])
+            self._trim_undo_stack()
             return
         self.undo_stack.append(_CompoundCommand(commands, label=label))
+        self._trim_undo_stack()
+
+    def _trim_undo_stack(self) -> None:
+        overflow = len(self.undo_stack) - self.max_undo_steps
+        if overflow > 0:
+            del self.undo_stack[:overflow]

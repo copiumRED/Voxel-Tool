@@ -234,6 +234,15 @@ class MainWindow(QMainWindow):
         self.redo_action.triggered.connect(self._on_redo)
         edit_menu.addAction(self.redo_action)
 
+        edit_menu.addSeparator()
+        set_undo_depth_action = QAction("Set Undo Depth", self)
+        set_undo_depth_action.triggered.connect(self._on_set_undo_depth)
+        edit_menu.addAction(set_undo_depth_action)
+
+        shortcut_help_action = QAction("Shortcut Help", self)
+        shortcut_help_action.triggered.connect(self._on_show_shortcut_help)
+        edit_menu.addAction(shortcut_help_action)
+
     def _build_view_menu(self) -> None:
         view_menu = self.menuBar().addMenu("&View")
 
@@ -604,6 +613,33 @@ class MainWindow(QMainWindow):
         self._show_voxel_status("Redo")
         self._refresh_ui_state()
 
+    def _on_set_undo_depth(self) -> None:
+        value, accepted = QInputDialog.getInt(
+            self,
+            "Undo Depth",
+            "Maximum undo steps:",
+            self.context.command_stack.max_undo_steps,
+            1,
+            5000,
+            1,
+        )
+        if not accepted:
+            return
+        self.context.command_stack.set_max_undo_steps(value)
+        self._show_voxel_status(f"Undo depth: {value}")
+        self._refresh_ui_state()
+
+    def _on_show_shortcut_help(self) -> None:
+        QMessageBox.information(
+            self,
+            "Shortcut Help",
+            "Tools: B/X/L/F\n"
+            "Modes: P/E\n"
+            "Palette: 1..0\n"
+            "Camera: Shift+F frame, Shift+R reset\n"
+            "Views: Ctrl+1..Ctrl+6",
+        )
+
     def _on_demo_add_random_voxel(self) -> None:
         x = random.randint(-5, 5)
         y = random.randint(-5, 5)
@@ -821,6 +857,7 @@ class MainWindow(QMainWindow):
             "grid_spacing": self.context.grid_spacing,
             "camera_snap_enabled": self.context.camera_snap_enabled,
             "camera_snap_degrees": self.context.camera_snap_degrees,
+            "undo_depth": self.context.command_stack.max_undo_steps,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
             "mirror_z_enabled": self.context.mirror_z_enabled,
@@ -862,6 +899,9 @@ class MainWindow(QMainWindow):
         self.context.camera_snap_degrees = max(
             1,
             int(state.get("camera_snap_degrees", self.context.camera_snap_degrees)),
+        )
+        self.context.command_stack.set_max_undo_steps(
+            int(state.get("undo_depth", self.context.command_stack.max_undo_steps))
         )
 
         self.context.mirror_x_enabled = bool(state.get("mirror_x_enabled", self.context.mirror_x_enabled))

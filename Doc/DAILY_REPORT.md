@@ -257,6 +257,20 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 20 (Next Workday): Shortcut/Undo Depth Preferences + Day-End QA Gate
+- What was done:
+  - Added undo-depth cap support in `CommandStack` and limit-trimming behavior.
+  - Added `Edit -> Set Undo Depth` and `Edit -> Shortcut Help` actions.
+  - Added undo-depth persistence via editor state save/load.
+  - Completed full task gate: launch smoke, `pytest -q`, and save/open/export smoke script.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Edit menu, set undo depth and verify high-volume edits trim history to configured cap.
+  - Open shortcut help dialog and verify shortcut map discoverability.
+  - Run: `pytest -q` (current: `82 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).
@@ -264,6 +278,21 @@
   - Network access restriction in execution environment.
 - Minimal next experiment:
   - Run `git ls-remote origin` from same environment; if it fails, validate proxy/VPN/firewall settings, then retry `git pull` and `git push`.
+
+## End of Day Summary
+- Tasks completed (today run): 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+- Operator must test (checklist):
+  - Viewport workflow: brush/box/line/fill previews, mirror/offset, camera presets, grid/snap controls.
+  - Part workflow: transform, reorder, grouping, visibility/lock behavior.
+  - Palette workflow: edit/add/remove/swap + hotkeys `1-0`.
+  - IO/recovery workflow: save/open plus forced-close recovery prompt flow.
+  - Interop/export workflow: VOX import (single + multi-model), OBJ export (pivot/scale/UV/vertex-color/MTL), VOX export.
+  - Stats/perf workflow: runtime metrics row and solidify rebuild timing updates.
+- Known issues:
+  - Remote `git pull`/`git push` remains blocked by environment network restrictions.
+  - Task 17 process deviation: commit landed directly on `main` (`00424f8`) before branch isolation; content is tested and merged locally.
+- Recommended next task number for tomorrow:
+  - No remaining tasks in this board; next work should start from operator findings or a newly authored roadmap.
 
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:

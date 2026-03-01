@@ -303,3 +303,12 @@ def test_app_context_pick_mode_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_pick_mode("surface")
     assert ctx.pick_mode == AppContext.PICK_MODE_SURFACE
+
+
+def test_command_stack_respects_max_undo_depth_cap() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.command_stack.set_max_undo_steps(2)
+    ctx.command_stack.do(PaintVoxelCommand(0, 0, 0, 1), ctx)
+    ctx.command_stack.do(PaintVoxelCommand(1, 0, 0, 1), ctx)
+    ctx.command_stack.do(PaintVoxelCommand(2, 0, 0, 1), ctx)
+    assert len(ctx.command_stack.undo_stack) == 2

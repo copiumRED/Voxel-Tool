@@ -57,6 +57,7 @@ Reasoning:
 - Correction 41: Incremental solidify v1 is implemented using dirty-region tracking with full-rebuild equivalence coverage on localized edits.
 - Correction 42: Runtime stats diagnostics now show frame timing, rebuild timing, scene tris, and active voxel count in Stats panel.
 - Correction 43: Autosave + crash recovery v1 is implemented with startup restore prompt and snapshot lifecycle tests.
+- Correction 44: Undo depth preference is now configurable and persisted, with command-stack cap enforcement.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
