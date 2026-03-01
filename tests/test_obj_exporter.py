@@ -138,11 +138,39 @@ def test_export_obj_applies_scale_and_center_pivot() -> None:
         path.with_suffix(".mtl").unlink(missing_ok=True)
 
 
+def test_export_obj_writes_uv_coordinates_and_uv_faces() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 0)
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-uv-{uuid.uuid4().hex}.obj"
+    try:
+        export_voxels_to_obj(voxels, list(DEFAULT_PALETTE), str(path))
+        text = path.read_text(encoding="utf-8")
+        assert "vt " in text
+        assert "/" in next(line for line in text.splitlines() if line.startswith("f "))
+    finally:
+        path.unlink(missing_ok=True)
+        path.with_suffix(".mtl").unlink(missing_ok=True)
+
+
+def test_export_obj_writes_vertex_color_extension_values() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 1)
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-vcolor-{uuid.uuid4().hex}.obj"
+    try:
+        export_voxels_to_obj(voxels, list(DEFAULT_PALETTE), str(path))
+        vertex_line = next(line for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("v "))
+        assert len(vertex_line.split()) == 7
+    finally:
+        path.unlink(missing_ok=True)
+        path.with_suffix(".mtl").unlink(missing_ok=True)
+
+
 def _read_vertices(path: Path) -> list[tuple[float, float, float]]:
     vertices: list[tuple[float, float, float]] = []
     with open(path, "r", encoding="utf-8") as file_obj:
         for line in file_obj:
             if line.startswith("v "):
-                _, x, y, z = line.strip().split(" ")
+                tokens = line.strip().split(" ")
+                _, x, y, z = tokens[:4]
                 vertices.append((float(x), float(y), float(z)))
     return vertices

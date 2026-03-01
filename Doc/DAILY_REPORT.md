@@ -206,6 +206,18 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 16 (Next Workday): Basic UV Projection + Vertex Color Export Path
+- What was done:
+  - Added basic OBJ UV output (`vt`) and UV-indexed face records.
+  - Added OBJ vertex-color extension output on vertex lines using palette-derived RGB values.
+  - Added regression tests for UV presence and vertex-color export structure.
+- How to test quickly:
+  - Export OBJ from app and inspect file for `vt` entries and `f v/vt...` records.
+  - Verify `v` lines include RGB extension values.
+  - Run: `pytest -q` (current: `79 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).

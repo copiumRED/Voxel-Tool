@@ -97,23 +97,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added regression tests validating outward-facing normals for both naive and greedy meshes on canonical voxel fixtures.
 - Confirmed mesh winding/normal orientation remains consistent under current extraction paths.
 
-## Remaining Tasks
-
 ### Task 16: Basic UV Projection + Vertex Color Export Path
-- Goal:
-  - Add basic UV coordinates and preserve color path as defined in spec scope.
-- Files/modules likely touched:
-  - `src/core/meshing/*`
-  - `src/core/export/obj_exporter.py`
-  - `src/core/export/gltf_exporter.py`
-- Acceptance criteria (human-testable):
-  - Exported mesh contains UVs for basic projection workflow.
-  - Vertex color path remains intact for supported exporter targets.
-- Tests required:
-  - UV buffer generation tests.
-  - Export structure tests for UV/color presence.
-- Risk/rollback note:
-  - If UV generation introduces topology bugs, ship UV-disabled fallback toggle and keep color path stable.
+- Commit: `COMMIT_PENDING`
+- Added OBJ UV emission (`vt`) with face texture-index output for both quad and triangulated face modes.
+- Added OBJ vertex-color extension output (`v x y z r g b`) driven by face palette mapping.
+- Added regression tests validating UV presence, UV-indexed faces, and vertex-color record output.
+
+## Remaining Tasks
 
 ### Task 17: Incremental Solidify Rebuild (Dirty Region v1)
 - Goal:

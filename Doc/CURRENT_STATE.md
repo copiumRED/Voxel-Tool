@@ -53,6 +53,7 @@ Reasoning:
 - Correction 37: `.qb` feasibility note and scope guardrail are now documented; implementation is deferred pending fixture/compatibility gates.
 - Correction 38: OBJ export now applies scale/pivot options and emits MTL material references for improved DCC/engine import behavior.
 - Correction 39: Mesh normal validation coverage is now in place for naive and greedy extraction paths with outward-normal checks.
+- Correction 40: OBJ export now includes basic UV output and vertex-color extension path for downstream pipeline compatibility.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

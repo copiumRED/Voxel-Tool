@@ -15,6 +15,8 @@ class ObjExportOptions:
     scale_factor: float = 1.0
     pivot_mode: str = "none"
     write_mtl: bool = True
+    write_uvs: bool = True
+    write_vertex_colors: bool = True
 
 
 def export_voxels_to_obj(
@@ -31,6 +33,7 @@ def export_voxels_to_obj(
         pivot_mode=export_options.pivot_mode,
         scale_factor=export_options.scale_factor,
     )
+    vertex_colors = _build_vertex_color_map(export_mesh, palette)
 
     mtl_name = ""
     if export_options.write_mtl and export_mesh.face_count > 0:
@@ -46,14 +49,37 @@ def export_voxels_to_obj(
             file_obj.write(f"mtllib {mtl_name}\n")
             file_obj.write("usemtl voxel_default\n")
 
-        for vx, vy, vz in transformed_vertices:
-            file_obj.write(f"v {vx} {vy} {vz}\n")
-        for a, b, c, d in export_mesh.quads:
-            if export_options.triangulate:
-                file_obj.write(f"f {a + 1} {b + 1} {c + 1}\n")
-                file_obj.write(f"f {a + 1} {c + 1} {d + 1}\n")
+        for index, (vx, vy, vz) in enumerate(transformed_vertices):
+            if export_options.write_vertex_colors and index in vertex_colors:
+                r, g, b = vertex_colors[index]
+                file_obj.write(f"v {vx} {vy} {vz} {r} {g} {b}\n")
             else:
-                file_obj.write(f"f {a + 1} {b + 1} {c + 1} {d + 1}\n")
+                file_obj.write(f"v {vx} {vy} {vz}\n")
+
+        quad_uv_indices: list[tuple[int, int, int, int]] = []
+        if export_options.write_uvs:
+            for _ in export_mesh.quads:
+                base = len(quad_uv_indices) * 4
+                file_obj.write("vt 0.0 0.0\n")
+                file_obj.write("vt 1.0 0.0\n")
+                file_obj.write("vt 1.0 1.0\n")
+                file_obj.write("vt 0.0 1.0\n")
+                quad_uv_indices.append((base + 1, base + 2, base + 3, base + 4))
+
+        for face_index, (a, b, c, d) in enumerate(export_mesh.quads):
+            uv = quad_uv_indices[face_index] if export_options.write_uvs else None
+            if export_options.triangulate:
+                if uv is not None:
+                    file_obj.write(f"f {a + 1}/{uv[0]} {b + 1}/{uv[1]} {c + 1}/{uv[2]}\n")
+                    file_obj.write(f"f {a + 1}/{uv[0]} {c + 1}/{uv[2]} {d + 1}/{uv[3]}\n")
+                else:
+                    file_obj.write(f"f {a + 1} {b + 1} {c + 1}\n")
+                    file_obj.write(f"f {a + 1} {c + 1} {d + 1}\n")
+            else:
+                if uv is not None:
+                    file_obj.write(f"f {a + 1}/{uv[0]} {b + 1}/{uv[1]} {c + 1}/{uv[2]} {d + 1}/{uv[3]}\n")
+                else:
+                    file_obj.write(f"f {a + 1} {b + 1} {c + 1} {d + 1}\n")
 
 
 def _transform_vertices(
@@ -93,3 +119,22 @@ def _write_mtl_file(path: Path, palette: list[tuple[int, int, int]]) -> None:
         file_obj.write("# VoxelTool MTL export\n")
         file_obj.write("newmtl voxel_default\n")
         file_obj.write(f"Kd {kd[0]} {kd[1]} {kd[2]}\n")
+
+
+def _build_vertex_color_map(
+    mesh: SurfaceMesh,
+    palette: list[tuple[int, int, int]],
+) -> dict[int, tuple[float, float, float]]:
+    if not palette:
+        return {}
+    colors: dict[int, tuple[float, float, float]] = {}
+    for face_index, quad in enumerate(mesh.quads):
+        color_index = 0
+        if face_index < len(mesh.face_colors):
+            color_index = int(mesh.face_colors[face_index]) % len(palette)
+        r, g, b = palette[color_index]
+        rgb = (float(r) / 255.0, float(g) / 255.0, float(b) / 255.0)
+        for vertex_index in quad:
+            if vertex_index not in colors:
+                colors[vertex_index] = rgb
+    return colors
