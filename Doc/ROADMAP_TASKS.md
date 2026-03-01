@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 08: Save/Open Robustness Sweep
-- Goal: Harden save/open around invalid paths and permission failures.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/project_io.py`.
-- Acceptance criteria (human-testable): Save/open failures show actionable messages and do not corrupt loaded state.
-- Tests required: Add IO exception-path tests.
-- Risk/rollback note: Preserve current successful path behavior.
-
 ### Task 09: Scene Outliner Search Filter
 - Goal: Add filter/search for parts/groups in inspector.
 - Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `tests/test_scene_parts.py`.
@@ -348,7 +341,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`131 passed`)
 
 ### Task 07: Project Schema Version Handshake
-- Commit: `COMMIT_PENDING`
+- Commit: `ffe7c1b`
 - Added explicit project schema version constants for current and minimum supported versions.
 - Added load-time version type validation with clear error for non-integer schema versions.
 - Added deterministic rejection path for schema versions older than supported minimum.
@@ -364,3 +357,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`133 passed`)
+
+### Task 08: Save/Open Robustness Sweep
+- Commit: `COMMIT_PENDING`
+- Added project IO error-detail helper to produce actionable open/save failure messaging with path context.
+- Updated open-project failure dialog to include operation name, path, and raw exception detail.
+- Updated save-as flow to set `current_path` only after successful write.
+- Added save-path helper return status to prevent state mutation on failed save.
+- Added save failure dialog path with operation-aware error text.
+- Preserved successful save path behavior and status-bar success messaging.
+- Preserved open success path behavior and post-load UI refresh flow.
+- Kept IO hardening scoped to main-window open/save entry points (no export changes).
+- Added regression test for project-IO error detail formatting.
+- Improved operator/user triage signal for path/permission errors.
+- Avoided adding new dependencies or changing project schema.
+- Maintained compatibility with existing open/save roundtrip tests.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`134 passed`)

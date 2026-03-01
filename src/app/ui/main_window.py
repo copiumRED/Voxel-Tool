@@ -147,6 +147,12 @@ def _next_brush_size(current: int, *, min_size: int = 1, max_size: int = 3) -> i
     return min_size + ((current_value - min_size + 1) % (max_size - min_size + 1))
 
 
+def _project_io_error_detail(action: str, path: str, exc: Exception) -> str:
+    label = str(action).strip() or "Project IO"
+    target = str(path).strip() or "<unknown>"
+    return f"{label} failed.\nPath: {target}\n\nDetails: {exc}"
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -475,8 +481,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Open Project Failed",
-                "Failed to open project file. The file may be invalid or corrupt.\n\n"
-                f"Details: {exc}",
+                _project_io_error_detail("Open Project", path, exc),
             )
             return
         self.context.current_project = project
@@ -502,14 +507,23 @@ class MainWindow(QMainWindow):
         )
         if not path:
             return
-        self.context.current_path = path
-        self._save_to_path(path)
+        if self._save_to_path(path):
+            self.context.current_path = path
 
-    def _save_to_path(self, path: str) -> None:
+    def _save_to_path(self, path: str) -> bool:
         self.context.current_project.modified_utc = utc_now_iso()
         self.context.current_project.editor_state = self._capture_editor_state()
-        save_project(self.context.current_project, path)
+        try:
+            save_project(self.context.current_project, path)
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Save Project Failed",
+                _project_io_error_detail("Save Project", path, exc),
+            )
+            return False
         self.statusBar().showMessage(f"Saved: {path}", 5000)
+        return True
 
     def _on_export_obj(self) -> None:
         export_options = self._prompt_export_options("OBJ")

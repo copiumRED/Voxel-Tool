@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
-from app.ui.main_window import _next_brush_size
+from app.ui.main_window import _next_brush_size, _project_io_error_detail
 from core.project import Project
 from PySide6.QtCore import Qt
 import pytest
@@ -60,3 +60,10 @@ def test_camera_sensitivity_helpers_follow_context_values() -> None:
     assert GLViewportWidget._orbit_sensitivity(ctx) == pytest.approx(0.6)
     assert GLViewportWidget._pan_sensitivity(ctx) == 2.0
     assert GLViewportWidget._zoom_sensitivity(ctx) == 0.5
+
+
+def test_project_io_error_detail_includes_action_path_and_message() -> None:
+    detail = _project_io_error_detail("Save Project", "C:/tmp/demo.json", RuntimeError("disk full"))
+    assert "Save Project failed." in detail
+    assert "C:/tmp/demo.json" in detail
+    assert "disk full" in detail

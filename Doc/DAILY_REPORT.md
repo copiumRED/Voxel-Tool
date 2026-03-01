@@ -1173,3 +1173,17 @@
   - Run: `pytest -q` (current: `133 passed`).
 - Risks/issues:
   - Save/open robustness edge-case UX handling remains pending Task 08.
+
+### Roadmap 08 (Day-Cycle 40): Save/Open Robustness Sweep
+- What was done:
+  - Added path-aware project IO error formatter for open/save failures.
+  - Updated open-project failure dialog to show operation, path, and exception details.
+  - Updated save-as flow so `current_path` only updates after successful write.
+  - Added save helper success/failure return path and user warning on failure.
+  - Added regression test validating project-IO error detail format output.
+- How to test quickly:
+  - Attempt open on invalid/corrupt JSON and verify path-aware error dialog.
+  - Attempt save to inaccessible path and verify save failure dialog appears without path state corruption.
+  - Run: `pytest -q` (current: `134 passed`).
+- Risks/issues:
+  - Scene outliner search/filter remains pending Task 09.
