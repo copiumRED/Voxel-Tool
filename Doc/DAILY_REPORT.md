@@ -1065,3 +1065,12 @@
   - `git checkout main`
   - `git fetch origin`
   - `git push origin main`
+
+## Connectivity Blocker (2026-03-01 03:57:17 +02:00)
+- Exact error output:
+  - `fatal: unable to access 'https://github.com/copiumRED/Voxel-Tool.git/': Failed to connect to github.com port 443 after 32 ms: Could not connect to server`
+  - `fatal: unable to access 'https://github.com/copiumRED/Voxel-Tool.git/': Failed to connect to github.com port 443 after 68 ms: Could not connect to server`
+- Suspected cause:
+  - Intermittent local network/proxy/VPN/firewall path to GitHub HTTPS endpoint.
+- Minimal next experiment:
+  - Verify GitHub in browser, then run `git fetch origin` and `git push origin main` again from same shell/session.
