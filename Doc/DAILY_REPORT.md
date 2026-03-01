@@ -980,3 +980,14 @@
   - Run: `pytest -q` (current: `118 passed`)
 - Risks/issues:
   - Canonical source-tree guardrail is still pending Task 27.
+
+### Roadmap 27 (Day-Cycle 30): Canonical Source Tree Guardrail
+- What was done:
+  - Added immutable legacy-tree hash manifest at `tests/fixtures/legacy_tree_manifest.txt`.
+  - Added `tests/test_source_tree_guard.py` to block accidental edits under `src/voxel_tool`.
+  - Updated README and `Doc/INDEX.md` with canonical source-path policy and guardrail notes.
+- How to test quickly:
+  - Run: `pytest -q` and verify `test_source_tree_guard.py` passes.
+  - Confirm docs point contributors to `src/app`, `src/core`, and `src/util` as canonical paths.
+- Risks/issues:
+  - Packaging script diagnostics and artifact checks remain pending Task 28.

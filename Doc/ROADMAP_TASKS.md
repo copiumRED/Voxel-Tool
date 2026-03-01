@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 27: Canonical Source Tree Guardrail
-- Goal: Prevent accidental edits under legacy `src/voxel_tool` tree.
-- Likely files/modules touched: `README.md`, `Doc/INDEX.md`, optional test/lint guard file.
-- Acceptance criteria (human-testable): Contributor docs clearly define canonical runtime path and guardrail is testable.
-- Tests required: Add lightweight test/CI check for banned-path edits if feasible.
-- Risk/rollback note: If guardrail automation is noisy, keep documentation warning and pre-commit note.
-
 ### Task 28: Packaging Script Hardening + Exit Diagnostics
 - Goal: Improve packaging script diagnostics and deterministic artifact checks.
 - Likely files/modules touched: `tools/package_windows.ps1`, `Doc/PACKAGING_CHECKLIST.md`.
@@ -461,7 +454,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`117 passed`)
 
 ### Task 26: Recovery Snapshot Version Stamp
-- Commit: `COMMIT_PENDING`
+- Commit: `3fdf567`
 - Added explicit recovery version marker key in snapshot editor-state payload.
 - Added recovery snapshot save path stamping with current recovery version.
 - Added recovery load validation for version marker type and compatibility.
@@ -476,3 +469,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`118 passed`)
+
+### Task 27: Canonical Source Tree Guardrail
+- Commit: `COMMIT_PENDING`
+- Added immutable legacy-tree manifest (`tests/fixtures/legacy_tree_manifest.txt`) with file hashes.
+- Added `tests/test_source_tree_guard.py` to fail on accidental legacy-tree source edits.
+- Guardrail test only scans Python source files and ignores runtime `__pycache__` artifacts.
+- Added explicit failure guidance that tells developers to use canonical paths by default.
+- Added README section documenting canonical edit/runtime paths (`src/app`, `src/core`, `src/util`).
+- Documented legacy-tree policy and manifest update path in `Doc/INDEX.md`.
+- Preserved existing runtime/editor behavior (no feature logic changed in this task).
+- Kept implementation dependency-free and CI-friendly (`pytest` only).
+- Added deterministic, sorted manifest comparison to prevent order-based flakiness.
+- Corrected Task 26 completed-entry hash to the merged commit on `main`.
+- Moved Task 27 from Remaining Tasks to Completed Today as required.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`119 passed`)

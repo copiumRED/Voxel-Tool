@@ -38,3 +38,16 @@ Expected output executable:
 For verification steps, use:
 
 `Doc/PACKAGING_CHECKLIST.md`
+
+## Source Tree Guardrail
+
+Canonical runtime/edit paths are:
+- `src/app`
+- `src/core`
+- `src/util`
+
+`src/voxel_tool` is legacy reference code and is frozen by a test guardrail.
+
+- Validate guardrail: `pytest -q`
+- If you intentionally update legacy reference files, regenerate:
+  - `tests/fixtures/legacy_tree_manifest.txt`

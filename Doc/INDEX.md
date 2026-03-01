@@ -22,3 +22,8 @@ Use this folder as the canonical documentation source for daily execution.
 - Run tests: `pytest -q`
 - Convenience run script: `.\run.ps1`
 - Packaging: `powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`
+
+## Canonical Source Paths
+- Canonical runtime/edit paths: `src/app`, `src/core`, `src/util`.
+- Legacy reference path: `src/voxel_tool` (guarded by `tests/test_source_tree_guard.py`).
+- If legacy files must change intentionally, update `tests/fixtures/legacy_tree_manifest.txt` in the same task.

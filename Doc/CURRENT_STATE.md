@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Source-tree guardrails are still documentation-only
-- Symptoms: contributors can still accidentally edit legacy `src/voxel_tool` files.
-- Suspected root cause: no automated check or explicit contributor guard in CI/docs enforcement.
-- Exact files: `README.md`, `Doc/INDEX.md`.
-- Fastest confirmation: modify file under `src/voxel_tool` and observe no guardrail warning/test failure.
+1. Duplicate source trees remain and require manifest maintenance discipline
+- Symptoms: intentional legacy-tree updates now require manifest refresh to keep guardrail passing.
+- Suspected root cause: historical dual-tree layout still exists while guardrail freezes legacy files by default.
+- Exact files: `src/app/**`, `src/voxel_tool/**`, `tests/test_source_tree_guard.py`, `tests/fixtures/legacy_tree_manifest.txt`.
+- Fastest confirmation: modify a legacy `.py` file under `src/voxel_tool` and run `pytest -q`; guardrail test fails until manifest is updated.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
@@ -186,7 +186,7 @@ Not Implemented:
 - Mitigation: add goldens + external roundtrip smoke matrix (Blender, Unity, Qubicle).
 
 3. Duplicate source-tree drift risk
-- Mitigation: freeze `src/voxel_tool` as legacy, add CI check/lint guard, and plan removal task.
+- Mitigation: freeze `src/voxel_tool` as legacy with manifest guardrail (implemented), and plan full tree deprecation/removal.
 
 4. Strict schema parser blocks forward compatibility
 - Mitigation: tolerate unknown fields with warnings and preserve pass-through metadata.
