@@ -6,21 +6,43 @@ from pathlib import Path
 from core.palette import normalize_palette
 
 
-def save_palette_preset(palette: list[tuple[int, int, int]], path: str) -> None:
+def _normalize_palette_metadata(metadata: dict[str, object] | None) -> dict[str, str]:
+    source = metadata or {}
+    return {
+        "name": str(source.get("name", "")).strip(),
+        "tags": str(source.get("tags", "")).strip(),
+        "source": str(source.get("source", "")).strip(),
+    }
+
+
+def save_palette_preset(
+    palette: list[tuple[int, int, int]],
+    path: str,
+    *,
+    metadata: dict[str, object] | None = None,
+) -> None:
     normalized = normalize_palette(palette)
     suffix = Path(path).suffix.lower()
     if suffix == ".gpl":
         _save_palette_gpl(normalized, path)
         return
-    payload = {"palette": [[r, g, b] for r, g, b in normalized]}
+    payload = {
+        "palette": [[r, g, b] for r, g, b in normalized],
+        "metadata": _normalize_palette_metadata(metadata),
+    }
     with open(path, "w", encoding="utf-8") as file_obj:
         json.dump(payload, file_obj, indent=2)
 
 
 def load_palette_preset(path: str) -> list[tuple[int, int, int]]:
+    palette, _metadata = load_palette_preset_with_metadata(path)
+    return palette
+
+
+def load_palette_preset_with_metadata(path: str) -> tuple[list[tuple[int, int, int]], dict[str, str]]:
     suffix = Path(path).suffix.lower()
     if suffix == ".gpl":
-        return _load_palette_gpl(path)
+        return _load_palette_gpl(path), _normalize_palette_metadata(None)
 
     with open(path, "r", encoding="utf-8") as file_obj:
         payload = json.load(file_obj)
@@ -34,7 +56,10 @@ def load_palette_preset(path: str) -> list[tuple[int, int, int]]:
         if not isinstance(item, (list, tuple)) or len(item) != 3:
             raise ValueError("Palette entries must be RGB triplets.")
         converted.append((int(item[0]), int(item[1]), int(item[2])))
-    return normalize_palette(converted)
+    metadata = payload.get("metadata")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise ValueError("Palette metadata must be an object when present.")
+    return normalize_palette(converted), _normalize_palette_metadata(metadata)
 
 
 def _save_palette_gpl(palette: list[tuple[int, int, int]], path: str) -> None:

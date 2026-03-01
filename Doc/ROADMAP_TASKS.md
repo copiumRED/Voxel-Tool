@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 16: Palette Metadata Schema v1
-- Goal: Add optional palette metadata fields (name/tags/source).
-- Likely files/modules touched: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
-- Acceptance criteria (human-testable): Palette metadata can be edited, saved, and reloaded.
-- Tests required: Add metadata roundtrip tests for JSON/GPL compatibility behavior.
-- Risk/rollback note: Preserve backward compatibility with existing palette files.
-
 ### Task 17: Palette Browser and Quick Filter
 - Goal: Add palette preset browser with search/filter.
 - Likely files/modules touched: `src/app/ui/panels/palette_panel.py`.
@@ -439,7 +432,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`148 passed`)
 
 ### Task 15: Mirror Visual Plane Overlays
-- Commit: `COMMIT_PENDING`
+- Commit: `7d1e828`
 - Refactored mirror guide rendering to use a dedicated geometry helper (`_mirror_guide_segments`).
 - Added deterministic mirror-guide segment generation for X/Y/Z axes with configurable extent and step.
 - Preserved axis color coding (X red, Y green, Z blue) for visual clarity.
@@ -456,3 +449,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`150 passed`)
+
+### Task 16: Palette Metadata Schema v1
+- Commit: `COMMIT_PENDING`
+- Added optional palette metadata normalization helper (`name`, `tags`, `source`) in palette IO layer.
+- Extended JSON palette preset save payload to include `metadata` object alongside color entries.
+- Added metadata-aware load API (`load_palette_preset_with_metadata`) with backward-compatible defaults.
+- Kept existing `load_palette_preset` API stable by returning palette-only values for legacy call sites.
+- Preserved GPL compatibility by returning empty metadata for GPL load paths.
+- Added metadata validation guard for malformed JSON metadata payload types.
+- Added AppContext `palette_metadata` state with default empty metadata values.
+- Added palette panel metadata editors (Name, Tags, Source) with live context update on edit commit.
+- Wired palette preset save path to write current metadata from context.
+- Wired palette preset load path to restore metadata and palette together.
+- Preserved existing palette color workflow and slot-lock behavior unchanged.
+- Added JSON metadata roundtrip regression test for save/load parity.
+- Added GPL metadata compatibility regression test verifying empty metadata fallback behavior.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`152 passed`)

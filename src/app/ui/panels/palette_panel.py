@@ -11,12 +11,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
+    QLineEdit,
     QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
-from core.io.palette_io import load_palette_preset, save_palette_preset
+from core.io.palette_io import load_palette_preset_with_metadata, save_palette_preset
 from core.palette import add_palette_color, clamp_active_color_index, remove_palette_color, swap_palette_colors
 
 if TYPE_CHECKING:
@@ -70,6 +71,27 @@ class PalettePanel(QWidget):
         self.load_palette_button.clicked.connect(self._on_load_palette)
         actions_row.addWidget(self.load_palette_button)
         root_layout.addLayout(actions_row)
+        meta_row_1 = QHBoxLayout()
+        self.metadata_name_edit = QLineEdit(self)
+        self.metadata_name_edit.setPlaceholderText("Palette Name")
+        self.metadata_name_edit.editingFinished.connect(self._on_metadata_changed)
+        meta_row_1.addWidget(QLabel("Name", self))
+        meta_row_1.addWidget(self.metadata_name_edit)
+        root_layout.addLayout(meta_row_1)
+        meta_row_2 = QHBoxLayout()
+        self.metadata_tags_edit = QLineEdit(self)
+        self.metadata_tags_edit.setPlaceholderText("Tags (comma-separated)")
+        self.metadata_tags_edit.editingFinished.connect(self._on_metadata_changed)
+        meta_row_2.addWidget(QLabel("Tags", self))
+        meta_row_2.addWidget(self.metadata_tags_edit)
+        root_layout.addLayout(meta_row_2)
+        meta_row_3 = QHBoxLayout()
+        self.metadata_source_edit = QLineEdit(self)
+        self.metadata_source_edit.setPlaceholderText("Source")
+        self.metadata_source_edit.editingFinished.connect(self._on_metadata_changed)
+        meta_row_3.addWidget(QLabel("Source", self))
+        meta_row_3.addWidget(self.metadata_source_edit)
+        root_layout.addLayout(meta_row_3)
         self.lock_active_slot_checkbox = QCheckBox("Lock Active Slot", self)
         self.lock_active_slot_checkbox.stateChanged.connect(self._on_lock_active_slot_toggled)
         root_layout.addWidget(self.lock_active_slot_checkbox)
@@ -107,6 +129,16 @@ class PalettePanel(QWidget):
         self.lock_active_slot_checkbox.blockSignals(True)
         self.lock_active_slot_checkbox.setChecked(is_locked)
         self.lock_active_slot_checkbox.blockSignals(False)
+        metadata = getattr(self._context, "palette_metadata", {"name": "", "tags": "", "source": ""})
+        self.metadata_name_edit.blockSignals(True)
+        self.metadata_tags_edit.blockSignals(True)
+        self.metadata_source_edit.blockSignals(True)
+        self.metadata_name_edit.setText(str(metadata.get("name", "")))
+        self.metadata_tags_edit.setText(str(metadata.get("tags", "")))
+        self.metadata_source_edit.setText(str(metadata.get("source", "")))
+        self.metadata_name_edit.blockSignals(False)
+        self.metadata_tags_edit.blockSignals(False)
+        self.metadata_source_edit.blockSignals(False)
 
     def _on_color_clicked(self, idx: int) -> None:
         if self._context is None:
@@ -127,7 +159,11 @@ class PalettePanel(QWidget):
         if not path:
             return
         try:
-            save_palette_preset(self._context.palette, path)
+            save_palette_preset(
+                self._context.palette,
+                path,
+                metadata=getattr(self._context, "palette_metadata", None),
+            )
             self.palette_status_message.emit(f"Saved palette preset: {path}")
         except Exception as exc:  # pragma: no cover
             QMessageBox.warning(self, "Save Palette Preset", f"Failed to save palette preset.\n\n{exc}")
@@ -144,11 +180,12 @@ class PalettePanel(QWidget):
         if not path:
             return
         try:
-            loaded_palette = load_palette_preset(path)
+            loaded_palette, metadata = load_palette_preset_with_metadata(path)
         except Exception as exc:  # pragma: no cover
             QMessageBox.warning(self, "Load Palette Preset", f"Failed to load palette preset.\n\n{exc}")
             return
         self._context.palette = loaded_palette
+        self._context.palette_metadata = metadata
         self._context.active_color_index = clamp_active_color_index(
             self._context.active_color_index,
             len(loaded_palette),
@@ -245,6 +282,16 @@ class PalettePanel(QWidget):
         self.palette_status_message.emit(
             f"{'Locked' if locked else 'Unlocked'} color slot {slot}"
         )
+
+    def _on_metadata_changed(self) -> None:
+        if self._context is None:
+            return
+        self._context.palette_metadata = {
+            "name": self.metadata_name_edit.text().strip(),
+            "tags": self.metadata_tags_edit.text().strip(),
+            "source": self.metadata_source_edit.text().strip(),
+        }
+        self.palette_status_message.emit("Updated palette metadata")
 
     def _rebuild_color_buttons(self) -> None:
         while self.grid.count():

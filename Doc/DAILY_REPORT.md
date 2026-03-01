@@ -1297,3 +1297,18 @@
   - Run: `pytest -q` (current: `150 passed`).
 - Risks/issues:
   - Palette metadata editing + persistence remains pending Task 16.
+
+### Roadmap 16 (Day-Cycle 40): Palette Metadata Schema v1
+- What was done:
+  - Added palette metadata support (`name`, `tags`, `source`) to JSON palette presets.
+  - Added metadata-aware palette load API with compatibility fallback for GPL presets.
+  - Added palette metadata state to app context and UI editors in Palette panel.
+  - Wired metadata into preset save/load flows without breaking palette-only API call sites.
+  - Added regression tests for JSON metadata roundtrip and GPL metadata fallback behavior.
+- How to test quickly:
+  - Open Palette panel and set `Name`, `Tags`, and `Source`.
+  - Save a JSON palette preset, then load it back and verify metadata fields are restored.
+  - Save/load a GPL preset and verify palette loads while metadata defaults empty.
+  - Run: `pytest -q` (current: `152 passed`).
+- Risks/issues:
+  - Palette browser quick filter UX remains pending Task 17.

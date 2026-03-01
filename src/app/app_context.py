@@ -35,6 +35,9 @@ class AppContext:
     command_stack: CommandStack = field(default_factory=CommandStack)
     active_color_index: int = 0
     palette: list[tuple[int, int, int]] = field(default_factory=lambda: list(DEFAULT_PALETTE))
+    palette_metadata: dict[str, str] = field(
+        default_factory=lambda: {"name": "", "tags": "", "source": ""}
+    )
     voxel_tool_mode: str = TOOL_MODE_PAINT
     voxel_tool_shape: str = TOOL_SHAPE_BRUSH
     brush_size: int = 1
