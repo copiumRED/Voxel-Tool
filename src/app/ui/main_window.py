@@ -6,7 +6,7 @@ import random
 import time
 from dataclasses import dataclass
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -35,6 +35,12 @@ from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
 from core.io.vox_io import load_vox_models
+from core.io.recovery_io import (
+    clear_recovery_snapshot,
+    has_recovery_snapshot,
+    load_recovery_snapshot,
+    save_recovery_snapshot,
+)
 from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -115,6 +121,9 @@ class MainWindow(QMainWindow):
         self._last_frame_ms = 0.0
         self._last_rebuild_ms = 0.0
         self._last_scene_triangles = 0
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setInterval(60000)
+        self._autosave_timer.timeout.connect(self._on_autosave_tick)
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
@@ -153,7 +162,9 @@ class MainWindow(QMainWindow):
         self._setup_shortcuts()
         self.statusBar().showMessage("Viewport: INITIALIZING | Shader: unknown | OpenGL: unknown")
         self._restore_layout_settings()
+        self._prompt_recovery_if_available()
         self._refresh_ui_state()
+        self._autosave_timer.start()
 
     def _add_dock(self, title: str, widget, area: Qt.DockWidgetArea) -> QDockWidget:
         dock = QDockWidget(title, self)
@@ -883,8 +894,43 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.stats_dock)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        self._autosave_timer.stop()
+        clear_recovery_snapshot()
         settings = get_settings()
         settings.setValue("main_window/geometry", self.saveGeometry())
         settings.setValue("main_window/state", self.saveState())
         super().closeEvent(event)
+
+    def _on_autosave_tick(self) -> None:
+        try:
+            self.context.current_project.editor_state = self._capture_editor_state()
+            save_recovery_snapshot(self.context.current_project)
+        except Exception:
+            logging.getLogger("voxel_tool").exception("Autosave recovery snapshot failed")
+
+    def _prompt_recovery_if_available(self) -> None:
+        if not has_recovery_snapshot():
+            return
+        answer = QMessageBox.question(
+            self,
+            "Recovery Available",
+            "An autosave recovery snapshot was found from a previous session.\n\nRestore it now?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if answer != QMessageBox.Yes:
+            clear_recovery_snapshot()
+            return
+        try:
+            project = load_recovery_snapshot()
+        except Exception as exc:
+            QMessageBox.warning(self, "Recovery Failed", f"Failed to load recovery snapshot.\n\n{exc}")
+            clear_recovery_snapshot()
+            return
+        self.context.current_project = project
+        self.context.current_path = None
+        self._apply_editor_state(project.editor_state)
+        self.context.command_stack.clear()
+        self.viewport.frame_to_voxels()
+        self._show_voxel_status("Recovered autosave snapshot")
 

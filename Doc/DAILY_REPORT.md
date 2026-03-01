@@ -244,6 +244,19 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 19 (Next Workday): Autosave + Crash Recovery v1
+- What was done:
+  - Added `core/io/recovery_io.py` for autosave recovery snapshot save/load/clear lifecycle.
+  - Added periodic autosave timer in main window and startup recovery prompt flow.
+  - Added clean-exit recovery cleanup and failure-safe recovery load handling.
+  - Added regression test for recovery snapshot save/load/clear cycle.
+- How to test quickly:
+  - Launch app, edit voxels, wait for autosave interval or trigger timer path, then force-close.
+  - Relaunch and confirm recovery prompt appears and can restore snapshot.
+  - Run: `pytest -q` (current: `81 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).

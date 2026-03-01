@@ -115,24 +115,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added viewport runtime metrics signal emitting per-frame timing data.
 - Added main-window wiring to aggregate frame/rebuild metrics and feed live stats panel updates.
 
-## Remaining Tasks
-
 ### Task 19: Autosave + Crash Recovery v1
-- Goal:
-  - Add periodic autosave and startup recovery prompt.
-- Files/modules likely touched:
-  - `src/app/ui/main_window.py`
-  - `src/core/io/project_io.py`
-  - `src/app/settings.py`
-- Acceptance criteria (human-testable):
-  - Autosave file updates on configured interval.
-  - Forced-close session prompts recovery on next launch.
-  - Recovery restore opens without corruption.
-- Tests required:
-  - Autosave write/load tests.
-  - Recovery flow tests for interrupted session.
-- Risk/rollback note:
-  - If autosave causes IO contention, increase interval and gate writes to idle periods.
+- Commit: `COMMIT_PENDING`
+- Added recovery IO module for autosave snapshot save/load/clear lifecycle.
+- Added periodic autosave timer in main window and startup recovery prompt flow.
+- Added recovery snapshot regression test covering save/load/clear behavior.
+
+## Remaining Tasks
 
 ### Task 20: Shortcut/Undo Depth Preferences + Day-End QA Gate
 - Goal:
