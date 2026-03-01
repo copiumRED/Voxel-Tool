@@ -202,6 +202,22 @@ def _layout_preset_state_key(slot: int) -> str:
     return f"main_window/layout_preset_{slot_value}"
 
 
+def _recent_project_state_key() -> str:
+    return "main_window/recent_project_path"
+
+
+def _startup_recovery_choices(*, has_snapshot: bool, has_recent_project: bool) -> tuple[str, ...]:
+    if has_snapshot:
+        choices = ["restore", "discard"]
+        if has_recent_project:
+            choices.append("open_recent")
+        choices.append("cancel")
+        return tuple(choices)
+    if has_recent_project:
+        return ("open_recent", "skip")
+    return ()
+
+
 def _app_theme_stylesheet() -> str:
     return (
         "QMainWindow { background: #1f242b; }\n"
@@ -657,22 +673,7 @@ class MainWindow(QMainWindow):
         )
         if not path:
             return
-        try:
-            project = load_project(path)
-        except Exception as exc:
-            QMessageBox.warning(
-                self,
-                "Open Project Failed",
-                _project_io_error_detail("Open Project", path, exc),
-            )
-            return
-        self.context.current_project = project
-        self.context.current_path = path
-        self._apply_editor_state(project.editor_state)
-        self.context.command_stack.clear()
-        self.viewport.frame_to_voxels()
-        self._show_voxel_status(f"Loaded: {path}")
-        self._refresh_ui_state()
+        self._open_project_path(path)
 
     def _on_save_project(self) -> None:
         if not self.context.current_path:
@@ -691,6 +692,7 @@ class MainWindow(QMainWindow):
             return
         if self._save_to_path(path):
             self.context.current_path = path
+            self._set_recent_project_path(path)
 
     def _save_to_path(self, path: str) -> bool:
         self.context.current_project.modified_utc = utc_now_iso()
@@ -705,7 +707,45 @@ class MainWindow(QMainWindow):
             )
             return False
         self.statusBar().showMessage(f"Saved: {path}", 5000)
+        self._set_recent_project_path(path)
         return True
+
+    def _open_project_path(self, path: str) -> bool:
+        try:
+            project = load_project(path)
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Open Project Failed",
+                _project_io_error_detail("Open Project", path, exc),
+            )
+            return False
+        self.context.current_project = project
+        self.context.current_path = path
+        self._set_recent_project_path(path)
+        self._apply_editor_state(project.editor_state)
+        self.context.command_stack.clear()
+        self.viewport.frame_to_voxels()
+        self._show_voxel_status(f"Loaded: {path}")
+        self._refresh_ui_state()
+        return True
+
+    def _set_recent_project_path(self, path: str | None) -> None:
+        settings = get_settings()
+        key = _recent_project_state_key()
+        if path:
+            settings.setValue(key, path)
+            return
+        settings.remove(key)
+
+    def _recent_project_path(self) -> str | None:
+        raw = get_settings().value(_recent_project_state_key())
+        if raw is None:
+            return None
+        path = str(raw).strip()
+        if not path:
+            return None
+        return path
 
     def _on_export_obj(self) -> None:
         export_options = self._prompt_export_options("OBJ")
@@ -1574,18 +1614,37 @@ class MainWindow(QMainWindow):
             logging.getLogger("voxel_tool").exception("Autosave recovery snapshot failed")
 
     def _prompt_recovery_if_available(self) -> None:
-        if not has_recovery_snapshot():
+        has_snapshot = has_recovery_snapshot()
+        recent_path = self._recent_project_path()
+        has_recent = bool(recent_path)
+
+        if has_snapshot:
+            choice = self._prompt_startup_recovery_choice(has_recent_project=has_recent, recent_path=recent_path)
+            if choice == "restore":
+                self._restore_recovery_snapshot()
+                return
+            if choice == "open_recent":
+                clear_recovery_snapshot()
+                if recent_path:
+                    self._open_project_path(recent_path)
+                return
+            if choice == "discard":
+                clear_recovery_snapshot()
+                return
             return
-        answer = QMessageBox.question(
-            self,
-            "Recovery Available",
-            "An autosave recovery snapshot was found from a previous session.\n\nRestore it now?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes,
-        )
-        if answer != QMessageBox.Yes:
-            clear_recovery_snapshot()
-            return
+
+        if has_recent and recent_path:
+            answer = QMessageBox.question(
+                self,
+                "Open Recent Project",
+                f"Open last project?\n\n{recent_path}",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if answer == QMessageBox.Yes:
+                self._open_project_path(recent_path)
+
+    def _restore_recovery_snapshot(self) -> None:
         try:
             project = load_recovery_snapshot()
         except Exception as exc:
@@ -1606,4 +1665,30 @@ class MainWindow(QMainWindow):
         self.context.command_stack.clear()
         self.viewport.frame_to_voxels()
         self._show_voxel_status("Recovered autosave snapshot")
+
+    def _prompt_startup_recovery_choice(self, *, has_recent_project: bool, recent_path: str | None) -> str:
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("Recovery Available")
+        detail = "An autosave recovery snapshot was found from a previous session."
+        if has_recent_project and recent_path:
+            detail += f"\n\nRecent project: {recent_path}"
+        detail += "\n\nChoose how to continue:"
+        dialog.setText(detail)
+
+        restore_button = dialog.addButton("Restore Snapshot", QMessageBox.AcceptRole)
+        discard_button = dialog.addButton("Discard Snapshot", QMessageBox.DestructiveRole)
+        open_recent_button = None
+        if has_recent_project:
+            open_recent_button = dialog.addButton("Open Recent", QMessageBox.ActionRole)
+        dialog.addButton("Cancel", QMessageBox.RejectRole)
+        dialog.setDefaultButton(restore_button)
+        dialog.exec()
+        clicked = dialog.clickedButton()
+        if clicked == restore_button:
+            return "restore"
+        if clicked == discard_button:
+            return "discard"
+        if open_recent_button is not None and clicked == open_recent_button:
+            return "open_recent"
+        return "cancel"
 

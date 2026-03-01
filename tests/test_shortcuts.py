@@ -11,6 +11,8 @@ from app.ui.main_window import (
     _layout_preset_state_key,
     _project_io_error_detail,
     _quick_toolbar_action_labels,
+    _recent_project_state_key,
+    _startup_recovery_choices,
     _vox_import_group_name,
     _vox_import_part_name,
 )
@@ -216,6 +218,26 @@ def test_hotkey_overlay_text_contains_binding_labels() -> None:
     assert "Tool: Brush" in text
     assert "Shift+F" in text
     assert "Frame Voxels" in text
+
+
+def test_startup_recovery_choices_cover_snapshot_and_recent_paths() -> None:
+    assert _startup_recovery_choices(has_snapshot=True, has_recent_project=True) == (
+        "restore",
+        "discard",
+        "open_recent",
+        "cancel",
+    )
+    assert _startup_recovery_choices(has_snapshot=True, has_recent_project=False) == (
+        "restore",
+        "discard",
+        "cancel",
+    )
+    assert _startup_recovery_choices(has_snapshot=False, has_recent_project=True) == ("open_recent", "skip")
+    assert _startup_recovery_choices(has_snapshot=False, has_recent_project=False) == ()
+
+
+def test_recent_project_state_key_is_stable() -> None:
+    assert _recent_project_state_key() == "main_window/recent_project_path"
 
 
 def test_app_theme_stylesheet_contains_key_widget_rules() -> None:

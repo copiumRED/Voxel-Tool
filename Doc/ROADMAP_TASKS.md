@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 39: Interface Polish - Startup Workspace Recovery UX
-- Goal: Improve startup dialogs for recovery + last project continuity.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
-- Acceptance criteria (human-testable): Startup presents clear choices: restore, discard, open recent.
-- Tests required: Add startup choice-path tests.
-- Risk/rollback note: Safe default must avoid data loss.
-
 ### Task 40: Interface Polish - Final UX Regression and Operator Pack
 - Goal: Run final UX polish QA pass and prepare operator validation scripts/checklists.
 - Likely files/modules touched: `Doc/DAILY_REPORT.md`, `Doc/NEXT_WORKDAY.md`, `Doc/PACKAGING_CHECKLIST.md`.
@@ -713,7 +706,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`179 passed`)
 
 ### Task 38: Interface Polish - Precision Input Mode
-- Commit: `COMMIT_PENDING`
+- Commit: `2e5cc92`
 - Added temporary precision modifier for camera orbit/pan/zoom using `Alt` key hold.
 - Applied precision scale factor to left-drag navigate orbit sensitivity.
 - Applied precision scale factor to middle-button orbit sensitivity.
@@ -730,3 +723,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`181 passed`)
+
+### Task 39: Interface Polish - Startup Workspace Recovery UX
+- Commit: `COMMIT_PENDING`
+- Added recent-project settings key helper and startup-choice helper for recovery flows.
+- Added recent project path persistence on save/open success paths.
+- Added shared `_open_project_path` loader path for reuse by startup and manual open.
+- Added startup recovery prompt with explicit actions: Restore Snapshot, Discard Snapshot, Open Recent, Cancel.
+- Added startup flow to open recent project when no snapshot exists and user confirms.
+- Added startup flow to open recent project directly from recovery prompt while discarding stale snapshot.
+- Added startup recovery restore extraction into dedicated helper method for clearer flow control.
+- Preserved recovery diagnostic write behavior on snapshot load failure.
+- Preserved safe default behavior: cancel keeps snapshot untouched and avoids destructive action.
+- Added regression test for startup recovery choice combinations.
+- Added regression test for recent project settings key stability.
+- Kept implementation scoped to startup UX and project-open flow reuse.
+- No dependency changes or schema changes introduced.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`183 passed`)

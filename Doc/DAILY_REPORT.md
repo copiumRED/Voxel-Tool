@@ -1619,3 +1619,18 @@
   - Run: `pytest -q` (current: `181 passed`).
 - Risks/issues:
   - Startup workspace recovery UX remains pending Task 39.
+
+### Roadmap 39 (Day-Cycle 40): Interface Polish - Startup Workspace Recovery UX
+- What was done:
+  - Added startup recovery flow with explicit choices: `Restore Snapshot`, `Discard Snapshot`, `Open Recent`, `Cancel`.
+  - Added recent project path persistence in settings on successful open/save operations.
+  - Added startup continuity prompt to open the last recent project when no snapshot exists.
+  - Added shared project-open helper for startup and manual open to keep behavior consistent.
+  - Added tests for startup choice matrix and recent project settings key.
+- How to test quickly:
+  - Save/open a project, close app, relaunch, and verify recent-project startup prompt appears.
+  - Create a recovery snapshot scenario and relaunch; verify recovery dialog offers restore/discard/open recent.
+  - Confirm `Cancel` does not delete snapshot data.
+  - Run: `pytest -q` (current: `183 passed`).
+- Risks/issues:
+  - Final UX regression/operator pack remains pending Task 40.
