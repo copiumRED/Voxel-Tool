@@ -1202,3 +1202,17 @@
   - Run: `pytest -q` (current: `135 passed`).
 - Risks/issues:
   - Multi-select part actions remain pending Task 10.
+
+### Roadmap 10 (Day-Cycle 40): Multi-select Part Actions
+- What was done:
+  - Enabled extended part-list selection mode in inspector.
+  - Added batch actions for selected parts (show/hide, lock/unlock, delete).
+  - Added scene-level batch APIs for visibility, lock, and multi-delete workflows.
+  - Added guards to prevent deleting all parts in batch operations.
+  - Added regression tests for new scene batch APIs.
+- How to test quickly:
+  - Ctrl-select multiple parts in Inspector and run `Show/Hide`, `Lock/Unlock`, and `Delete Selected`.
+  - Confirm at least one part must remain and active part stays valid after batch delete.
+  - Run: `pytest -q` (current: `138 passed`).
+- Risks/issues:
+  - Voxel selection-set workflow remains pending Task 11.

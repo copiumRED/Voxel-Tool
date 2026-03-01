@@ -157,3 +157,37 @@ def test_inspector_filter_matcher_is_case_insensitive_substring() -> None:
     assert InspectorPanel._matches_filter_text("Part Alpha", "alpha") is True
     assert InspectorPanel._matches_filter_text("Part Alpha", "PART") is True
     assert InspectorPanel._matches_filter_text("Part Alpha", "beta") is False
+
+
+def test_scene_set_parts_visible_updates_multiple_parts() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    third = scene.add_part("Part 3")
+    updated = scene.set_parts_visible([first.part_id, second.part_id, "missing"], False)
+    assert updated == [first.part_id, second.part_id]
+    assert first.visible is False
+    assert second.visible is False
+    assert third.visible is True
+
+
+def test_scene_set_parts_locked_updates_multiple_parts() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    updated = scene.set_parts_locked([first.part_id, second.part_id], True)
+    assert updated == [first.part_id, second.part_id]
+    assert first.locked is True
+    assert second.locked is True
+
+
+def test_scene_delete_parts_keeps_one_minimum() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    third = scene.add_part("Part 3")
+    scene.set_active_part(third.part_id)
+    next_active = scene.delete_parts([second.part_id, third.part_id])
+    assert next_active == first.part_id
+    assert len(scene.parts) == 1
+    assert first.part_id in scene.parts

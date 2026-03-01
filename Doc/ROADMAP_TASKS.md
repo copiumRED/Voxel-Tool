@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 10: Multi-select Part Actions
-- Goal: Support multi-select visibility/lock/delete operations in inspector.
-- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `src/core/scene.py`.
-- Acceptance criteria (human-testable): Multiple selected parts can be toggled/locked/deleted in one action.
-- Tests required: Add scene operation tests for batch actions.
-- Risk/rollback note: Guard against deleting last remaining part.
-
 ### Task 11: Voxel Selection Set v1
 - Goal: Add explicit voxel selection mode (box-select cells) independent of paint.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/core/commands/demo_commands.py`.
@@ -370,7 +363,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`134 passed`)
 
 ### Task 09: Scene Outliner Search Filter
-- Commit: `COMMIT_PENDING`
+- Commit: `09d34a6`
 - Added part filter input control to inspector panel with live refresh binding.
 - Added group filter input control to inspector panel with live refresh binding.
 - Added filtered list-population logic for parts during inspector refresh.
@@ -386,3 +379,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`135 passed`)
+
+### Task 10: Multi-select Part Actions
+- Commit: `COMMIT_PENDING`
+- Enabled extended multi-selection mode for part list in inspector panel.
+- Added batch part action buttons: show selected, hide selected, lock selected, unlock selected, delete selected.
+- Added inspector helper to collect selected part IDs with current-item fallback.
+- Added batch visibility update flow for selected part IDs.
+- Added batch lock update flow for selected part IDs.
+- Added batch delete flow with confirmation and \"at least one part remains\" guard.
+- Added scene-level batch APIs for part visibility, lock state, and deletion operations.
+- Added scene batch-delete validation to reject deleting all parts.
+- Preserved existing single-part controls and behavior as compatible subset.
+- Added scene regression tests for batch visibility, lock, and delete semantics.
+- Kept implementation dependency-free and scoped to inspector/scene workflow.
+- Maintained existing active-part selection signaling after batch deletion.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`138 passed`)

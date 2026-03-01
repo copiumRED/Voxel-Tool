@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -36,6 +37,7 @@ class InspectorPanel(QWidget):
         layout.addWidget(self.part_filter_input)
 
         self.part_list = QListWidget(self)
+        self.part_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.part_list.currentItemChanged.connect(self._on_current_part_changed)
         layout.addWidget(self.part_list)
 
@@ -63,6 +65,24 @@ class InspectorPanel(QWidget):
         buttons_layout.addWidget(self.move_down_button)
 
         layout.addLayout(buttons_layout)
+
+        multi_buttons_layout = QHBoxLayout()
+        self.show_selected_button = QPushButton("Show Selected", self)
+        self.show_selected_button.clicked.connect(lambda: self._on_set_selected_parts_visible(True))
+        multi_buttons_layout.addWidget(self.show_selected_button)
+        self.hide_selected_button = QPushButton("Hide Selected", self)
+        self.hide_selected_button.clicked.connect(lambda: self._on_set_selected_parts_visible(False))
+        multi_buttons_layout.addWidget(self.hide_selected_button)
+        self.lock_selected_button = QPushButton("Lock Selected", self)
+        self.lock_selected_button.clicked.connect(lambda: self._on_set_selected_parts_locked(True))
+        multi_buttons_layout.addWidget(self.lock_selected_button)
+        self.unlock_selected_button = QPushButton("Unlock Selected", self)
+        self.unlock_selected_button.clicked.connect(lambda: self._on_set_selected_parts_locked(False))
+        multi_buttons_layout.addWidget(self.unlock_selected_button)
+        self.delete_selected_button = QPushButton("Delete Selected", self)
+        self.delete_selected_button.clicked.connect(self._on_delete_selected_parts)
+        multi_buttons_layout.addWidget(self.delete_selected_button)
+        layout.addLayout(multi_buttons_layout)
 
         flags_layout = QHBoxLayout()
         self.visible_checkbox = QCheckBox("Visible", self)
@@ -318,6 +338,72 @@ class InspectorPanel(QWidget):
         part.locked = state == Qt.Checked
         self.part_status_message.emit(f"Part lock: {'on' if part.locked else 'off'} ({part.name})")
         self.refresh()
+
+    def _selected_part_ids(self) -> list[str]:
+        selected: list[str] = []
+        for item in self.part_list.selectedItems():
+            part_id = item.data(Qt.UserRole)
+            if isinstance(part_id, str):
+                selected.append(part_id)
+        if selected:
+            return selected
+        current_item = self.part_list.currentItem()
+        if current_item is None:
+            return []
+        part_id = current_item.data(Qt.UserRole)
+        if isinstance(part_id, str):
+            return [part_id]
+        return []
+
+    def _on_set_selected_parts_visible(self, visible: bool) -> None:
+        if self._context is None:
+            return
+        selected_ids = self._selected_part_ids()
+        if not selected_ids:
+            return
+        updated = self._context.current_project.scene.set_parts_visible(selected_ids, visible)
+        if not updated:
+            return
+        self.part_status_message.emit(f"Updated visibility for {len(updated)} selected part(s).")
+        self.refresh()
+
+    def _on_set_selected_parts_locked(self, locked: bool) -> None:
+        if self._context is None:
+            return
+        selected_ids = self._selected_part_ids()
+        if not selected_ids:
+            return
+        updated = self._context.current_project.scene.set_parts_locked(selected_ids, locked)
+        if not updated:
+            return
+        self.part_status_message.emit(f"Updated lock for {len(updated)} selected part(s).")
+        self.refresh()
+
+    def _on_delete_selected_parts(self) -> None:
+        if self._context is None:
+            return
+        selected_ids = self._selected_part_ids()
+        if not selected_ids:
+            return
+        if len(selected_ids) <= 1:
+            self._on_delete_part()
+            return
+        if len(self._context.current_project.scene.parts) - len({*selected_ids}) < 1:
+            QMessageBox.information(self, "Delete Selected", "At least one part must remain in the scene.")
+            return
+        answer = QMessageBox.question(
+            self,
+            "Delete Selected Parts",
+            f"Delete {len(selected_ids)} selected parts?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if answer != QMessageBox.Yes:
+            return
+        next_active_part_id = self._context.current_project.scene.delete_parts(selected_ids)
+        self.refresh()
+        self.part_selection_changed.emit(next_active_part_id)
+        self.part_status_message.emit(f"Deleted {len(selected_ids)} selected part(s).")
 
     def _on_transform_changed(self) -> None:
         if self._context is None:

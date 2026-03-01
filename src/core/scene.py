@@ -105,6 +105,36 @@ class Scene:
             self.active_part_id = self.part_order[0]
         return self.active_part_id or ""
 
+    def set_parts_visible(self, part_ids: list[str], visible: bool) -> list[str]:
+        updated: list[str] = []
+        for part_id in part_ids:
+            part = self.parts.get(part_id)
+            if part is None:
+                continue
+            part.visible = bool(visible)
+            updated.append(part_id)
+        return updated
+
+    def set_parts_locked(self, part_ids: list[str], locked: bool) -> list[str]:
+        updated: list[str] = []
+        for part_id in part_ids:
+            part = self.parts.get(part_id)
+            if part is None:
+                continue
+            part.locked = bool(locked)
+            updated.append(part_id)
+        return updated
+
+    def delete_parts(self, part_ids: list[str]) -> str:
+        unique_ids = [part_id for part_id in dict.fromkeys(part_ids) if part_id in self.parts]
+        if not unique_ids:
+            raise ValueError("No valid parts selected for deletion.")
+        if len(self.parts) - len(unique_ids) < 1:
+            raise ValueError("Cannot delete all parts; at least one part must remain.")
+        for part_id in unique_ids:
+            self.delete_part(part_id)
+        return self.active_part_id or ""
+
     def iter_visible_parts(self) -> list[Part]:
         return [part for _, part in self.iter_parts_ordered() if part.visible]
 
