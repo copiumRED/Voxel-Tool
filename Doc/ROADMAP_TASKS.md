@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 17: Palette Slot Lock Protection
-- Goal: Prevent accidental overwrite/removal of protected palette slots (user toggle).
-- Likely files/modules touched: `src/app/ui/panels/palette_panel.py`, `src/app/app_context.py`.
-- Acceptance criteria (human-testable): Locked slot cannot be edited/removed until unlocked.
-- Tests required: Add palette lock behavior tests.
-- Risk/rollback note: If state complexity grows, scope lock to active slot only for v1.
-
 ### Task 18: OBJ Multi-Material Export Option
 - Goal: Add optional per-color material splitting in OBJ/MTL output.
 - Likely files/modules touched: `src/core/export/obj_exporter.py`, `src/app/ui/main_window.py`.
@@ -361,7 +354,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`107 passed`)
 
 ### Task 16: Palette Import/Export GPL Support v1
-- Commit: `TASK16_HASH_PENDING`
+- Commit: `23e9ee7`
 - Added palette preset IO support for GPL (`.gpl`) alongside existing JSON format.
 - Added GPL writer with standard header and RGB row emission.
 - Added GPL loader with header validation and robust row parsing.
@@ -376,3 +369,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`109 passed`)
+
+### Task 17: Palette Slot Lock Protection
+- Commit: `TASK17_HASH_PENDING`
+- Added palette slot lock state to `AppContext` with lock/unlock APIs.
+- Added lock state persistence in editor-state capture/apply flow.
+- Added active-slot lock toggle control in palette panel.
+- Added lock guards that block RGB edits on locked active slot.
+- Added lock guards that block remove action when active slot is locked.
+- Added lock guards that block swap operations involving locked slots.
+- Added lock-index maintenance logic on add/remove operations to keep lock state aligned to slot indices.
+- Preserved existing palette add/remove/swap/edit behavior for unlocked slots.
+- Added app-context lock API regression test coverage.
+- Extended project IO editor_state roundtrip test with locked slot list.
+- Kept implementation dependency-free and scoped to palette safety behavior.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`110 passed`)

@@ -921,6 +921,7 @@ class MainWindow(QMainWindow):
             "pick_mode": self.context.pick_mode,
             "edit_plane": self.context.edit_plane,
             "fill_connectivity": self.context.fill_connectivity,
+            "locked_palette_slots": sorted(self.context.locked_palette_slots),
             "grid_visible": self.context.grid_visible,
             "grid_spacing": self.context.grid_spacing,
             "camera_snap_enabled": self.context.camera_snap_enabled,
@@ -975,6 +976,17 @@ class MainWindow(QMainWindow):
             AppContext.FILL_CONNECTIVITY_VOLUME,
         ):
             self.context.fill_connectivity = fill_connectivity
+        raw_locked_slots = state.get("locked_palette_slots", [])
+        next_locked_slots: set[int] = set()
+        if isinstance(raw_locked_slots, list):
+            for raw in raw_locked_slots:
+                try:
+                    slot = int(raw)
+                except (TypeError, ValueError):
+                    continue
+                if 0 <= slot < len(self.context.palette):
+                    next_locked_slots.add(slot)
+        self.context.locked_palette_slots = next_locked_slots
         self.context.grid_visible = bool(state.get("grid_visible", self.context.grid_visible))
         self.context.grid_spacing = max(1, int(state.get("grid_spacing", self.context.grid_spacing)))
         self.context.camera_snap_enabled = bool(

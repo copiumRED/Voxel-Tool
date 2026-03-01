@@ -51,6 +51,7 @@ class AppContext:
     mirror_z_offset: int = 0
     fill_max_cells: int = 5000
     fill_connectivity: str = FILL_CONNECTIVITY_PLANE
+    locked_palette_slots: set[int] = field(default_factory=set)
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
     _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
     _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
@@ -113,6 +114,18 @@ class AppContext:
         if mode_value not in self._VALID_FILL_CONNECTIVITY:
             raise ValueError(f"Unsupported fill connectivity: {mode_value}")
         self.fill_connectivity = mode_value
+
+    def set_palette_slot_locked(self, index: int, locked: bool) -> None:
+        slot = int(index)
+        if slot < 0:
+            raise ValueError(f"Invalid palette slot index: {slot}")
+        if locked:
+            self.locked_palette_slots.add(slot)
+            return
+        self.locked_palette_slots.discard(slot)
+
+    def is_palette_slot_locked(self, index: int) -> bool:
+        return int(index) in self.locked_palette_slots
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":

@@ -365,6 +365,14 @@ def test_app_context_fill_connectivity_validation() -> None:
     assert ctx.fill_connectivity == AppContext.FILL_CONNECTIVITY_VOLUME
 
 
+def test_app_context_palette_slot_locking() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_palette_slot_locked(2, True)
+    assert ctx.is_palette_slot_locked(2) is True
+    ctx.set_palette_slot_locked(2, False)
+    assert ctx.is_palette_slot_locked(2) is False
+
+
 def test_command_stack_respects_max_undo_depth_cap() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.command_stack.set_max_undo_steps(2)

@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **92%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **93%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Palette slot lock protection is not implemented
-- Symptoms: accidental edits/removals of important palette slots cannot be prevented.
-- Suspected root cause: palette panel has no lock state model per slot.
-- Exact files: `src/app/ui/panels/palette_panel.py`, `src/app/app_context.py`.
-- Fastest confirmation: attempt to lock a slot; no lock control exists.
+1. OBJ export still lacks optional multi-material splitting by color
+- Symptoms: OBJ/MTL export defaults to single material even for multi-color voxel models.
+- Suspected root cause: exporter emits one `usemtl` strategy without per-color segmentation option.
+- Exact files: `src/core/export/obj_exporter.py`, `src/app/ui/main_window.py`.
+- Fastest confirmation: export multi-color model and inspect `.obj` for single `usemtl`.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

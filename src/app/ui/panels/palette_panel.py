@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
+    QCheckBox,
     QFileDialog,
     QGridLayout,
     QHBoxLayout,
@@ -69,6 +70,9 @@ class PalettePanel(QWidget):
         self.load_palette_button.clicked.connect(self._on_load_palette)
         actions_row.addWidget(self.load_palette_button)
         root_layout.addLayout(actions_row)
+        self.lock_active_slot_checkbox = QCheckBox("Lock Active Slot", self)
+        self.lock_active_slot_checkbox.stateChanged.connect(self._on_lock_active_slot_toggled)
+        root_layout.addWidget(self.lock_active_slot_checkbox)
         root_layout.addStretch(1)
 
         self._rebuild_color_buttons()
@@ -99,6 +103,10 @@ class PalettePanel(QWidget):
         self.r_spin.blockSignals(False)
         self.g_spin.blockSignals(False)
         self.b_spin.blockSignals(False)
+        is_locked = self._context.is_palette_slot_locked(self._context.active_color_index)
+        self.lock_active_slot_checkbox.blockSignals(True)
+        self.lock_active_slot_checkbox.setChecked(is_locked)
+        self.lock_active_slot_checkbox.blockSignals(False)
 
     def _on_color_clicked(self, idx: int) -> None:
         if self._context is None:
@@ -153,6 +161,10 @@ class PalettePanel(QWidget):
         if self._context is None:
             return
         idx = self._context.active_color_index
+        if self._context.is_palette_slot_locked(idx):
+            self.refresh()
+            self.palette_status_message.emit(f"Color slot {idx} is locked")
+            return
         self._context.palette[idx] = (self.r_spin.value(), self.g_spin.value(), self.b_spin.value())
         self.refresh()
         self.palette_status_message.emit(f"Edited color slot {idx}")
@@ -162,6 +174,10 @@ class PalettePanel(QWidget):
             return
         base = self._context.palette[self._context.active_color_index]
         insert_at = self._context.active_color_index + 1
+        shifted: set[int] = set()
+        for slot in self._context.locked_palette_slots:
+            shifted.add(slot + 1 if slot >= insert_at else slot)
+        self._context.locked_palette_slots = shifted
         self._context.palette = add_palette_color(self._context.palette, base, index=insert_at)
         self._context.active_color_index = insert_at
         self.refresh()
@@ -171,11 +187,21 @@ class PalettePanel(QWidget):
     def _on_remove_color(self) -> None:
         if self._context is None:
             return
+        if self._context.is_palette_slot_locked(self._context.active_color_index):
+            QMessageBox.information(self, "Remove Color", "Active color slot is locked.")
+            return
         try:
             self._context.palette = remove_palette_color(self._context.palette, self._context.active_color_index)
         except ValueError as exc:
             QMessageBox.information(self, "Remove Color", str(exc))
             return
+        removed = self._context.active_color_index
+        shifted: set[int] = set()
+        for slot in self._context.locked_palette_slots:
+            if slot == removed:
+                continue
+            shifted.add(slot - 1 if slot > removed else slot)
+        self._context.locked_palette_slots = shifted
         self._context.active_color_index = clamp_active_color_index(
             self._context.active_color_index,
             len(self._context.palette),
@@ -191,11 +217,34 @@ class PalettePanel(QWidget):
         dst = src + direction
         if dst < 0 or dst >= len(self._context.palette):
             return
+        if self._context.is_palette_slot_locked(src) or self._context.is_palette_slot_locked(dst):
+            QMessageBox.information(self, "Swap Color", "Locked color slots cannot be swapped.")
+            return
         self._context.palette = swap_palette_colors(self._context.palette, src, dst)
+        locked = self._context.locked_palette_slots
+        src_locked = src in locked
+        dst_locked = dst in locked
+        if src_locked or dst_locked:
+            locked.discard(src)
+            locked.discard(dst)
+            if src_locked:
+                locked.add(dst)
+            if dst_locked:
+                locked.add(src)
         self._context.active_color_index = dst
         self.refresh()
         self.active_color_changed.emit(self._context.active_color_index)
         self.palette_status_message.emit("Swapped palette colors")
+
+    def _on_lock_active_slot_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        slot = self._context.active_color_index
+        locked = state != 0
+        self._context.set_palette_slot_locked(slot, locked)
+        self.palette_status_message.emit(
+            f"{'Locked' if locked else 'Unlocked'} color slot {slot}"
+        )
 
     def _rebuild_color_buttons(self) -> None:
         while self.grid.count():

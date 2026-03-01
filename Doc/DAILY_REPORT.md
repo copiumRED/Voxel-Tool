@@ -857,3 +857,18 @@
   - Run: `pytest -q` (current: `109 passed`)
 - Risks/issues:
   - Palette slot lock protection remains pending Task 17.
+
+### Roadmap 17 (Day-Cycle 30): Palette Slot Lock Protection
+- What was done:
+  - Added palette slot lock state and lock APIs in app context.
+  - Added `Lock Active Slot` control in Palette panel.
+  - Blocked edit/remove/swap on locked slots.
+  - Added persistence of locked slots via editor state.
+  - Added lock-state regression tests.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Lock active palette slot, try edit/remove/swap, and confirm operations are blocked.
+  - Unlock and confirm operations work again.
+  - Run: `pytest -q` (current: `110 passed`)
+- Risks/issues:
+  - OBJ multi-material export option remains pending Task 18.
