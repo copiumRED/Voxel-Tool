@@ -2,6 +2,7 @@
 
 from core.io.palette_io import load_palette_preset, load_palette_preset_with_metadata, save_palette_preset
 from core.io.project_io import load_project, save_project
+from core.io.qb_io import load_qb_models, load_qb_models_with_warnings
 from core.io.recovery_io import (
     clear_recovery_snapshot,
     get_recovery_path,
@@ -16,6 +17,8 @@ __all__ = [
     "load_palette_preset",
     "load_palette_preset_with_metadata",
     "save_palette_preset",
+    "load_qb_models",
+    "load_qb_models_with_warnings",
     "get_recovery_path",
     "has_recovery_snapshot",
     "save_recovery_snapshot",

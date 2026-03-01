@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 23: Qubicle QB Import Feasibility Slice
-- Goal: Implement bounded `.qb` importer for core voxel data only.
-- Likely files/modules touched: `src/core/io/qb_io.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_io.py` (new).
-- Acceptance criteria (human-testable): Import simple `.qb` fixture into scene parts without crash.
-- Tests required: Add parser tests using curated tiny fixtures.
-- Risk/rollback note: Gate unsupported features with explicit warnings.
-
 ### Task 24: Qubicle QB Export Feasibility Slice
 - Goal: Implement bounded `.qb` exporter for current scene voxel data.
 - Likely files/modules touched: `src/core/export/qb_exporter.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_exporter.py` (new).
@@ -523,7 +516,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`155 passed`)
 
 ### Task 22: VOX Multi-part Naming and Grouping
-- Commit: `COMMIT_PENDING`
+- Commit: `c13180e`
 - Added deterministic VOX import naming helper for part labels (`Base Part 01`, `Base Part 02`, ...).
 - Added deterministic VOX import grouping helper (`<Base> Import`) for multi-model imports.
 - Updated VOX import flow to create a group automatically when importing multiple VOX models.
@@ -540,3 +533,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`156 passed`)
+
+### Task 23: Qubicle QB Import Feasibility Slice
+- Commit: `COMMIT_PENDING`
+- Added new QB IO module (`core/io/qb_io.py`) for bounded Qubicle `.qb` import.
+- Implemented QB header parsing (version/format/compression/visibility/matrix count).
+- Implemented uncompressed matrix parsing for voxel payloads with matrix position offsets.
+- Implemented RGBA voxel unpacking and alpha-aware occupancy handling (alpha zero skipped).
+- Implemented palette extraction from encountered matrix voxel colors with deterministic indexing.
+- Added explicit rejection for compressed QB payloads in this feasibility slice.
+- Added public IO exports for QB loaders in `core/io/__init__.py`.
+- Added File menu action `Import QB` and wired it to new main-window import flow.
+- Added QB import scene integration with deterministic part naming and optional grouping for multi-matrix files.
+- Added QB import palette apply behavior and post-import status/warning messaging.
+- Added regression test for QB single-matrix import with positional offset mapping.
+- Added regression test for compressed QB rejection path.
+- Kept scope bounded to core voxel import feasibility (no advanced QB features/compression yet).
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`158 passed`)

@@ -1397,3 +1397,17 @@
   - Run: `pytest -q` (current: `156 passed`).
 - Risks/issues:
   - QB import feasibility slice remains pending Task 23.
+
+### Roadmap 23 (Day-Cycle 40): Qubicle QB Import Feasibility Slice
+- What was done:
+  - Added bounded QB importer (`core/io/qb_io.py`) for uncompressed matrix voxel data.
+  - Added File menu `Import QB` flow and scene integration (part creation + optional grouping).
+  - Added QB palette derivation from imported voxel colors and context palette assignment.
+  - Added parser tests for positional-offset matrix import and compressed-file rejection.
+- How to test quickly:
+  - Use `File -> Import QB` on a small uncompressed QB fixture.
+  - Verify voxels import at expected offsets and scene parts are created without crashes.
+  - Confirm compressed QB payloads are rejected with clear error messaging.
+  - Run: `pytest -q` (current: `158 passed`).
+- Risks/issues:
+  - QB export feasibility slice remains pending Task 24.

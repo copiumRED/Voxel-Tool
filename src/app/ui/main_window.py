@@ -35,6 +35,7 @@ from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
+from core.io.qb_io import load_qb_models_with_warnings
 from core.io.vox_io import load_vox_models_with_warnings
 from core.io.recovery_io import (
     clear_recovery_snapshot,
@@ -262,6 +263,9 @@ class MainWindow(QMainWindow):
         import_vox_action = QAction("Import VOX", self)
         import_vox_action.triggered.connect(self._on_import_vox)
         file_menu.addAction(import_vox_action)
+        import_qb_action = QAction("Import QB", self)
+        import_qb_action.triggered.connect(self._on_import_qb)
+        file_menu.addAction(import_qb_action)
 
         file_menu.addSeparator()
 
@@ -632,6 +636,54 @@ class MainWindow(QMainWindow):
                 self,
                 "VOX Import Warnings",
                 "Imported with unsupported chunk(s): " + ", ".join(warnings),
+            )
+        self._refresh_ui_state()
+
+    def _on_import_qb(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import QB",
+            "",
+            "Qubicle QB (*.qb);;All Files (*)",
+        )
+        if not path:
+            return
+        try:
+            models, palette, warnings = load_qb_models_with_warnings(path)
+        except Exception as exc:
+            QMessageBox.warning(self, "Import QB", f"Failed to import QB file.\n\n{exc}")
+            return
+
+        scene = self.context.current_project.scene
+        part_name = os.path.splitext(os.path.basename(path))[0] or "Imported QB"
+        target_group_id: str | None = None
+        if len(models) > 1:
+            group = scene.create_group(_vox_import_group_name(part_name))
+            target_group_id = group.group_id
+        imported_count = 0
+        active_part_id: str | None = None
+        for index, voxels in enumerate(models):
+            name = _vox_import_part_name(part_name, index, len(models))
+            imported_part = scene.add_part(name)
+            imported_part.voxels = voxels
+            if target_group_id is not None:
+                scene.assign_part_to_group(imported_part.part_id, target_group_id)
+            if active_part_id is None:
+                active_part_id = imported_part.part_id
+            imported_count += 1
+        if active_part_id is not None:
+            scene.set_active_part(active_part_id)
+        self.context.palette = palette
+        self.context.active_color_index = max(
+            0,
+            min(self.context.active_color_index, len(self.context.palette) - 1),
+        )
+        self._show_voxel_status(f"Imported QB: {path} ({imported_count} part(s))")
+        if warnings:
+            QMessageBox.information(
+                self,
+                "QB Import Warnings",
+                "Imported with unsupported data: " + ", ".join(warnings),
             )
         self._refresh_ui_state()
 
