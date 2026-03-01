@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
+from datetime import datetime, timezone
 
 from core.io.project_io import load_project, save_project
 from core.project import Project
 from util.fs import get_app_temp_dir
 
 _RECOVERY_FILE_NAME = "autosave_recovery.json"
+_RECOVERY_DIAGNOSTIC_FILE_NAME = "autosave_recovery_diagnostic.json"
 _RECOVERY_EDITOR_STATE_KEY = "_recovery_version"
 _RECOVERY_VERSION = 1
 
@@ -18,6 +21,10 @@ def get_recovery_path() -> Path:
 
 def has_recovery_snapshot() -> bool:
     return get_recovery_path().exists()
+
+
+def get_recovery_diagnostic_path() -> Path:
+    return get_app_temp_dir("VoxelTool") / _RECOVERY_DIAGNOSTIC_FILE_NAME
 
 
 def save_recovery_snapshot(project: Project) -> Path:
@@ -44,4 +51,17 @@ def load_recovery_snapshot() -> Project:
 
 def clear_recovery_snapshot() -> None:
     get_recovery_path().unlink(missing_ok=True)
+
+
+def write_recovery_diagnostic(error_text: str, *, stage: str = "load") -> Path:
+    payload = {
+        "kind": "recovery_diagnostic",
+        "stage": str(stage).strip().lower() or "unknown",
+        "error": str(error_text),
+        "recovery_path": str(get_recovery_path()),
+        "timestamp_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+    }
+    path = get_recovery_diagnostic_path()
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return path
 

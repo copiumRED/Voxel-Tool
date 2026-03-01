@@ -40,6 +40,7 @@ from core.io.recovery_io import (
     has_recovery_snapshot,
     load_recovery_snapshot,
     save_recovery_snapshot,
+    write_recovery_diagnostic,
 )
 from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project, utc_now_iso
@@ -1171,7 +1172,15 @@ class MainWindow(QMainWindow):
         try:
             project = load_recovery_snapshot()
         except Exception as exc:
-            QMessageBox.warning(self, "Recovery Failed", f"Failed to load recovery snapshot.\n\n{exc}")
+            diagnostic_path = ""
+            try:
+                diagnostic_path = str(write_recovery_diagnostic(str(exc), stage="load"))
+            except Exception:
+                logging.getLogger("voxel_tool").exception("Failed to write recovery diagnostics")
+            detail = f"Failed to load recovery snapshot.\n\n{exc}"
+            if diagnostic_path:
+                detail += f"\n\nDiagnostics: {diagnostic_path}"
+            QMessageBox.warning(self, "Recovery Failed", detail)
             clear_recovery_snapshot()
             return
         self.context.current_project = project

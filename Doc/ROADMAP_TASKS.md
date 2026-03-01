@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 06: Recovery Diagnostic Report
-- Goal: Add structured diagnostics when recovery load fails.
-- Likely files/modules touched: `src/core/io/recovery_io.py`, `src/app/ui/main_window.py`, `tests/test_recovery_io.py`.
-- Acceptance criteria (human-testable): Recovery failure surfaces clear reason and writes a small diagnostics file.
-- Tests required: Add failure-path tests for diagnostics emission.
-- Risk/rollback note: Never block app startup due to diagnostics write failure.
-
 ### Task 07: Project Schema Version Handshake
 - Goal: Introduce explicit schema version check and migration hook scaffolding.
 - Likely files/modules touched: `src/core/io/project_io.py`, `src/core/project.py`, `tests/test_project_io.py`.
@@ -326,7 +319,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`128 passed`)
 
 ### Task 05: Drag Transaction Abort Hardening
-- Commit: `COMMIT_PENDING`
+- Commit: `381e833`
 - Added command-stack `transaction_active` property to expose active transaction state explicitly.
 - Added command-stack `cancel_transaction()` API with optional rollback behavior.
 - Implemented rollback path that undoes staged transaction commands in reverse order.
@@ -342,3 +335,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`130 passed`)
+
+### Task 06: Recovery Diagnostic Report
+- Commit: `COMMIT_PENDING`
+- Added dedicated recovery diagnostic file path helper in recovery IO module.
+- Added recovery diagnostic writer utility that records stage, error, snapshot path, and UTC timestamp.
+- Added JSON diagnostic payload schema for operator triage of recovery failures.
+- Wired main-window recovery-failure path to emit diagnostic file on load exceptions.
+- Added defensive fallback logging if diagnostic file writing itself fails.
+- Extended recovery failure warning dialog to include diagnostic file path when available.
+- Preserved existing safe-fail behavior (clear snapshot and continue startup) on recovery load failure.
+- Kept recovery save/load schema behavior unchanged for successful paths.
+- Added recovery diagnostic regression test validating payload content and file creation.
+- Preserved compatibility with existing recovery snapshot tests and version mismatch guards.
+- Kept implementation dependency-free and IO/UI scoped.
+- Improved operator triage signal without blocking normal app startup behavior.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`131 passed`)

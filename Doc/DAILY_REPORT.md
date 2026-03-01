@@ -1146,3 +1146,17 @@
   - Run: `pytest -q` (current: `130 passed`).
 - Risks/issues:
   - Recovery diagnostics remain pending Task 06.
+
+### Roadmap 06 (Day-Cycle 40): Recovery Diagnostic Report
+- What was done:
+  - Added recovery diagnostic writer and path helper in `core.io.recovery_io`.
+  - Wired recovery-load failure UI path to emit a diagnostic JSON file.
+  - Included diagnostic path in recovery failure dialog for operator triage.
+  - Added regression test for diagnostic payload creation/shape.
+- How to test quickly:
+  - Corrupt recovery snapshot payload and relaunch app.
+  - Confirm warning dialog appears and includes diagnostics file path.
+  - Inspect diagnostic JSON for `kind`, `stage`, `error`, and `timestamp_utc`.
+  - Run: `pytest -q` (current: `131 passed`).
+- Risks/issues:
+  - Project schema handshake/migration scaffolding remains pending Task 07.

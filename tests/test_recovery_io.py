@@ -6,9 +6,11 @@ import pytest
 
 from core.io.recovery_io import (
     clear_recovery_snapshot,
+    get_recovery_diagnostic_path,
     has_recovery_snapshot,
     load_recovery_snapshot,
     save_recovery_snapshot,
+    write_recovery_diagnostic,
 )
 from core.project import Project
 
@@ -59,4 +61,16 @@ def test_recovery_snapshot_version_mismatch_raises_value_error() -> None:
     with pytest.raises(ValueError):
         load_recovery_snapshot()
     clear_recovery_snapshot()
+
+
+def test_write_recovery_diagnostic_records_error_payload() -> None:
+    path = get_recovery_diagnostic_path()
+    path.unlink(missing_ok=True)
+    written = write_recovery_diagnostic("boom", stage="load")
+    assert written == path
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["kind"] == "recovery_diagnostic"
+    assert payload["stage"] == "load"
+    assert payload["error"] == "boom"
+    path.unlink(missing_ok=True)
 
