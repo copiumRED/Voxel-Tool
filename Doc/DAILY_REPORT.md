@@ -1187,3 +1187,18 @@
   - Run: `pytest -q` (current: `134 passed`).
 - Risks/issues:
   - Scene outliner search/filter remains pending Task 09.
+
+### Roadmap 09 (Day-Cycle 40): Scene Outliner Search Filter
+- What was done:
+  - Added live part filter field to inspector panel.
+  - Added live group filter field to inspector panel.
+  - Applied case-insensitive substring filtering to part/group list population in refresh.
+  - Added helper matcher method to keep filter logic centralized and testable.
+  - Added regression test for filter matcher behavior.
+- How to test quickly:
+  - In Inspector, type text in `Filter parts...` and verify list narrows instantly.
+  - Type text in `Filter groups...` and verify group list narrows instantly.
+  - Clear filters and verify full lists return.
+  - Run: `pytest -q` (current: `135 passed`).
+- Risks/issues:
+  - Multi-select part actions remain pending Task 10.

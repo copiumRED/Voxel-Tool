@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QInputDialog,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
@@ -29,6 +30,10 @@ class InspectorPanel(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Parts"))
+        self.part_filter_input = QLineEdit(self)
+        self.part_filter_input.setPlaceholderText("Filter parts...")
+        self.part_filter_input.textChanged.connect(lambda _text: self.refresh())
+        layout.addWidget(self.part_filter_input)
 
         self.part_list = QListWidget(self)
         self.part_list.currentItemChanged.connect(self._on_current_part_changed)
@@ -70,6 +75,10 @@ class InspectorPanel(QWidget):
         layout.addLayout(flags_layout)
 
         layout.addWidget(QLabel("Groups"))
+        self.group_filter_input = QLineEdit(self)
+        self.group_filter_input.setPlaceholderText("Filter groups...")
+        self.group_filter_input.textChanged.connect(lambda _text: self.refresh())
+        layout.addWidget(self.group_filter_input)
         self.group_list = QListWidget(self)
         self.group_list.currentItemChanged.connect(self._on_current_group_changed)
         layout.addWidget(self.group_list)
@@ -144,7 +153,10 @@ class InspectorPanel(QWidget):
         active_part = self._context.active_part
         self.part_list.blockSignals(True)
         self.part_list.clear()
+        part_filter = self.part_filter_input.text()
         for part_id, part in self._context.current_project.scene.iter_parts_ordered():
+            if not self._matches_filter_text(part.name, part_filter):
+                continue
             item = QListWidgetItem(part.name)
             item.setData(Qt.UserRole, part_id)
             self.part_list.addItem(item)
@@ -153,7 +165,10 @@ class InspectorPanel(QWidget):
         self.part_list.blockSignals(False)
         self.group_list.blockSignals(True)
         self.group_list.clear()
+        group_filter = self.group_filter_input.text()
         for group_id, group in self._context.current_project.scene.iter_groups_ordered():
+            if not self._matches_filter_text(group.name, group_filter):
+                continue
             item = QListWidgetItem(group.name)
             item.setData(Qt.UserRole, group_id)
             self.group_list.addItem(item)
@@ -440,6 +455,13 @@ class InspectorPanel(QWidget):
             )
         )
         self.part_status_message.emit(f"Part order updated: {self._context.active_part.name}")
+
+    @staticmethod
+    def _matches_filter_text(label: str, text_filter: str) -> bool:
+        needle = str(text_filter).strip().lower()
+        if not needle:
+            return True
+        return needle in str(label).strip().lower()
 
     @staticmethod
     def _create_transform_spin(

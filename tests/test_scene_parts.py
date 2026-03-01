@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.app_context import AppContext
 from core.commands.demo_commands import PaintVoxelCommand
 from core.project import Project
+from app.ui.panels.inspector_panel import InspectorPanel
 from core.scene import Scene
 
 
@@ -150,3 +151,9 @@ def test_scene_group_names_for_part_reports_membership() -> None:
     second_memberships = scene.group_names_for_part(second.part_id)
     assert first_memberships == ["Characters", "Props"]
     assert second_memberships == ["Props"]
+
+
+def test_inspector_filter_matcher_is_case_insensitive_substring() -> None:
+    assert InspectorPanel._matches_filter_text("Part Alpha", "alpha") is True
+    assert InspectorPanel._matches_filter_text("Part Alpha", "PART") is True
+    assert InspectorPanel._matches_filter_text("Part Alpha", "beta") is False

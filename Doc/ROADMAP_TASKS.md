@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 09: Scene Outliner Search Filter
-- Goal: Add filter/search for parts/groups in inspector.
-- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `tests/test_scene_parts.py`.
-- Acceptance criteria (human-testable): Typing filter instantly narrows visible parts/groups.
-- Tests required: Add UI logic tests for filtered list results.
-- Risk/rollback note: Keep default full list view when filter empty.
-
 ### Task 10: Multi-select Part Actions
 - Goal: Support multi-select visibility/lock/delete operations in inspector.
 - Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `src/core/scene.py`.
@@ -359,7 +352,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`133 passed`)
 
 ### Task 08: Save/Open Robustness Sweep
-- Commit: `COMMIT_PENDING`
+- Commit: `008bd30`
 - Added project IO error-detail helper to produce actionable open/save failure messaging with path context.
 - Updated open-project failure dialog to include operation name, path, and raw exception detail.
 - Updated save-as flow to set `current_path` only after successful write.
@@ -375,3 +368,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`134 passed`)
+
+### Task 09: Scene Outliner Search Filter
+- Commit: `COMMIT_PENDING`
+- Added part filter input control to inspector panel with live refresh binding.
+- Added group filter input control to inspector panel with live refresh binding.
+- Added filtered list-population logic for parts during inspector refresh.
+- Added filtered list-population logic for groups during inspector refresh.
+- Preserved active-part transform/visibility/lock control behavior under filtered list states.
+- Preserved group visibility/lock control behavior under filtered list states.
+- Added reusable case-insensitive substring matcher helper for filter checks.
+- Ensured empty filter string returns full list for both parts and groups.
+- Kept filtering scope non-destructive (view-only; no scene mutation side effects).
+- Added regression test coverage for filter matcher behavior and case-insensitive matching.
+- Kept implementation UI-scoped with no new dependencies.
+- Maintained existing part/group selection signal contracts.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`135 passed`)
