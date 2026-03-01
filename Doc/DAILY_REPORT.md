@@ -1634,3 +1634,38 @@
   - Run: `pytest -q` (current: `183 passed`).
 - Risks/issues:
   - Final UX regression/operator pack remains pending Task 40.
+
+### Roadmap 40 (Day-Cycle 40): Interface Polish - Final UX Regression and Operator Pack
+- What was done:
+  - Executed final full gate run (`python src/app/main.py` launch smoke + `pytest -q`).
+  - Refreshed `Doc/NEXT_WORKDAY.md` into operator-validation mode with explicit pass/fail checklist.
+  - Expanded `Doc/PACKAGING_CHECKLIST.md` with packaged-build validation matrix and evidence requirements.
+  - Updated `Doc/CURRENT_STATE.md` completion percentages and corrected stale implemented/not-implemented entries.
+  - Updated risks/blockers to current post-Task-39 baseline.
+- How to test quickly:
+  - Run `python src/app/main.py` and verify normal startup/shutdown.
+  - Run `pytest -q` and confirm full suite green.
+  - Follow `Doc/NEXT_WORKDAY.md` Operator checklist exactly.
+  - Follow `Doc/PACKAGING_CHECKLIST.md` packaging matrix and record evidence.
+- Risks/issues:
+  - No new P0 blocker discovered in this task.
+
+## End of Day Summary (Day-Cycle 40)
+- Tasks completed: 01-40 (all merged to `main`).
+- Commit hash list:
+  - See `Doc/ROADMAP_TASKS.md` Completed Today section for per-task hashes (Task 40 hash will be this task commit).
+- Final gates on `main` state at task close:
+  - App launch smoke: PASS
+  - `pytest -q`: PASS (`183 passed`)
+- Operator validation checklist:
+  - Run `python src/app/main.py` and `pytest -q`.
+  - Execute viewport/tool/scene/palette/recovery/export checks from `Doc/NEXT_WORKDAY.md`.
+  - Execute packaged-build checks from `Doc/PACKAGING_CHECKLIST.md`.
+  - Record any defect with exact repro and expected/actual behavior.
+- Known issues/risks:
+  - Mesh edit mode (vertex/edge/face) remains out-of-scope for current phase.
+  - FBX exporter path remains unimplemented.
+  - VOX hierarchy reconstruction beyond transform v1 remains partial.
+- Packaging/build notes:
+  - Use `powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`.
+  - Capture artifact path/size/hash and portable zip hash in report.

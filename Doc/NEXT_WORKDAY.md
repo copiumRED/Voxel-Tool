@@ -4,10 +4,8 @@ Date Prepared: 2026-03-01
 Prepared By: Codex
 
 ## Workday Definition
-- Complete `Doc/ROADMAP_TASKS.md` Tasks **01-40** in strict order.
-- Tasks 01-30 are core stability/parity/perf/packaging delivery.
-- Tasks 31-40 are interface polish delivery.
-- One task per branch; merge only to `main` after gate pass.
+- Day-cycle complete: Tasks **01-40** executed in order and merged to `main` only.
+- Current focus is operator validation and defect triage only (no new roadmap feature starts).
 
 ## 10-Minute Smoke Checklist
 1. `git checkout main`
@@ -35,27 +33,41 @@ Prepared By: Codex
 - Confirm `ARTIFACT_EXE`, `ARTIFACT_SIZE_BYTES`, `ARTIFACT_SHA256`
 
 ## Operator End-of-Day Validation Checklist
-1. Confirm all roadmap tasks completed in `Doc/ROADMAP_TASKS.md` with commit hashes.
-2. Confirm `main` is clean and green:
-- `python src/app/main.py`
-- `pytest -q`
-3. Validate viewport workflow:
-- Create test voxels
-- Orbit/pan/zoom across dense and sparse scenes
-- Confirm edit-plane and pick-mode behavior is visible and predictable
-4. Validate scene workflow:
-- Add, duplicate, rename, reorder, hide/show, lock/unlock parts
-- Group/ungroup parts and verify inspector reflects membership
-5. Validate export workflow:
-- Export OBJ/glTF/VOX on a multi-color, multi-part scene
-- Verify files are created and non-empty
-6. Validate recovery workflow:
-- Perform edits, force-close, relaunch, validate recovery prompt path
-7. Validate packaging workflow:
-- Run packaging script and record artifact diagnostics
-- Build portable zip and verify launch from extracted folder
-8. Record outcomes in `Doc/DAILY_REPORT.md` and list any blocker with exact repro.
-9. Only after sign-off: operator may promote `main` to `stable`.
+1. Preflight:
+- `git checkout main`
+- `git status` (must be clean)
+- `python src/app/main.py` (launch/close cleanly)
+- `pytest -q` (must be green)
+2. Viewport/navigation:
+- `Debug -> Create Test Voxels (Cross)` is visible and works.
+- Orbit/pan/zoom in all navigation profiles (`Classic`, `MMB Orbit`, `Blender-Mix`).
+- Hold `Alt` during camera motion and verify precision mode reduces sensitivity.
+3. Tooling:
+- Brush/box/line/fill paint + erase paths.
+- Mirror axes + mirror overlay visuals.
+- Voxel selection mode: select, move (arrow/page keys), duplicate via tools panel, undo/redo.
+4. Scene workflow:
+- Multi-part add/duplicate/rename/reorder/delete.
+- Multi-select visibility/lock/delete actions.
+- Groups: create/assign/unassign/lock/visibility.
+5. Palette and UI:
+- Palette slot edit + lock + import/export.
+- Hotkey overlay (`Edit -> Shortcut Help`) opens modeless and closes.
+- Command palette (`Ctrl+Shift+P`) runs selected commands.
+- Dock layout preset save/load (1 and 2).
+6. IO and recovery:
+- Save/Open roundtrip once.
+- Restart app with recent project prompt.
+- Recovery snapshot prompt: test restore/discard/open recent/cancel paths.
+7. Export:
+- Export OBJ, glTF, VOX, and QB once each on multi-color scene.
+- Re-import VOX and QB once; validate scene loads without crash.
+8. Packaging:
+- Run `powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`.
+- Validate artifact path/size/hash outputs and launch packaged EXE.
+9. Reporting:
+- Record pass/fail with exact repro steps for any defect in `Doc/DAILY_REPORT.md`.
+- Promote `main` to `stable` only after full sign-off.
 
 ## Day Objective
-Deliver a production-credible voxel editor MVP in this cycle by resolving the highest-risk stability/correctness gaps first, then completing parity-critical workflows, then hardening performance and packaging, followed by focused interface polish for industry-standard daily use.
+Deliver operator-ready validation of the completed 40-task MVP cycle and capture any defects as isolated fix branches into `main`.

@@ -7,12 +7,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 40: Interface Polish - Final UX Regression and Operator Pack
-- Goal: Run final UX polish QA pass and prepare operator validation scripts/checklists.
-- Likely files/modules touched: `Doc/DAILY_REPORT.md`, `Doc/NEXT_WORKDAY.md`, `Doc/PACKAGING_CHECKLIST.md`.
-- Acceptance criteria (human-testable): Operator can execute full validation checklist with no ambiguity.
-- Tests required: Full `pytest -q` and documented manual smoke matrix.
-- Risk/rollback note: If unresolved P0 remains, hold merge and document blocker clearly.
+- None.
 
 ## Completed Today
 ### Task 01: Input State Machine Split (Edit vs Navigate)
@@ -725,7 +720,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`181 passed`)
 
 ### Task 39: Interface Polish - Startup Workspace Recovery UX
-- Commit: `COMMIT_PENDING`
+- Commit: `e6e675e`
 - Added recent-project settings key helper and startup-choice helper for recovery flows.
 - Added recent project path persistence on save/open success paths.
 - Added shared `_open_project_path` loader path for reuse by startup and manual open.
@@ -739,6 +734,24 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Added regression test for recent project settings key stability.
 - Kept implementation scoped to startup UX and project-open flow reuse.
 - No dependency changes or schema changes introduced.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`183 passed`)
+
+### Task 40: Interface Polish - Final UX Regression and Operator Pack
+- Commit: `COMMIT_PENDING`
+- Ran full final gate pass for day-end (`python src/app/main.py` launch smoke + full `pytest -q`).
+- Verified gate summary remains green at task close (`183 passed`).
+- Refreshed `Doc/NEXT_WORKDAY.md` into operator-validation mode (no new task starts).
+- Added explicit operator validation checklist covering viewport/tools/scene/io/export/packaging.
+- Added precise startup-recovery validation steps including restore/discard/open-recent/cancel paths.
+- Added packaging validation matrix for packaged EXE behavior and key editing/export flows.
+- Added packaging evidence capture requirements (artifact path/hash + zip hash + smoke status).
+- Updated `Doc/CURRENT_STATE.md` completion percentages and corrected stale feature-status entries.
+- Updated `Doc/CURRENT_STATE.md` top risk list to match current implemented baseline.
+- Kept scope docs-only for end-of-day operator handoff readiness.
+- Preserved no-feature-change requirement in this final polish task.
+- No dependency or runtime code changes in this task.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`183 passed`)

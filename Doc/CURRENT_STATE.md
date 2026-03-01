@@ -4,14 +4,15 @@ Date: 2026-03-01
 Branch baseline: `main`
 
 ## Phase Completion Estimates
-- Phase 0 (Core Editor Foundations): **98%**
-- Phase 1 (Qubicle-competitive voxel workflow): **74%**
+- Phase 0 (Core Editor Foundations): **100%**
+- Phase 1 (Qubicle-competitive voxel workflow): **92%**
 - Phase 2 (Mesh Edit MVP): **10%**
 
 Reasoning:
-- Phase 0 is mostly complete: app shell, viewport, parts/palette, undo/redo, save/load, autosave/recovery, meshing, and baseline exports are implemented and tested.
-- Phase 1 is partially complete: core voxel editing is usable, but full Qubicle parity is still blocked by missing advanced selection workflows, richer viewport controls, and broad import/export compatibility.
+- Phase 0 is complete for MVP scope: app shell, viewport, parts/palette, undo/redo, save/load, autosave/recovery, meshing, and export pipeline are implemented and passing tests.
+- Phase 1 is near complete for current day-cycle: tooling, selection move/duplicate, mirror overlays, hotkeys/command palette/HUD, VOX/QB import-export feasibility, and glTF/OBJ parity slices are integrated.
 - Phase 2 remains early: no production mesh-edit mode (vertex/edge/face selection + editing ops) in the current runtime path.
+- Correction: previous state understated delivered navigation presets, selection workflows, memory instrumentation, QB IO, and glTF color/material/UV support.
 
 ## Implemented vs Not Implemented
 
@@ -32,11 +33,12 @@ Not Implemented:
 Implemented:
 - OpenGL viewport with perspective + orthographic projections.
 - Orbit/pan/zoom, frame voxels, camera snap options.
+- Navigation profiles: `classic`, `mmb_orbit`, and `blender_mix`.
+- Precision modifier mode (`Alt`) for reduced camera sensitivity.
 - Hover and drag previews for voxel tools.
 - Debug test-voxel workflow and grid controls.
 
 Not Implemented:
-- Industry-standard control profile (MMB orbit variant / Blender-like navigation profile).
 - Ortho quad-view layout (front/top/side simultaneous).
 - High-density scene culling and level-of-detail strategy.
 
@@ -46,9 +48,12 @@ Implemented:
 - Box/line/fill tools with preview and mirror support.
 - Pick modes (`surface` vs `plane_lock`) and fill plane/volume connectivity.
 - Brush shape/size and cycle hotkey support.
+- Voxel selection mode with click/drag-box selection.
+- Selected voxel move and duplicate workflows with undo/redo.
+- Mirror visual plane overlays and fill confidence preview region.
 
 Not Implemented:
-- Lasso/rect voxel selection and transform of selected voxel sets.
+- Lasso/freeform voxel selection mode.
 - Tool-level symmetry visualization overlays per axis plane.
 - Macro tools (stamp library, noise/falloff brushes).
 
@@ -78,13 +83,12 @@ Not Implemented:
 Implemented:
 - OBJ export with greedy/triangulate/pivot/scale/UV/vertex-color options.
 - OBJ multi-material by color and explicit vertex-color policy.
-- glTF export with scale and normals.
-- VOX export and VOX import warning path for unsupported chunks.
+- glTF export with scale, normals, UVs, vertex colors, and baseline material payload.
+- VOX export and VOX import with transform mapping v1 + warnings for unsupported chunks.
+- Qubicle `.qb` import/export feasibility slices.
 
 Not Implemented:
 - FBX exporter path.
-- glTF color/material/UV payload parity.
-- Qubicle `.qb` import/export.
 - Rich VOX transform/hierarchy chunk reconstruction.
 
 ### Solidify
@@ -103,10 +107,10 @@ Implemented:
 - Runtime frame/rebuild metrics.
 - Perf baseline tests with per-metric thresholds.
 - Reduced redundant viewport per-frame traversal.
+- Dense-scene tier harness (64/96/128) and memory budget instrumentation.
 
 Not Implemented:
 - CI-enforced strict perf budgets per scene tier.
-- Memory profile instrumentation for 64^3/96^3/128^3 targets.
 - Stress scene replay harness with trend history.
 
 ### Packaging
@@ -121,32 +125,32 @@ Not Implemented:
 - Automatic artifact publishing workflow.
 
 ## Top 10 Blockers / Risks + Confirmation Experiments
-1. Missing mesh edit mode blocks "full MVP" target from project spec
-- Confirmation experiment: search runtime code paths for active vertex/edge/face edit mode and execute manual UI pass; verify no usable mesh-edit toolchain is exposed.
+1. Missing mesh edit mode blocks full spec completion
+- Confirmation experiment: search runtime for vertex/edge/face edit command path and run manual UI pass for mesh edit tools.
 
-2. No FBX export path despite spec target
-- Confirmation experiment: run export menu smoke and code search for FBX exporter integration; verify no functional FBX export action exists.
+2. FBX exporter path is still absent
+- Confirmation experiment: inspect export menu and code for FBX wiring; verify no enabled export flow exists.
 
-3. No `.qb` interoperability
-- Confirmation experiment: attempt to import/export `.qb` via UI and verify option absence; confirm no parser/writer in `src/core/io`.
+3. VOX hierarchy reconstruction is partial (`nTRN` translation v1 only)
+- Confirmation experiment: import VOX scene with layered transforms/groups and verify flattening/warning behavior.
 
-4. Navigation controls are not industry-standard yet (no MMB orbit profile)
-- Confirmation experiment: perform viewport input test; verify orbit is left-drag (non-brush), pan is right-drag, no MMB orbit mode toggle.
+4. QB interoperability is feasibility-level only
+- Confirmation experiment: run import/export on varied QB files (compressed, multi-matrix variants) and log unsupported cases.
 
-5. glTF parity is partial (normals yes, but no UV/colors/materials)
-- Confirmation experiment: export glTF and inspect JSON accessors/primitives for `TEXCOORD_0`, `COLOR_0`, and material references.
+5. Startup recovery/open-recent paths rely on interactive prompts that need operator validation
+- Confirmation experiment: create recovery snapshot + recent-path scenarios and validate all dialog choices manually.
 
-6. VOX import does not reconstruct hierarchy/transform semantics
-- Confirmation experiment: import VOX containing transform/scene chunks and verify warning + flattened behavior.
+6. High-density render path still depends on cache invalidation correctness
+- Confirmation experiment: perform rapid dense-scene edits and verify viewport updates remain correct without stale geometry.
 
-7. Duplicate source trees still carry maintenance risk
-- Confirmation experiment: modify legacy file under `src/voxel_tool`; verify guard test failure and developer friction for intentional changes.
+7. Incremental meshing fallback rate may rise on complex edits
+- Confirmation experiment: monitor `inc tries/fallbacks` stats during large localized edit sessions.
 
-8. Incremental meshing safety currently relies on fallback checks that may impact large-scene performance
-- Confirmation experiment: run repeated localized edits on dense scenes and log rebuild timings with fallback frequency.
+8. Packaging confidence still machine-dependent
+- Confirmation experiment: run packaging and portable smoke on a clean VM and second machine.
 
-9. Packaging confidence is still environment-biased
-- Confirmation experiment: run packaging + smoke on clean VM and second machine; compare failures and missing runtime deps.
+9. Duplicate source trees remain a maintenance hazard
+- Confirmation experiment: run guardrails and ensure only canonical source paths are edited.
 
-10. Day-scale delivery risk for "Qubicle + better" scope is high without strict task slicing and acceptance gates
-- Confirmation experiment: track completion burn-down at task 10/20/30 checkpoints against pass/fail gates.
+10. Scope risk: "Qubicle + better" still exceeds current phase boundaries without controlled follow-up slicing
+- Confirmation experiment: track remaining parity gaps against next-day roadmap and enforce gate criteria per task.

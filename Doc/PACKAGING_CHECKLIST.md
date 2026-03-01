@@ -38,6 +38,17 @@
    - Extract zip into a clean folder.
    - Run `VoxelTool.exe` from extracted folder.
    - Verify app launches and viewport loads.
+7. Operator validation matrix (packaged build):
+   - `Debug -> Create Test Voxels (Cross)` works.
+   - Orbit/pan/zoom + `Alt` precision modifier works.
+   - Brush paint/erase and selection move/duplicate work.
+   - Export OBJ/glTF/VOX/QB creates non-empty files.
+   - Save/Open roundtrip works once.
+8. Record packaging evidence in `Doc/DAILY_REPORT.md`:
+   - artifact path
+   - artifact SHA256
+   - zip path + SHA256
+   - pass/fail for packaged smoke matrix
 
 ## Installer Prerequisites (Prep Only)
 - Inno Setup (or equivalent installer tool) selected and version pinned.
