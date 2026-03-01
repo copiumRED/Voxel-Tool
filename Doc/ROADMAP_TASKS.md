@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 13: Selected Voxel Duplicate Tool
-- Goal: Duplicate selected voxel sets with offset.
-- Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`.
-- Acceptance criteria (human-testable): Duplicate action creates copy at configured offset.
-- Tests required: Add selection duplicate tests including mirror mode interactions.
-- Risk/rollback note: Hard cap voxel count growth to prevent accidental explosions.
-
 ### Task 14: Fill Preview Confidence Layer
 - Goal: Add preview indicators for fill reach before commit.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
@@ -403,7 +396,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`140 passed`)
 
 ### Task 12: Selected Voxel Move Tool
-- Commit: `COMMIT_PENDING`
+- Commit: `8df078a`
 - Added command `MoveSelectedVoxelsCommand` to move selected voxel sets by integer axis delta.
 - Implemented deterministic source filtering so only existing selected cells participate in move.
 - Implemented collision blocking when destination contains non-selected voxels.
@@ -420,3 +413,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`143 passed`)
+
+### Task 13: Selected Voxel Duplicate Tool
+- Commit: `COMMIT_PENDING`
+- Added command `DuplicateSelectedVoxelsCommand` for offset duplication of selected voxel sets.
+- Implemented source filtering so only existing selected cells are used as duplication input.
+- Added deterministic destination-occupancy collision blocking to avoid destructive overwrite.
+- Added safety cap guard (`50,000` selected cells) to prevent accidental explosive duplication.
+- Preserved source voxels and colors while creating duplicated target copies.
+- Updated selection set after duplicate to target copy cells for immediate follow-up edits.
+- Added undo path removing duplicated voxels and restoring prior selection coordinates.
+- Added tools-panel duplicate controls with X/Y/Z offset spinboxes and one-click duplicate action.
+- Wired tools-panel duplicate signal into main-window command execution flow.
+- Added status feedback for duplicate success, no selection, collision block, and cap block cases.
+- Added regression tests for duplicate undo/redo behavior and destination-collision blocking.
+- Added regression test confirming duplicate behavior is independent of mirror mode state.
+- Kept implementation dependency-free and scoped to selection duplicate workflow only.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`146 passed`)

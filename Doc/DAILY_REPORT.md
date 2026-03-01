@@ -1249,3 +1249,21 @@
   - Run: `pytest -q` (current: `143 passed`).
 - Risks/issues:
   - Selected-set duplicate workflow remains pending Task 13.
+
+### Roadmap 13 (Day-Cycle 40): Selected Voxel Duplicate Tool
+- What was done:
+  - Added `DuplicateSelectedVoxelsCommand` to duplicate selected voxel sets by configurable XYZ offset.
+  - Added deterministic destination occupancy checks to block destructive overwrite during duplicate.
+  - Added a hard duplication safety cap (`50,000` selected cells) to prevent runaway growth.
+  - Added tools-panel duplicate controls (offset X/Y/Z + `Duplicate Selected Voxels` action).
+  - Wired tools-panel duplicate action through main-window command path with status feedback.
+  - Added regression tests for duplicate success + undo/redo, collision blocking, and mirror-state independence.
+- How to test quickly:
+  - Launch app, enable `Voxel Selection Mode`, and select one or more voxels.
+  - In Tools panel set duplicate offset (for example `X 1, Y 0, Z 0`) and click `Duplicate Selected Voxels`.
+  - Verify originals remain, duplicates appear at offset, and new copy becomes selected.
+  - Run undo/redo and confirm duplicates are removed/restored predictably.
+  - Place occupied voxel at destination and verify duplicate action is blocked safely.
+  - Run: `pytest -q` (current: `146 passed`).
+- Risks/issues:
+  - Fill-region confidence preview remains pending Task 14.

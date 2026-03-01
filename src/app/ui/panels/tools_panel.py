@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QRadioButton,
     QSpinBox,
     QVBoxLayout,
@@ -26,6 +27,7 @@ class ToolsPanel(QWidget):
     edit_plane_changed = Signal(str)
     fill_connectivity_changed = Signal(str)
     selection_mode_changed = Signal(bool)
+    duplicate_selected_requested = Signal(int, int, int)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -75,6 +77,24 @@ class ToolsPanel(QWidget):
         self.selection_mode_checkbox = QCheckBox("Voxel Selection Mode", self)
         self.selection_mode_checkbox.stateChanged.connect(self._on_selection_mode_toggled)
         layout.addWidget(self.selection_mode_checkbox)
+        layout.addWidget(QLabel("Selection Duplicate"))
+        duplicate_offset_row = QHBoxLayout()
+        self.duplicate_offset_x_spin = QSpinBox(self)
+        self.duplicate_offset_y_spin = QSpinBox(self)
+        self.duplicate_offset_z_spin = QSpinBox(self)
+        for spin in (self.duplicate_offset_x_spin, self.duplicate_offset_y_spin, self.duplicate_offset_z_spin):
+            spin.setRange(-64, 64)
+        self.duplicate_offset_x_spin.setValue(1)
+        self.duplicate_offset_x_spin.setPrefix("X ")
+        self.duplicate_offset_y_spin.setPrefix("Y ")
+        self.duplicate_offset_z_spin.setPrefix("Z ")
+        duplicate_offset_row.addWidget(self.duplicate_offset_x_spin)
+        duplicate_offset_row.addWidget(self.duplicate_offset_y_spin)
+        duplicate_offset_row.addWidget(self.duplicate_offset_z_spin)
+        layout.addLayout(duplicate_offset_row)
+        self.duplicate_selected_button = QPushButton("Duplicate Selected Voxels", self)
+        self.duplicate_selected_button.clicked.connect(self._on_duplicate_selected_clicked)
+        layout.addWidget(self.duplicate_selected_button)
         layout.addWidget(QLabel("Action"))
 
         self.paint_radio = QRadioButton("Paint", self)
@@ -197,6 +217,7 @@ class ToolsPanel(QWidget):
         self.pick_mode_combo.setEnabled(is_brush)
         self.edit_plane_combo.setEnabled(True)
         self.fill_connectivity_combo.setEnabled(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_FILL)
+        self.duplicate_selected_button.setEnabled(bool(self._context.selected_voxels))
         self.hints_label.setText(self._build_hint_text())
 
     def _on_mode_toggled(self, checked: bool) -> None:
@@ -276,6 +297,15 @@ class ToolsPanel(QWidget):
         if not enabled:
             self._context.clear_selected_voxels()
         self.selection_mode_changed.emit(enabled)
+
+    def _on_duplicate_selected_clicked(self) -> None:
+        if self._context is None:
+            return
+        self.duplicate_selected_requested.emit(
+            int(self.duplicate_offset_x_spin.value()),
+            int(self.duplicate_offset_y_spin.value()),
+            int(self.duplicate_offset_z_spin.value()),
+        )
 
     def set_tool_shape(self, shape: str) -> None:
         if shape == AppContext.TOOL_SHAPE_BRUSH:

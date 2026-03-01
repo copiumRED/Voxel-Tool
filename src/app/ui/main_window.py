@@ -26,6 +26,7 @@ from app.settings import get_settings
 from core.commands.demo_commands import (
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    DuplicateSelectedVoxelsCommand,
     PaintVoxelCommand,
     RenameProjectCommand,
 )
@@ -192,6 +193,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.edit_plane_changed.connect(self._on_edit_plane_changed)
         self.tools_panel.fill_connectivity_changed.connect(self._on_fill_connectivity_changed)
         self.tools_panel.selection_mode_changed.connect(self._on_selection_mode_changed)
+        self.tools_panel.duplicate_selected_requested.connect(self._on_duplicate_selected_requested)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -961,6 +963,29 @@ class MainWindow(QMainWindow):
 
     def _on_selection_mode_changed(self, enabled: bool) -> None:
         self._show_voxel_status(f"Voxel selection mode: {'on' if enabled else 'off'}")
+        self._refresh_ui_state()
+
+    def _on_duplicate_selected_requested(self, dx: int, dy: int, dz: int) -> None:
+        if not self.context.selected_voxels:
+            self._show_voxel_status("No selected voxels to duplicate")
+            self._refresh_ui_state()
+            return
+        if self.context.active_part.locked:
+            self._show_voxel_status(f"Part locked: {self.context.active_part.name}")
+            self._refresh_ui_state()
+            return
+        command = DuplicateSelectedVoxelsCommand(set(self.context.selected_voxels), dx, dy, dz)
+        self.context.command_stack.do(command, self.context)
+        if command.capped_by_limit:
+            self._show_voxel_status("Duplicate blocked: selection exceeds safe limit")
+        elif command.collision_blocked:
+            self._show_voxel_status("Duplicate blocked: destination occupied")
+        elif command.duplicated_count <= 0:
+            self._show_voxel_status("Duplicate skipped: selected voxels not present")
+        else:
+            self._show_voxel_status(
+                f"Duplicated selected voxels: {command.duplicated_count} at offset ({dx}, {dy}, {dz})"
+            )
         self._refresh_ui_state()
 
     def _on_create_test_voxels(self) -> None:

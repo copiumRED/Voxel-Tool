@@ -7,6 +7,7 @@ from core.commands.demo_commands import (
     BoxVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    DuplicateSelectedVoxelsCommand,
     FillVoxelCommand,
     LineVoxelCommand,
     MoveSelectedVoxelsCommand,
@@ -452,6 +453,62 @@ def test_move_selected_voxels_command_blocks_on_destination_collision() -> None:
     assert voxels.get(0, 0, 0) == 2
     assert voxels.get(1, 0, 0) == 4
     assert ctx.selected_voxels == {(0, 0, 0)}
+
+
+def test_duplicate_selected_voxels_command_creates_offset_copy_with_undo_redo() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 2)
+    voxels.set(1, 0, 0, 3)
+    ctx.set_selected_voxels({(0, 0, 0), (1, 0, 0)})
+
+    ctx.command_stack.do(DuplicateSelectedVoxelsCommand(set(ctx.selected_voxels), 0, 1, 0), ctx)
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 3
+    assert voxels.get(0, 1, 0) == 2
+    assert voxels.get(1, 1, 0) == 3
+    assert ctx.selected_voxels == {(0, 1, 0), (1, 1, 0)}
+
+    ctx.command_stack.undo(ctx)
+    assert voxels.get(0, 1, 0) is None
+    assert voxels.get(1, 1, 0) is None
+    assert ctx.selected_voxels == {(0, 0, 0), (1, 0, 0)}
+
+    ctx.command_stack.redo(ctx)
+    assert voxels.get(0, 1, 0) == 2
+    assert voxels.get(1, 1, 0) == 3
+    assert ctx.selected_voxels == {(0, 1, 0), (1, 1, 0)}
+
+
+def test_duplicate_selected_voxels_command_blocks_when_destination_occupied() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 2)
+    voxels.set(1, 0, 0, 7)
+    ctx.set_selected_voxels({(0, 0, 0)})
+
+    command = DuplicateSelectedVoxelsCommand(set(ctx.selected_voxels), 1, 0, 0)
+    ctx.command_stack.do(command, ctx)
+
+    assert command.collision_blocked is True
+    assert command.duplicated_count == 0
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 7
+
+
+def test_duplicate_selected_voxels_command_is_independent_of_mirror_state() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_mirror_axis("x", True)
+    voxels = ctx.current_project.voxels
+    voxels.set(2, 0, 0, 5)
+    ctx.set_selected_voxels({(2, 0, 0)})
+
+    command = DuplicateSelectedVoxelsCommand(set(ctx.selected_voxels), 1, 0, 0)
+    ctx.command_stack.do(command, ctx)
+
+    assert command.duplicated_count == 1
+    assert voxels.get(2, 0, 0) == 5
+    assert voxels.get(3, 0, 0) == 5
 
 
 def test_app_context_fill_connectivity_validation() -> None:
