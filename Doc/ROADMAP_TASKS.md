@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 20: glTF Material Baseline
-- Goal: Add basic material block generation for glTF exports.
-- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Exported glTF includes minimal valid materials and references.
-- Tests required: Add material presence and index wiring tests.
-- Risk/rollback note: Keep simple default material if richer mapping is unstable.
-
 ### Task 21: VOX Transform Chunk Mapping v1
 - Goal: Parse and map common VOX transform chunk semantics into scene parts.
 - Likely files/modules touched: `src/core/io/vox_io.py`, `tests/test_vox_io.py`.
@@ -487,7 +480,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`153 passed`)
 
 ### Task 19: glTF Vertex Color Export
-- Commit: `COMMIT_PENDING`
+- Commit: `72fc235`
 - Added vertex-color generation helper for glTF export (`_build_vertex_colors`) using mesh face-color indices.
 - Added palette-aware color mapping path with default palette fallback when palette is not supplied.
 - Normalized RGB output to float color space (`0.0-1.0`) for glTF `COLOR_0` compatibility.
@@ -501,6 +494,25 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Added regression assertions for `COLOR_0` attribute binding and accessor wiring.
 - Added regression test decoding glTF buffer payload and verifying multi-color output emits distinct vertex colors.
 - Kept implementation dependency-free and scoped to vertex-color parity only.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`154 passed`)
+
+### Task 20: glTF Material Baseline
+- Commit: `COMMIT_PENDING`
+- Added glTF material baseline helper (`_build_material_baseline`) in exporter.
+- Added `materials` array emission with one default PBR material.
+- Added primitive material binding (`material: 0`) on exported mesh primitive.
+- Set baseline material to `doubleSided: true` for reliable voxel shell rendering.
+- Added minimal `pbrMetallicRoughness` payload with conservative defaults.
+- Initialized material base color from palette/face-color context for stable default tint.
+- Preserved existing POSITION/NORMAL/TEXCOORD_0/COLOR_0 attribute export paths.
+- Preserved existing index buffer/accessor wiring and triangle mode.
+- Preserved empty-mesh glTF export behavior (no materials when no mesh payload).
+- Kept material generation dependency-free and deterministic.
+- Added regression assertions for material array presence and primitive material index wiring.
+- Added regression assertions for baseline PBR structure and baseColorFactor shape.
+- Kept implementation scoped strictly to glTF material baseline (no UI behavior changes).
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`154 passed`)

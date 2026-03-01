@@ -1354,3 +1354,17 @@
   - Run: `pytest -q` (current: `154 passed`).
 - Risks/issues:
   - glTF material baseline remains pending Task 20.
+
+### Roadmap 20 (Day-Cycle 40): glTF Material Baseline
+- What was done:
+  - Added baseline glTF material generation and emitted `materials` array in exporter output.
+  - Wired primitive `material` reference to material index `0`.
+  - Added minimal PBR payload (`baseColorFactor`, `metallicFactor`, `roughnessFactor`) with double-sided rendering.
+  - Added regression tests to verify material presence and primitive material index wiring.
+- How to test quickly:
+  - Export glTF from a non-empty scene.
+  - Confirm JSON has `materials` with at least one entry and primitive has `material: 0`.
+  - Confirm material includes `pbrMetallicRoughness` and `doubleSided: true`.
+  - Run: `pytest -q` (current: `154 passed`).
+- Risks/issues:
+  - VOX transform chunk mapping improvements remain pending Task 21.

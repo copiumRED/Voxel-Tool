@@ -24,17 +24,23 @@ def test_export_gltf_smoke_non_empty_mesh_and_counts() -> None:
         payload = json.loads(path.read_text(encoding="utf-8"))
         assert payload["asset"]["version"] == "2.0"
         assert len(payload["meshes"]) == 1
+        assert len(payload["materials"]) == 1
         primitive = payload["meshes"][0]["primitives"][0]
         assert "NORMAL" in primitive["attributes"]
         assert primitive["attributes"]["NORMAL"] == 1
         assert primitive["attributes"]["TEXCOORD_0"] == 2
         assert primitive["attributes"]["COLOR_0"] == 3
         assert primitive["mode"] == 4
+        assert primitive["material"] == 0
         assert payload["accessors"][1]["count"] == payload["accessors"][0]["count"]
         assert payload["accessors"][2]["type"] == "VEC2"
         assert payload["accessors"][2]["count"] == payload["accessors"][0]["count"]
         assert payload["accessors"][3]["type"] == "VEC3"
         assert payload["accessors"][4]["type"] == "SCALAR"
+        material = payload["materials"][0]
+        assert material["doubleSided"] is True
+        assert "pbrMetallicRoughness" in material
+        assert len(material["pbrMetallicRoughness"]["baseColorFactor"]) == 4
     finally:
         path.unlink(missing_ok=True)
 

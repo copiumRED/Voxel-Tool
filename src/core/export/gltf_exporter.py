@@ -47,6 +47,8 @@ def export_voxels_to_gltf(
     normals = _build_vertex_normals(export_mesh, len(positions))
     uvs = _build_vertex_uvs(positions)
     vertex_colors = _build_vertex_colors(export_mesh, palette or list(DEFAULT_PALETTE), len(positions))
+    material_palette = palette or list(DEFAULT_PALETTE)
+    material = _build_material_baseline(export_mesh, material_palette)
 
     vertex_bytes = b"".join(struct.pack("<3f", x, y, z) for x, y, z in positions)
     normal_bytes = b"".join(struct.pack("<3f", nx, ny, nz) for nx, ny, nz in normals)
@@ -138,11 +140,13 @@ def export_voxels_to_gltf(
                     {
                         "attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2, "COLOR_0": 3},
                         "indices": 4,
+                        "material": 0,
                         "mode": 4,
                     }
                 ]
             }
         ],
+        "materials": [material],
         "nodes": [{"mesh": 0}],
         "scenes": [{"nodes": [0]}],
         "scene": 0,
@@ -202,3 +206,22 @@ def _build_vertex_colors(
                 colors[vertex_index] = rgb
                 assigned[vertex_index] = True
     return colors
+
+
+def _build_material_baseline(
+    mesh: SurfaceMesh,
+    palette: list[tuple[int, int, int]],
+) -> dict[str, object]:
+    color_index = 0
+    if mesh.face_colors and palette:
+        color_index = int(mesh.face_colors[0]) % len(palette)
+    r, g, b = palette[color_index] if palette else (255, 255, 255)
+    return {
+        "name": "VoxelTool Default",
+        "doubleSided": True,
+        "pbrMetallicRoughness": {
+            "baseColorFactor": [r / 255.0, g / 255.0, b / 255.0, 1.0],
+            "metallicFactor": 0.0,
+            "roughnessFactor": 1.0,
+        },
+    }
