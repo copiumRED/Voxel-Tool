@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 30: End-to-End Correctness Sweep
-- Goal: Consolidate and validate tool/IO/export correctness with expanded regression tests.
-- Likely files/modules touched: `tests/test_command_stack.py`, `tests/test_project_io.py`, `tests/test_vox_io.py`, `tests/test_gltf_exporter.py`.
-- Acceptance criteria (human-testable): Full `pytest -q` remains green with new parity coverage.
-- Tests required: Add cross-feature regression matrix tests.
-- Risk/rollback note: If failures spike, split high-risk assertions behind temporary xfail notes with follow-up tasks.
-
 ### Task 31: Interface Polish - Top Toolbar Quick Actions
 - Goal: Add compact top toolbar for frequent actions (new/save/open/undo/redo/solidify/export).
 - Likely files/modules touched: `src/app/ui/main_window.py`.
@@ -607,7 +600,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`163 passed`)
 
 ### Task 29: Memory Budget Instrumentation
-- Commit: `COMMIT_PENDING`
+- Commit: `33b5085`
 - Added memory budget fields to part stats (voxel bytes, mesh bytes, total bytes).
 - Added memory budget fields to scene stats (voxel bytes, mesh bytes, total bytes).
 - Implemented deterministic voxel memory estimate based on active voxel count.
@@ -624,3 +617,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`165 passed`)
+
+### Task 30: End-to-End Correctness Sweep
+- Commit: `COMMIT_PENDING`
+- Added cross-feature command regression for selection move + duplicate with undo/redo sequencing.
+- Added extended project IO regression ensuring modern editor-state keys roundtrip cleanly.
+- Added VOX import regression combining transform mapping and unknown-chunk warning handling.
+- Added glTF regression validating primitive/accessor index consistency across POSITION/NORMAL/UV/COLOR/indices.
+- Kept regression additions isolated to test suite with no runtime behavior changes.
+- Preserved existing tests and fixtures while extending parity coverage for recently added features.
+- Validated command stack behavior under combined workflows instead of single-operation-only tests.
+- Validated IO forward stability for expanded editor-state payload variants.
+- Validated import pipeline correctness under mixed supported/unsupported chunk scenarios.
+- Validated export payload structural integrity for downstream loader compatibility.
+- Maintained deterministic fixture construction patterns for reproducible test runs.
+- Kept assertions human-readable for quicker triage of parity regressions.
+- No dependencies or schema migrations introduced.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`169 passed`)

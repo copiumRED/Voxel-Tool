@@ -224,3 +224,26 @@ def test_project_load_legacy_part_ids_and_add_new_uuid_part() -> None:
         assert len(new_part.part_id) > len("part-1234")
     finally:
         path.unlink(missing_ok=True)
+
+
+def test_project_save_load_roundtrip_preserves_extended_editor_state_keys() -> None:
+    project = Project(name="EditorState Extended")
+    project.editor_state = {
+        "voxel_selection_mode": True,
+        "camera_projection": "orthographic",
+        "navigation_profile": "blender_mix",
+        "camera_orbit_sensitivity": 1.4,
+        "camera_pan_sensitivity": 0.7,
+        "camera_zoom_sensitivity": 1.2,
+        "fill_connectivity": "volume",
+        "mirror_x_enabled": True,
+        "mirror_x_offset": 2,
+        "fill_max_cells": 8000,
+    }
+    path = get_app_temp_dir("VoxelTool") / f"test-project-editor-extended-{uuid.uuid4().hex}.json"
+    try:
+        save_project(project, str(path))
+        loaded = load_project(str(path))
+        assert loaded.editor_state == project.editor_state
+    finally:
+        path.unlink(missing_ok=True)

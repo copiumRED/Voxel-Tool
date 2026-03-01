@@ -535,6 +535,34 @@ def test_duplicate_selected_voxels_command_is_independent_of_mirror_state() -> N
     assert voxels.get(3, 0, 0) == 5
 
 
+def test_selection_move_then_duplicate_end_to_end_with_undo_redo() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 2)
+    voxels.set(1, 0, 0, 3)
+    ctx.set_selected_voxels({(0, 0, 0), (1, 0, 0)})
+
+    ctx.command_stack.do(MoveSelectedVoxelsCommand(set(ctx.selected_voxels), 0, 1, 0), ctx)
+    ctx.command_stack.do(DuplicateSelectedVoxelsCommand(set(ctx.selected_voxels), 0, 0, 1), ctx)
+
+    assert voxels.get(0, 1, 0) == 2
+    assert voxels.get(1, 1, 0) == 3
+    assert voxels.get(0, 1, 1) == 2
+    assert voxels.get(1, 1, 1) == 3
+
+    ctx.command_stack.undo(ctx)  # undo duplicate
+    assert voxels.get(0, 1, 1) is None
+    assert voxels.get(1, 1, 1) is None
+    ctx.command_stack.undo(ctx)  # undo move
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 3
+
+    ctx.command_stack.redo(ctx)
+    ctx.command_stack.redo(ctx)
+    assert voxels.get(0, 1, 1) == 2
+    assert voxels.get(1, 1, 1) == 3
+
+
 def test_app_context_fill_connectivity_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_fill_connectivity("volume")

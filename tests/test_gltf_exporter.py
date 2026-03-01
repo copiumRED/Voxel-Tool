@@ -96,3 +96,23 @@ def test_export_gltf_vertex_colors_emit_multiple_values_for_multicolor_mesh() ->
         assert len(distinct) >= 2
     finally:
         path.unlink(missing_ok=True)
+
+
+def test_export_gltf_primitive_accessor_indices_are_consistent() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 1)
+    path = get_app_temp_dir("VoxelTool") / f"gltf-export-consistency-{uuid.uuid4().hex}.gltf"
+    try:
+        export_voxels_to_gltf(voxels, str(path))
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        primitive = payload["meshes"][0]["primitives"][0]
+        attrs = primitive["attributes"]
+        assert attrs["POSITION"] == 0
+        assert attrs["NORMAL"] == 1
+        assert attrs["TEXCOORD_0"] == 2
+        assert attrs["COLOR_0"] == 3
+        assert primitive["indices"] == 4
+        assert len(payload["bufferViews"]) == 5
+        assert len(payload["accessors"]) == 5
+    finally:
+        path.unlink(missing_ok=True)

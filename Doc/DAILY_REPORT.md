@@ -1490,3 +1490,20 @@
   - Run: `pytest -q` (current: `165 passed`).
 - Risks/issues:
   - End-to-end correctness sweep remains pending Task 30.
+
+### Roadmap 30 (Day-Cycle 40): End-to-End Correctness Sweep
+- What was done:
+  - Expanded regression matrix across commands, project IO, VOX IO, and glTF export.
+  - Added combined selection move+duplicate undo/redo command-stack regression.
+  - Added extended editor-state roundtrip regression for project save/load.
+  - Added VOX transform+warning mixed-path regression fixture.
+  - Added glTF primitive/accessor consistency regression coverage.
+- How to test quickly:
+  - Run `pytest -q` and confirm new cross-feature regressions pass.
+  - Run targeted checks:
+    - `pytest -q tests/test_command_stack.py`
+    - `pytest -q tests/test_project_io.py`
+    - `pytest -q tests/test_vox_io.py`
+    - `pytest -q tests/test_gltf_exporter.py`
+- Risks/issues:
+  - Interface polish sequence starts at Task 31.
