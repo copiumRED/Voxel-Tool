@@ -844,3 +844,16 @@
   - Run: `pytest -q` (current: `107 passed`)
 - Risks/issues:
   - GPL palette format support remains pending Task 16.
+
+### Roadmap 16 (Day-Cycle 30): Palette Import/Export GPL Support v1
+- What was done:
+  - Added GPL palette read/write support in palette IO.
+  - Added extension-based dispatch for JSON vs GPL preset files.
+  - Updated palette file dialogs to include `.gpl`.
+  - Added GPL roundtrip and invalid-header tests.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Save palette as `.gpl`, then load it back and verify swatches/colors match.
+  - Run: `pytest -q` (current: `109 passed`)
+- Risks/issues:
+  - Palette slot lock protection remains pending Task 17.

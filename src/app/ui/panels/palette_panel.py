@@ -114,7 +114,7 @@ class PalettePanel(QWidget):
             self,
             "Save Palette Preset",
             "",
-            "Palette Preset (*.json);;All Files (*)",
+            "Palette Preset (*.json *.gpl);;JSON (*.json);;GIMP Palette (*.gpl);;All Files (*)",
         )
         if not path:
             return
@@ -131,7 +131,7 @@ class PalettePanel(QWidget):
             self,
             "Load Palette Preset",
             "",
-            "Palette Preset (*.json);;All Files (*)",
+            "Palette Preset (*.json *.gpl);;JSON (*.json);;GIMP Palette (*.gpl);;All Files (*)",
         )
         if not path:
             return

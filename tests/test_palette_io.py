@@ -31,6 +31,27 @@ def test_palette_preset_load_validation() -> None:
         path.unlink(missing_ok=True)
 
 
+def test_palette_preset_gpl_roundtrip() -> None:
+    palette = [(5, 10, 15), (200, 150, 100)]
+    path = get_app_temp_dir("VoxelTool") / f"palette-{uuid.uuid4().hex}.gpl"
+    try:
+        save_palette_preset(palette, str(path))
+        loaded = load_palette_preset(str(path))
+        assert loaded == palette
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_palette_preset_gpl_header_validation() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"palette-invalid-{uuid.uuid4().hex}.gpl"
+    try:
+        path.write_text("Not a GPL file\n", encoding="utf-8")
+        with pytest.raises(ValueError):
+            load_palette_preset(str(path))
+    finally:
+        path.unlink(missing_ok=True)
+
+
 def test_clamp_active_color_index_keeps_index_valid() -> None:
     assert clamp_active_color_index(5, 3) == 2
     assert clamp_active_color_index(-1, 3) == 0

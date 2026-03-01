@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 16: Palette Import/Export GPL Support v1
-- Goal: Add GPL palette format import/export alongside JSON.
-- Likely files/modules touched: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
-- Acceptance criteria (human-testable): GPL file can be imported and re-exported with color fidelity.
-- Tests required: Add GPL parser/writer roundtrip tests.
-- Risk/rollback note: Keep strict parser with clear error messages for malformed GPL files.
-
 ### Task 17: Palette Slot Lock Protection
 - Goal: Prevent accidental overwrite/removal of protected palette slots (user toggle).
 - Likely files/modules touched: `src/app/ui/panels/palette_panel.py`, `src/app/app_context.py`.
@@ -351,7 +344,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`106 passed`)
 
 ### Task 15: Group Membership Visibility in Inspector
-- Commit: `HEAD_PENDING`
+- Commit: `1314998`
 - Added scene API helper (`group_names_for_part`) to query ordered group memberships for a part.
 - Added active-part group membership summary label to inspector panel.
 - Updated inspector refresh path to render concise membership summary text.
@@ -366,3 +359,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`107 passed`)
+
+### Task 16: Palette Import/Export GPL Support v1
+- Commit: `TASK16_HASH_PENDING`
+- Added palette preset IO support for GPL (`.gpl`) alongside existing JSON format.
+- Added GPL writer with standard header and RGB row emission.
+- Added GPL loader with header validation and robust row parsing.
+- Added extension-based format dispatch in palette save/load APIs.
+- Added file dialog filters for both JSON and GPL palette formats.
+- Preserved existing JSON preset behavior and schema compatibility.
+- Added GPL roundtrip test coverage for save/load fidelity.
+- Added GPL invalid-header validation test coverage.
+- Kept palette normalization behavior consistent across JSON and GPL paths.
+- Avoided introducing palette metadata migration in this task.
+- Implementation remained dependency-free and roadmap-scoped.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`109 passed`)

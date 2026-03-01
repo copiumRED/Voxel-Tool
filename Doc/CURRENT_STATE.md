@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **91%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **92%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Palette workflow still lacks GPL import/export interoperability
-- Symptoms: palette preset IO supports JSON only; GPL interchange is unavailable.
-- Suspected root cause: palette IO module has no GPL parser/writer path.
-- Exact files: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
-- Fastest confirmation: try loading/saving `.gpl`; flow is unsupported.
+1. Palette slot lock protection is not implemented
+- Symptoms: accidental edits/removals of important palette slots cannot be prevented.
+- Suspected root cause: palette panel has no lock state model per slot.
+- Exact files: `src/app/ui/panels/palette_panel.py`, `src/app/app_context.py`.
+- Fastest confirmation: attempt to lock a slot; no lock control exists.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
