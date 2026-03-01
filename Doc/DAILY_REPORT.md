@@ -1340,3 +1340,17 @@
   - Run: `pytest -q` (current: `153 passed`).
 - Risks/issues:
   - glTF vertex color parity remains pending Task 19.
+
+### Roadmap 19 (Day-Cycle 40): glTF Vertex Color Export
+- What was done:
+  - Added `COLOR_0` export path in glTF writer with palette-aware per-vertex color mapping.
+  - Added color bufferView/accessor wiring and updated primitive attribute/index references.
+  - Wired app glTF export call to pass current palette for correct color emission.
+  - Added regression tests for color attribute/accessor structure and multi-color payload output.
+- How to test quickly:
+  - Create a small multi-color voxel model.
+  - Export glTF and inspect JSON primitive attributes for `COLOR_0`.
+  - Verify color accessor is `VEC3` float and payload contains at least two distinct RGB values.
+  - Run: `pytest -q` (current: `154 passed`).
+- Risks/issues:
+  - glTF material baseline remains pending Task 20.

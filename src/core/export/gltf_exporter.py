@@ -8,6 +8,7 @@ from math import sqrt
 
 from core.meshing.mesh import SurfaceMesh
 from core.meshing.solidify import build_solid_mesh
+from core.palette import DEFAULT_PALETTE
 from core.voxels.voxel_grid import VoxelGrid
 
 
@@ -23,6 +24,7 @@ def export_voxels_to_gltf(
     mesh: SurfaceMesh | None = None,
     *,
     scale_factor: float = 1.0,
+    palette: list[tuple[int, int, int]] | None = None,
 ) -> GltfExportStats:
     export_mesh = mesh or build_solid_mesh(voxels, greedy=True)
     if export_mesh.face_count == 0:
@@ -44,10 +46,12 @@ def export_voxels_to_gltf(
         indices.extend((a, b, c, a, c, d))
     normals = _build_vertex_normals(export_mesh, len(positions))
     uvs = _build_vertex_uvs(positions)
+    vertex_colors = _build_vertex_colors(export_mesh, palette or list(DEFAULT_PALETTE), len(positions))
 
     vertex_bytes = b"".join(struct.pack("<3f", x, y, z) for x, y, z in positions)
     normal_bytes = b"".join(struct.pack("<3f", nx, ny, nz) for nx, ny, nz in normals)
     uv_bytes = b"".join(struct.pack("<2f", u, v) for u, v in uvs)
+    color_bytes = b"".join(struct.pack("<3f", r, g, b) for r, g, b in vertex_colors)
     index_bytes = b"".join(struct.pack("<I", idx) for idx in indices)
     if len(vertex_bytes) % 4 != 0:
         vertex_bytes += b"\x00" * (4 - (len(vertex_bytes) % 4))
@@ -55,9 +59,11 @@ def export_voxels_to_gltf(
         normal_bytes += b"\x00" * (4 - (len(normal_bytes) % 4))
     if len(uv_bytes) % 4 != 0:
         uv_bytes += b"\x00" * (4 - (len(uv_bytes) % 4))
+    if len(color_bytes) % 4 != 0:
+        color_bytes += b"\x00" * (4 - (len(color_bytes) % 4))
     if len(index_bytes) % 4 != 0:
         index_bytes += b"\x00" * (4 - (len(index_bytes) % 4))
-    combined = vertex_bytes + normal_bytes + uv_bytes + index_bytes
+    combined = vertex_bytes + normal_bytes + uv_bytes + color_bytes + index_bytes
     data_uri = "data:application/octet-stream;base64," + base64.b64encode(combined).decode("ascii")
 
     min_bounds = [min(v[i] for v in positions) for i in range(3)]
@@ -77,6 +83,12 @@ def export_voxels_to_gltf(
             {
                 "buffer": 0,
                 "byteOffset": len(vertex_bytes) + len(normal_bytes) + len(uv_bytes),
+                "byteLength": len(color_bytes),
+                "target": 34962,
+            },
+            {
+                "buffer": 0,
+                "byteOffset": len(vertex_bytes) + len(normal_bytes) + len(uv_bytes) + len(color_bytes),
                 "byteLength": len(index_bytes),
                 "target": 34963,
             },
@@ -108,6 +120,13 @@ def export_voxels_to_gltf(
             {
                 "bufferView": 3,
                 "byteOffset": 0,
+                "componentType": 5126,
+                "count": len(vertex_colors),
+                "type": "VEC3",
+            },
+            {
+                "bufferView": 4,
+                "byteOffset": 0,
                 "componentType": 5125,
                 "count": len(indices),
                 "type": "SCALAR",
@@ -116,7 +135,11 @@ def export_voxels_to_gltf(
         "meshes": [
             {
                 "primitives": [
-                    {"attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2}, "indices": 3, "mode": 4}
+                    {
+                        "attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2, "COLOR_0": 3},
+                        "indices": 4,
+                        "mode": 4,
+                    }
                 ]
             }
         ],
@@ -157,3 +180,25 @@ def _build_vertex_uvs(positions: list[tuple[float, float, float]]) -> list[tuple
     span_x = max(max_x - min_x, 1e-6)
     span_z = max(max_z - min_z, 1e-6)
     return [((x - min_x) / span_x, (z - min_z) / span_z) for x, _y, z in positions]
+
+
+def _build_vertex_colors(
+    mesh: SurfaceMesh,
+    palette: list[tuple[int, int, int]],
+    vertex_count: int,
+) -> list[tuple[float, float, float]]:
+    if not palette:
+        palette = list(DEFAULT_PALETTE)
+    colors: list[tuple[float, float, float]] = [(1.0, 1.0, 1.0) for _ in range(vertex_count)]
+    assigned = [False for _ in range(vertex_count)]
+    for face_index, quad in enumerate(mesh.quads):
+        color_index = 0
+        if face_index < len(mesh.face_colors):
+            color_index = int(mesh.face_colors[face_index]) % len(palette)
+        r, g, b = palette[color_index]
+        rgb = (r / 255.0, g / 255.0, b / 255.0)
+        for vertex_index in quad:
+            if 0 <= vertex_index < vertex_count and not assigned[vertex_index]:
+                colors[vertex_index] = rgb
+                assigned[vertex_index] = True
+    return colors

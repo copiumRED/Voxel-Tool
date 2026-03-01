@@ -632,6 +632,7 @@ class MainWindow(QMainWindow):
             self.context.current_project.voxels,
             path,
             scale_factor=_scale_factor_from_preset(export_options.scale_preset),
+            palette=self.context.palette,
             mesh=(
                 self.context.active_part.mesh_cache
                 if self.context.active_part.dirty_bounds is None

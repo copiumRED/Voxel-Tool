@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 19: glTF Vertex Color Export
-- Goal: Emit `COLOR_0` in glTF export.
-- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
-- Acceptance criteria (human-testable): Multi-color model exports with vertex colors recognized by viewers.
-- Tests required: Add color accessor + primitive attribute tests.
-- Risk/rollback note: Clamp and normalize color ranges consistently.
-
 ### Task 20: glTF Material Baseline
 - Goal: Add basic material block generation for glTF exports.
 - Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
@@ -475,7 +468,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`153 passed`)
 
 ### Task 18: glTF UV Export
-- Commit: `COMMIT_PENDING`
+- Commit: `0f305bf`
 - Added UV generation path for glTF export (`_build_vertex_uvs`) derived from normalized X/Z bounds.
 - Added per-vertex UV buffer serialization (`<2f`) and 4-byte alignment handling.
 - Added dedicated glTF bufferView for UV data with array-buffer target.
@@ -492,3 +485,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`153 passed`)
+
+### Task 19: glTF Vertex Color Export
+- Commit: `COMMIT_PENDING`
+- Added vertex-color generation helper for glTF export (`_build_vertex_colors`) using mesh face-color indices.
+- Added palette-aware color mapping path with default palette fallback when palette is not supplied.
+- Normalized RGB output to float color space (`0.0-1.0`) for glTF `COLOR_0` compatibility.
+- Added per-vertex color buffer serialization (`<3f`) with 4-byte alignment handling.
+- Added dedicated glTF color bufferView (`ARRAY_BUFFER`) and color accessor (`VEC3`, float).
+- Updated glTF primitive attributes to include `COLOR_0`.
+- Updated glTF primitive index accessor reference to account for inserted color accessor.
+- Wired main-window glTF export call to pass active app palette for accurate color emission.
+- Preserved existing POSITION/NORMAL/TEXCOORD_0 export behavior.
+- Kept empty-mesh glTF export path behavior unchanged.
+- Added regression assertions for `COLOR_0` attribute binding and accessor wiring.
+- Added regression test decoding glTF buffer payload and verifying multi-color output emits distinct vertex colors.
+- Kept implementation dependency-free and scoped to vertex-color parity only.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`154 passed`)
