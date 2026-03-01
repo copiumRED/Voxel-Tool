@@ -632,3 +632,15 @@
   2. Mirror X+Y line draw result
   3. Fill operation result and post-undo state
   4. Stats panel showing scene/object totals
+
+## Connectivity Blocker (2026-03-01)
+- Time/date: 2026-03-01 02:29:51 +02:00
+- Blocked action: `git fetch origin` during Day-End Re-Run + Sync procedure (Step 2).
+- Exact error output:
+  - `fatal: unable to access 'https://github.com/copiumRED/Voxel-Tool.git/': Failed to connect to github.com port 443 after 59 ms: Could not connect to server`
+- Suspected cause: outbound network path to GitHub is unavailable from this environment (VPN/proxy/firewall/network policy), not a repo-state issue.
+- Minimal next experiment:
+  - Verify GitHub is reachable in browser from this machine.
+  - Run `ping github.com` and `git ls-remote origin`.
+  - Confirm proxy/VPN/firewall settings, then retry `git fetch origin` and `git push`.
+- Status: push/pull remains blocked; no new day-cycle tasks started.
