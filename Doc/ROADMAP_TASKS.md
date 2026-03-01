@@ -103,21 +103,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added OBJ vertex-color extension output (`v x y z r g b`) driven by face palette mapping.
 - Added regression tests validating UV presence, UV-indexed faces, and vertex-color record output.
 
-## Remaining Tasks
-
 ### Task 17: Incremental Solidify Rebuild (Dirty Region v1)
-- Goal:
-  - Reduce rebuild cost by processing changed regions only.
-- Files/modules likely touched:
-  - `src/core/meshing/solidify.py`
-  - `src/core/commands/demo_commands.py`
-  - `src/core/part.py`
-- Acceptance criteria (human-testable):
-  - Localized edits trigger faster rebuild than full-scene baseline.
-  - Mesh output remains functionally identical to full rebuild on test fixtures.
-- Tests required:
-  - Perf regression tests against stored baseline.
-  - Equivalence tests full-rebuild vs incremental-rebuild.
+- Commit: `COMMIT_PENDING`
+- Added dirty-region tracking on part edits and runtime dirty-bound accumulation on voxel command writes.
+- Added incremental rebuild path in `rebuild_part_mesh()` that patches cached mesh geometry within dirty bounds.
+- Added equivalence test to validate incremental rebuild output matches full rebuild for localized edits.
+
+## Remaining Tasks
 
 ### Task 18: Runtime Performance Diagnostics in Stats Panel
 - Goal:

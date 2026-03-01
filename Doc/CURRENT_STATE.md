@@ -54,6 +54,7 @@ Reasoning:
 - Correction 38: OBJ export now applies scale/pivot options and emits MTL material references for improved DCC/engine import behavior.
 - Correction 39: Mesh normal validation coverage is now in place for naive and greedy extraction paths with outward-normal checks.
 - Correction 40: OBJ export now includes basic UV output and vertex-color extension path for downstream pipeline compatibility.
+- Correction 41: Incremental solidify v1 is implemented using dirty-region tracking with full-rebuild equivalence coverage on localized edits.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

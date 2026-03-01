@@ -424,7 +424,11 @@ class MainWindow(QMainWindow):
                 scale_factor=_scale_factor_from_preset(export_options.scale_preset),
                 pivot_mode=export_options.obj_pivot_mode,
             ),
-            mesh=self.context.active_part.mesh_cache,
+            mesh=(
+                self.context.active_part.mesh_cache
+                if self.context.active_part.dirty_bounds is None
+                else None
+            ),
         )
         voxel_count = self.context.current_project.voxels.count()
         if voxel_count == 0:
@@ -494,7 +498,11 @@ class MainWindow(QMainWindow):
         stats = export_voxels_to_gltf(
             self.context.current_project.voxels,
             path,
-            mesh=self.context.active_part.mesh_cache,
+            mesh=(
+                self.context.active_part.mesh_cache
+                if self.context.active_part.dirty_bounds is None
+                else None
+            ),
         )
         if stats.triangle_count == 0:
             self.statusBar().showMessage(

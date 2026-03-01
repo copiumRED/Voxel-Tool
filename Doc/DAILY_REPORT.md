@@ -218,6 +218,19 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 17 (Next Workday): Incremental Solidify Rebuild (Dirty Region v1)
+- What was done:
+  - Added dirty-bounds tracking on parts and command-level dirty marking for voxel edits.
+  - Added incremental rebuild path in solidify pipeline that patches cached mesh in localized dirty regions.
+  - Added fallback handling to avoid stale cache use in stats/export when dirty bounds are present.
+  - Added equivalence regression test for localized edit incremental rebuild vs full rebuild.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Perform localized edits, run `Voxels -> Solidify/Rebuild Mesh`, and verify expected output remains stable.
+  - Run: `pytest -q` (current: `80 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).
