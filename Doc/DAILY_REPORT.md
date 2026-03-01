@@ -1074,3 +1074,16 @@
   - Intermittent local network/proxy/VPN/firewall path to GitHub HTTPS endpoint.
 - Minimal next experiment:
   - Verify GitHub in browser, then run `git fetch origin` and `git push origin main` again from same shell/session.
+
+### Roadmap 01 (Day-Cycle 40): Input State Machine Split (Edit vs Navigate)
+- What was done:
+  - Split viewport left-input behavior into explicit `edit` vs `navigate` modes.
+  - Routed brush/box/line/fill interactions through edit mode only.
+  - Routed camera orbit behavior through navigate mode only.
+  - Added tests for left-interaction mode resolution across tool shapes and no-context fallback.
+- How to test quickly:
+  - Launch app, choose `Box` or `Line`, drag with LMB and confirm tool preview/edit behavior is maintained without unexpected camera orbit.
+  - Switch to non-edit flow and confirm camera navigation remains functional.
+  - Run: `pytest -q` (current: `123 passed`).
+- Risks/issues:
+  - MMB orbit and Blender-style navigation profile are not in this task and remain pending Task 02/03.

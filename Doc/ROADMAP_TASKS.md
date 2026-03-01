@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 01: Input State Machine Split (Edit vs Navigate)
-- Goal: Separate camera-navigation state from tool-edit state to remove LMB ambiguity.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `tests/test_shortcuts.py`.
-- Acceptance criteria (human-testable): Drag operations never unexpectedly orbit when user is in active shape drag workflow.
-- Tests required: Add viewport input-sequence tests for drag begin/drag end in brush/box/line/fill.
-- Risk/rollback note: If regressions appear, keep legacy input branch behind temporary flag for one cycle.
-
 ### Task 02: MMB Orbit Navigation Profile
 - Goal: Add middle-mouse orbit as selectable navigation profile.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/app/ui/main_window.py`.
@@ -288,4 +281,20 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Risk/rollback note: If unresolved P0 remains, hold merge and document blocker clearly.
 
 ## Completed Today
-- None yet (day start planning board).
+### Task 01: Input State Machine Split (Edit vs Navigate)
+- Commit: `64a6ea4`
+- Added explicit left-interaction mode state in viewport (`edit` vs `navigate`) to separate camera and tool intent.
+- Initialized left interaction mode to navigate and reset it on left-release for deterministic state transitions.
+- Added interaction mode resolver that maps voxel tool shapes to edit-mode and non-tool/no-context flows to navigate-mode.
+- Updated left mouse press flow to begin brush/shape edit setup only when resolved mode is edit.
+- Updated left drag move flow to apply orbit only when resolved mode is navigate.
+- Updated left drag move flow to apply brush stroke continuation and shape preview updates only when resolved mode is edit.
+- Preserved right-button pan behavior and wheel zoom behavior unchanged.
+- Preserved camera snap behavior during navigate drags.
+- Added focused tests for interaction-mode resolver behavior across brush/box/line/fill shapes.
+- Added focused test for resolver fallback to navigate mode when no context is available.
+- Kept implementation scoped to input-state split only (no MMB profile changes in this task).
+- No new dependencies introduced; behavior remains production-safe and deterministic.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`123 passed`)

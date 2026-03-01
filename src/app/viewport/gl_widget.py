@@ -49,6 +49,8 @@ class GLViewportWidget(QOpenGLWidget):
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
     _VOXEL_HALF_EXTENT = 0.45
+    _LEFT_INTERACTION_EDIT = "edit"
+    _LEFT_INTERACTION_NAVIGATE = "navigate"
 
     _PALETTE: tuple[tuple[float, float, float], ...] = (
         (0.95, 0.35, 0.35),
@@ -81,6 +83,7 @@ class GLViewportWidget(QOpenGLWidget):
         self._last_mouse_pos: tuple[float, float] | None = None
         self._left_press_pos: QPointF | None = None
         self._left_dragging = False
+        self._left_interaction_mode = self._LEFT_INTERACTION_NAVIGATE
         self._brush_stroke_active = False
         self._brush_stroke_last_cell: tuple[int, int, int] | None = None
         self._hover_preview_cells: set[tuple[int, int, int]] = set()
@@ -593,8 +596,10 @@ class GLViewportWidget(QOpenGLWidget):
         if event.button() == Qt.LeftButton:
             self._left_press_pos = event.position()
             self._left_dragging = False
-            self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
-            self._update_drag_preview(self._left_press_pos, self._left_press_pos, event.modifiers())
+            self._left_interaction_mode = self._resolve_left_interaction_mode(self._app_context)
+            if self._left_interaction_mode == self._LEFT_INTERACTION_EDIT:
+                self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
+                self._update_drag_preview(self._left_press_pos, self._left_press_pos, event.modifiers())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
@@ -614,10 +619,7 @@ class GLViewportWidget(QOpenGLWidget):
                 if (press_dx * press_dx + press_dy * press_dy) >= 9.0:
                     self._left_dragging = True
             if self._left_dragging:
-                if (
-                    self._app_context is None
-                    or self._app_context.voxel_tool_shape != self._app_context.TOOL_SHAPE_BRUSH
-                ):
+                if self._left_interaction_mode == self._LEFT_INTERACTION_NAVIGATE:
                     self.yaw_deg += dx * 0.4
                     self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
                     if (
@@ -629,10 +631,11 @@ class GLViewportWidget(QOpenGLWidget):
                         self.yaw_deg = round(self.yaw_deg / step) * step
                         self.pitch_deg = round(self.pitch_deg / step) * step
                     self.update()
-            if self._brush_stroke_active:
-                self._continue_brush_stroke(pos, event.modifiers())
-            elif self._left_press_pos is not None:
-                self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
+            if self._left_interaction_mode == self._LEFT_INTERACTION_EDIT:
+                if self._brush_stroke_active:
+                    self._continue_brush_stroke(pos, event.modifiers())
+                elif self._left_press_pos is not None:
+                    self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -670,6 +673,7 @@ class GLViewportWidget(QOpenGLWidget):
             self._shape_preview_cells = set()
             self._left_press_pos = None
             self._left_dragging = False
+            self._left_interaction_mode = self._LEFT_INTERACTION_NAVIGATE
         if event.button() in (Qt.LeftButton, Qt.RightButton):
             self._last_mouse_pos = None
         self._update_hover_preview(event.position(), event.modifiers())
@@ -693,6 +697,20 @@ class GLViewportWidget(QOpenGLWidget):
     @staticmethod
     def _clamp(value: float, min_value: float, max_value: float) -> float:
         return max(min_value, min(max_value, value))
+
+    @classmethod
+    def _resolve_left_interaction_mode(cls, app_context: "AppContext | None") -> str:
+        if app_context is None:
+            return cls._LEFT_INTERACTION_NAVIGATE
+        edit_shapes = {
+            app_context.TOOL_SHAPE_BRUSH,
+            app_context.TOOL_SHAPE_BOX,
+            app_context.TOOL_SHAPE_LINE,
+            app_context.TOOL_SHAPE_FILL,
+        }
+        if app_context.voxel_tool_shape in edit_shapes:
+            return cls._LEFT_INTERACTION_EDIT
+        return cls._LEFT_INTERACTION_NAVIGATE
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)
