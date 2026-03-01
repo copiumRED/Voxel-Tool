@@ -886,3 +886,15 @@
   - Run: `pytest -q` (current: `111 passed`)
 - Risks/issues:
   - Vertex color conflict policy for shared vertices remains pending Task 19.
+
+### Roadmap 19 (Day-Cycle 30): OBJ Vertex Color Policy Clarification
+- What was done:
+  - Added explicit vertex-color policy option (`first_face`/`last_face`) in OBJ exporter.
+  - Kept deterministic default (`first_face`) for compatibility.
+  - Added shared-vertex fixture tests for both policies.
+- How to test quickly:
+  - Export a mesh with shared vertices across differently colored faces.
+  - Validate vertex RGB follows configured policy.
+  - Run: `pytest -q` (current: `113 passed`)
+- Risks/issues:
+  - VOX unsupported-chunk diagnostics remain pending Task 20.

@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **94%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **95%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. OBJ vertex-color policy for shared vertices is still implicit
-- Symptoms: shared vertices across different face colors take first-assigned vertex color without explicit mode control.
-- Suspected root cause: vertex-color map uses first-write wins strategy.
-- Exact files: `src/core/export/obj_exporter.py`.
-- Fastest confirmation: export mixed-color adjacency and inspect repeated vertex color assignments.
+1. VOX import does not surface unsupported chunk diagnostics yet
+- Symptoms: unsupported VOX chunks are silently ignored without user-visible notice.
+- Suspected root cause: loader parser does not collect/report unsupported chunk IDs.
+- Exact files: `src/core/io/vox_io.py`, `src/app/ui/main_window.py`.
+- Fastest confirmation: import VOX with extra scene chunks and observe no warning output.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

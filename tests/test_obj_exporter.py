@@ -189,6 +189,66 @@ def test_export_obj_multi_material_by_color_emits_multiple_materials() -> None:
         mtl_path.unlink(missing_ok=True)
 
 
+def test_export_obj_vertex_color_policy_first_face_for_shared_vertex() -> None:
+    mesh = SurfaceMesh(
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+        ],
+        quads=[(0, 1, 2, 3), (0, 1, 5, 4)],
+        face_colors=[0, 1],
+    )
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-vpolicy-first-{uuid.uuid4().hex}.obj"
+    try:
+        export_voxels_to_obj(
+            VoxelGrid(),
+            list(DEFAULT_PALETTE),
+            str(path),
+            options=ObjExportOptions(vertex_color_policy="first_face"),
+            mesh=mesh,
+        )
+        vertex_colors = _read_vertex_colors(path)
+        expected = tuple(channel / 255.0 for channel in DEFAULT_PALETTE[0])
+        assert vertex_colors[0] == expected
+    finally:
+        path.unlink(missing_ok=True)
+        path.with_suffix(".mtl").unlink(missing_ok=True)
+
+
+def test_export_obj_vertex_color_policy_last_face_for_shared_vertex() -> None:
+    mesh = SurfaceMesh(
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+        ],
+        quads=[(0, 1, 2, 3), (0, 1, 5, 4)],
+        face_colors=[0, 1],
+    )
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-vpolicy-last-{uuid.uuid4().hex}.obj"
+    try:
+        export_voxels_to_obj(
+            VoxelGrid(),
+            list(DEFAULT_PALETTE),
+            str(path),
+            options=ObjExportOptions(vertex_color_policy="last_face"),
+            mesh=mesh,
+        )
+        vertex_colors = _read_vertex_colors(path)
+        expected = tuple(channel / 255.0 for channel in DEFAULT_PALETTE[1])
+        assert vertex_colors[0] == expected
+    finally:
+        path.unlink(missing_ok=True)
+        path.with_suffix(".mtl").unlink(missing_ok=True)
+
+
 def _read_vertices(path: Path) -> list[tuple[float, float, float]]:
     vertices: list[tuple[float, float, float]] = []
     with open(path, "r", encoding="utf-8") as file_obj:
@@ -198,3 +258,17 @@ def _read_vertices(path: Path) -> list[tuple[float, float, float]]:
                 _, x, y, z = tokens[:4]
                 vertices.append((float(x), float(y), float(z)))
     return vertices
+
+
+def _read_vertex_colors(path: Path) -> list[tuple[float, float, float]]:
+    colors: list[tuple[float, float, float]] = []
+    with open(path, "r", encoding="utf-8") as file_obj:
+        for line in file_obj:
+            if not line.startswith("v "):
+                continue
+            tokens = line.strip().split(" ")
+            if len(tokens) < 7:
+                colors.append((0.0, 0.0, 0.0))
+                continue
+            colors.append((float(tokens[4]), float(tokens[5]), float(tokens[6])))
+    return colors

@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 19: OBJ Vertex Color Policy Clarification
-- Goal: Make vertex color behavior deterministic when faces with different colors share vertices.
-- Likely files/modules touched: `src/core/export/obj_exporter.py`.
-- Acceptance criteria (human-testable): Export behavior matches documented policy and test fixtures.
-- Tests required: Add mixed-color shared-vertex fixture test.
-- Risk/rollback note: If per-face policy requires topology split, guard behind option.
-
 ### Task 20: VOX Import Unsupported-Chunk Diagnostics
 - Goal: Report unsupported VOX chunks (transform/hierarchy) clearly to user.
 - Likely files/modules touched: `src/core/io/vox_io.py`, `src/app/ui/main_window.py`.
@@ -381,7 +374,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`110 passed`)
 
 ### Task 18: OBJ Multi-Material Export Option
-- Commit: `TASK18_HASH_PENDING`
+- Commit: `2b7b00c`
 - Added OBJ export option to split materials by face color index.
 - Added OBJ export dialog control (`Split Materials By Color`) for OBJ path.
 - Wired UI export options into OBJ exporter multi-material strategy.
@@ -396,3 +389,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`111 passed`)
+
+### Task 19: OBJ Vertex Color Policy Clarification
+- Commit: `TASK19_HASH_PENDING`
+- Added explicit OBJ vertex-color policy option (`first_face` / `last_face`) to exporter options.
+- Kept deterministic default policy as `first_face` for backward compatibility.
+- Added policy validation with clear error for unsupported mode values.
+- Wired vertex-color assignment logic through explicit policy branch instead of implicit behavior.
+- Preserved existing vertex-color extension output format (`v x y z r g b`).
+- Added shared-vertex fixture test validating `first_face` behavior.
+- Added shared-vertex fixture test validating `last_face` behavior.
+- Kept OBJ material/UV writing behavior unchanged in this task.
+- Avoided topology splitting or vertex duplication changes for this iteration.
+- Implementation remained dependency-free and exporter-scoped.
+- Clarified behavior through tests as executable policy documentation.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`113 passed`)

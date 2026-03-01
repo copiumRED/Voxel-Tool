@@ -17,6 +17,7 @@ class ObjExportOptions:
     write_mtl: bool = True
     write_uvs: bool = True
     write_vertex_colors: bool = True
+    vertex_color_policy: str = "first_face"
     multi_material_by_color: bool = False
 
 
@@ -34,7 +35,11 @@ def export_voxels_to_obj(
         pivot_mode=export_options.pivot_mode,
         scale_factor=export_options.scale_factor,
     )
-    vertex_colors = _build_vertex_color_map(export_mesh, palette)
+    vertex_colors = _build_vertex_color_map(
+        export_mesh,
+        palette,
+        policy=export_options.vertex_color_policy,
+    )
 
     mtl_name = ""
     used_color_indices = _used_face_color_indices(export_mesh, palette)
@@ -164,9 +169,14 @@ def _material_name(color_index: int) -> str:
 def _build_vertex_color_map(
     mesh: SurfaceMesh,
     palette: list[tuple[int, int, int]],
+    *,
+    policy: str = "first_face",
 ) -> dict[int, tuple[float, float, float]]:
     if not palette:
         return {}
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in {"first_face", "last_face"}:
+        raise ValueError(f"Unsupported vertex color policy: {policy}")
     colors: dict[int, tuple[float, float, float]] = {}
     for face_index, quad in enumerate(mesh.quads):
         color_index = 0
@@ -175,6 +185,11 @@ def _build_vertex_color_map(
         r, g, b = palette[color_index]
         rgb = (float(r) / 255.0, float(g) / 255.0, float(b) / 255.0)
         for vertex_index in quad:
+            if normalized_policy == "first_face" and vertex_index in colors:
+                continue
+            if normalized_policy == "last_face" and vertex_index in colors:
+                colors[vertex_index] = rgb
+                continue
             if vertex_index not in colors:
                 colors[vertex_index] = rgb
     return colors
