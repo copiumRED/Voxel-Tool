@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 24: Qubicle QB Export Feasibility Slice
-- Goal: Implement bounded `.qb` exporter for current scene voxel data.
-- Likely files/modules touched: `src/core/export/qb_exporter.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_exporter.py` (new).
-- Acceptance criteria (human-testable): Exported `.qb` from simple scene can be re-imported by our importer.
-- Tests required: Add roundtrip tests for small scenes.
-- Risk/rollback note: Keep feature flagged if compatibility is partial.
-
 ### Task 25: Solidify QA Diagnostics
 - Goal: Add mesh QA counters (degenerate quads, non-manifold risk hints).
 - Likely files/modules touched: `src/core/meshing/solidify.py`, `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
@@ -535,7 +528,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`156 passed`)
 
 ### Task 23: Qubicle QB Import Feasibility Slice
-- Commit: `COMMIT_PENDING`
+- Commit: `a32bd8b`
 - Added new QB IO module (`core/io/qb_io.py`) for bounded Qubicle `.qb` import.
 - Implemented QB header parsing (version/format/compression/visibility/matrix count).
 - Implemented uncompressed matrix parsing for voxel payloads with matrix position offsets.
@@ -552,3 +545,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`158 passed`)
+
+### Task 24: Qubicle QB Export Feasibility Slice
+- Commit: `COMMIT_PENDING`
+- Added new QB exporter module (`core/export/qb_exporter.py`) for bounded `.qb` write support.
+- Implemented QB header/matrix emission for uncompressed single-matrix export payloads.
+- Implemented voxel bounds extraction and matrix-position offset emission for negative/positive coordinates.
+- Implemented voxel color write path using palette-indexed RGBA packing.
+- Implemented empty-scene QB export handling with zero-matrix payload.
+- Added export stats model (`QbExportStats`) with voxel count and matrix size reporting.
+- Exported QB helpers through `core/export/__init__.py`.
+- Added File menu action `Export QB` and wired main-window handler.
+- Added QB export status reporting in UI (empty and non-empty paths).
+- Preserved existing OBJ/glTF/VOX export flows unchanged.
+- Added regression roundtrip test (QB export then QB import) verifying coordinates and palette mapping.
+- Added regression test for empty-grid QB export behavior.
+- Kept implementation bounded to feasibility slice (single active-part voxel grid export).
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`160 passed`)

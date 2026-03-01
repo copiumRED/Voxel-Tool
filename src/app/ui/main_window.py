@@ -32,6 +32,7 @@ from core.commands.demo_commands import (
 )
 from core.analysis.stats import compute_scene_stats
 from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
+from core.export.qb_exporter import export_voxels_to_qb
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
@@ -280,6 +281,9 @@ class MainWindow(QMainWindow):
         export_vox_action = QAction("Export VOX", self)
         export_vox_action.triggered.connect(self._on_export_vox)
         file_menu.addAction(export_vox_action)
+        export_qb_action = QAction("Export QB", self)
+        export_qb_action.triggered.connect(self._on_export_qb)
+        file_menu.addAction(export_qb_action)
 
         file_menu.addSeparator()
 
@@ -747,6 +751,35 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             (
                 f"Exported VOX: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz}"
+            ),
+            5000,
+        )
+
+    def _on_export_qb(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export QB",
+            "",
+            "Qubicle QB (*.qb);;All Files (*)",
+        )
+        if not path:
+            return
+        stats = export_voxels_to_qb(
+            self.context.current_project.voxels,
+            self.context.palette,
+            path,
+            matrix_name=self.context.active_part.name,
+        )
+        if stats.voxel_count == 0:
+            self.statusBar().showMessage(
+                f"No voxels to export | Exported QB: {path}",
+                5000,
+            )
+            return
+        sx, sy, sz = stats.size
+        self.statusBar().showMessage(
+            (
+                f"Exported QB: {path} | Voxels: {stats.voxel_count} | Size: {sx}x{sy}x{sz}"
             ),
             5000,
         )

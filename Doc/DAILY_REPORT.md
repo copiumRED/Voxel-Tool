@@ -1411,3 +1411,17 @@
   - Run: `pytest -q` (current: `158 passed`).
 - Risks/issues:
   - QB export feasibility slice remains pending Task 24.
+
+### Roadmap 24 (Day-Cycle 40): Qubicle QB Export Feasibility Slice
+- What was done:
+  - Added bounded QB exporter and wired `File -> Export QB` in main window.
+  - Implemented matrix bounds + position offset emission and palette-based RGBA voxel packing.
+  - Added export stats reporting for voxel count and matrix size.
+  - Added roundtrip regression test (`export QB -> import QB`) plus empty-export test.
+- How to test quickly:
+  - Create a small voxel model and run `File -> Export QB`.
+  - Re-import exported QB and confirm voxel positions/colors are preserved.
+  - Export with empty voxel grid and confirm exporter handles it without crash.
+  - Run: `pytest -q` (current: `160 passed`).
+- Risks/issues:
+  - Solidify QA diagnostics remain pending Task 25.
