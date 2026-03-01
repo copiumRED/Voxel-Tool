@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Runtime stats labels still mix scene-level and active-part context
-- Symptoms: runtime row is informative but active-part vs scene scope can still be ambiguous.
-- Suspected root cause: label wording does not explicitly separate scope for each metric.
-- Exact files: `src/app/ui/panels/stats_panel.py`, `src/app/ui/main_window.py`.
-- Fastest confirmation: inspect Stats panel labels in multi-part scenes.
+1. Autosave still depends on interval tick and can miss very recent edits
+- Symptoms: forced close shortly after edit may lose latest change before timer fires.
+- Suspected root cause: autosave path is timer-driven with no edit-triggered debounce save.
+- Exact files: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
+- Fastest confirmation: edit and force-close before autosave interval; compare recovery snapshot.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

@@ -5,14 +5,32 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 from core.analysis.stats import SceneStats
 
 
+def format_runtime_stats_label(
+    *,
+    frame_ms: float,
+    rebuild_ms: float,
+    scene_triangles: int,
+    scene_voxels: int,
+    active_part_voxels: int,
+) -> str:
+    return (
+        "Runtime: "
+        f"frame {frame_ms:.2f} ms | rebuild {rebuild_ms:.2f} ms | "
+        f"scene tris {scene_triangles} | scene voxels {scene_voxels} | "
+        f"active-part voxels {active_part_voxels}"
+    )
+
+
 class StatsPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         self.scene_label = QLabel("Scene: tris 0 | faces 0 | edges 0 | verts 0 | materials 0")
         self.object_label = QLabel("Object: -")
-        self.voxel_count_label = QLabel("Active Voxel Count: 0")
-        self.runtime_label = QLabel("Runtime: frame 0.00 ms | rebuild 0.00 ms | scene tris 0 | active voxels 0")
+        self.voxel_count_label = QLabel("Active Part Voxels: 0")
+        self.runtime_label = QLabel(
+            "Runtime: frame 0.00 ms | rebuild 0.00 ms | scene tris 0 | scene voxels 0 | active-part voxels 0"
+        )
         layout.addWidget(self.scene_label)
         layout.addWidget(self.object_label)
         layout.addWidget(self.voxel_count_label)
@@ -38,7 +56,7 @@ class StatsPanel(QWidget):
                 f"{mx:.2f}x{my:.2f}x{mz:.2f} m | "
                 f"materials {active_part.materials_used}"
             )
-        self.voxel_count_label.setText(f"Active Voxel Count: {active_voxel_count}")
+        self.voxel_count_label.setText(f"Active Part Voxels: {active_voxel_count}")
 
     def set_runtime_stats(
         self,
@@ -46,10 +64,15 @@ class StatsPanel(QWidget):
         frame_ms: float,
         rebuild_ms: float,
         scene_triangles: int,
-        active_voxels: int,
+        scene_voxels: int,
+        active_part_voxels: int,
     ) -> None:
         self.runtime_label.setText(
-            "Runtime: "
-            f"frame {frame_ms:.2f} ms | rebuild {rebuild_ms:.2f} ms | "
-            f"scene tris {scene_triangles} | active voxels {active_voxels}"
+            format_runtime_stats_label(
+                frame_ms=frame_ms,
+                rebuild_ms=rebuild_ms,
+                scene_triangles=scene_triangles,
+                scene_voxels=scene_voxels,
+                active_part_voxels=active_part_voxels,
+            )
         )

@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 24: Runtime Stats Label Clarity Pass
-- Goal: Distinguish active-part vs scene-level runtime stats.
-- Likely files/modules touched: `src/app/ui/panels/stats_panel.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Stats panel clearly labels scene vs active-part values.
-- Tests required: Add stats panel formatting tests.
-- Risk/rollback note: Keep current row if formatting work exceeds scope.
-
 ### Task 25: Autosave Debounce on Edit
 - Goal: Trigger short-delay snapshot saves after voxel edits in addition to periodic timer.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
@@ -431,7 +424,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`115 passed`)
 
 ### Task 23: Performance Gate Tightening (CI-friendly)
-- Commit: `TASK23_HASH_PENDING`
+- Commit: `4ebaf93`
 - Tightened global perf regression multiplier from 20x to 12x baseline.
 - Added per-metric multipliers for brush/fill/solidify/viewport-surrogate metrics.
 - Updated perf harness assertions to consume metric-specific multipliers with fallback to global multiplier.
@@ -446,3 +439,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`115 passed`)
+
+### Task 24: Runtime Stats Label Clarity Pass
+- Commit: `TASK24_HASH_PENDING`
+- Updated stats label wording to clearly separate scene-level vs active-part voxel context.
+- Renamed active voxel label to `Active Part Voxels` for explicit scope.
+- Extended runtime row to include both `scene voxels` and `active-part voxels`.
+- Added dedicated runtime-label formatting helper for deterministic text generation.
+- Updated main window runtime updates to provide both scene voxel totals and active-part voxel counts.
+- Preserved existing scene/object triangle/face/edge/bounds statistics output.
+- Added unit test validating runtime label includes both scene and active-part scopes.
+- Kept runtime metrics sources unchanged (frame/rebuild timings preserved).
+- Avoided UI layout or panel hierarchy refactors in this task.
+- Implementation remained dependency-free and roadmap-scoped.
+- Human-facing stats readability improved for multi-part scenes.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`116 passed`)

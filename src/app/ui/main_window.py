@@ -726,7 +726,8 @@ class MainWindow(QMainWindow):
             frame_ms=self._last_frame_ms,
             rebuild_ms=self._last_rebuild_ms,
             scene_triangles=self._last_scene_triangles,
-            active_voxels=self.context.current_project.voxels.count(),
+            scene_voxels=sum(part.voxels.count() for part in self.context.current_project.scene.parts.values()),
+            active_part_voxels=self.context.current_project.voxels.count(),
         )
         self.palette_panel.refresh()
         self.inspector_panel.refresh()
@@ -912,7 +913,8 @@ class MainWindow(QMainWindow):
             frame_ms=self._last_frame_ms,
             rebuild_ms=self._last_rebuild_ms,
             scene_triangles=self._last_scene_triangles,
-            active_voxels=self.context.current_project.voxels.count(),
+            scene_voxels=sum(part.voxels.count() for part in self.context.current_project.scene.parts.values()),
+            active_part_voxels=self.context.current_project.voxels.count(),
         )
 
     def _on_viewport_error(self, message: str) -> None:

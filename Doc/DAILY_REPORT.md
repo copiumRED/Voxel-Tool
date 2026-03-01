@@ -944,3 +944,15 @@
   - Inspect `tests/perf_baseline.json` for metric-specific multipliers.
 - Risks/issues:
   - Runtime stats label clarity still pending Task 24.
+
+### Roadmap 24 (Day-Cycle 30): Runtime Stats Label Clarity Pass
+- What was done:
+  - Clarified stats labels to separate scene vs active-part metrics.
+  - Added runtime row fields for both `scene voxels` and `active-part voxels`.
+  - Added runtime stats label formatting test.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In multi-part scene, verify runtime stats explicitly show both scene and active-part voxel counts.
+  - Run: `pytest -q` (current: `116 passed`)
+- Risks/issues:
+  - Autosave debounce on edit remains pending Task 25.
