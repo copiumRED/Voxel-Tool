@@ -6,15 +6,27 @@ from dataclasses import dataclass, field
 @dataclass(slots=True)
 class VoxelGrid:
     _data: dict[tuple[int, int, int], int] = field(default_factory=dict)
+    revision: int = 0
 
     def set(self, x: int, y: int, z: int, color_index: int) -> None:
-        self._data[(x, y, z)] = color_index
+        key = (x, y, z)
+        color_value = int(color_index)
+        if self._data.get(key) == color_value:
+            return
+        self._data[key] = color_value
+        self.revision += 1
 
     def remove(self, x: int, y: int, z: int) -> None:
-        self._data.pop((x, y, z), None)
+        key = (x, y, z)
+        if key in self._data:
+            del self._data[key]
+            self.revision += 1
 
     def clear(self) -> None:
+        if not self._data:
+            return
         self._data.clear()
+        self.revision += 1
 
     def get(self, x: int, y: int, z: int) -> int | None:
         return self._data.get((x, y, z))

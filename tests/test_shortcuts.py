@@ -135,3 +135,11 @@ def test_vox_import_naming_helpers_for_single_and_multi_part_imports() -> None:
     assert _vox_import_part_name("Robot", 0, 1) == "Robot"
     assert _vox_import_part_name("Robot", 0, 12) == "Robot Part 01"
     assert _vox_import_part_name("Robot", 11, 12) == "Robot Part 12"
+
+
+def test_visible_render_signature_changes_when_voxel_revision_changes() -> None:
+    ctx = AppContext(current_project=Project(name="Signature"))
+    before = GLViewportWidget._compute_visible_render_signature(ctx)
+    ctx.current_project.voxels.set(0, 0, 0, 1)
+    after = GLViewportWidget._compute_visible_render_signature(ctx)
+    assert before != after

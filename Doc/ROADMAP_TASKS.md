@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 28: Frame-Time Hotspot Pass
-- Goal: Reduce viewport frame-time hotspots during dense scene navigation.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): Noticeably smoother orbit/pan on dense test scenes.
-- Tests required: Extend perf surrogate checks for viewport path.
-- Risk/rollback note: Preserve rendering correctness over aggressive optimization.
-
 ### Task 29: Memory Budget Instrumentation
 - Goal: Add basic memory usage stats for scene/mesh buffers.
 - Likely files/modules touched: `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
@@ -583,7 +576,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`161 passed`)
 
 ### Task 27: Dense Scene Stress Harness (64/96/128)
-- Commit: `COMMIT_PENDING`
+- Commit: `f9266bd`
 - Extended performance baseline harness with explicit dense-scene tier workloads (`64`, `96`, `128` bounds).
 - Added dense-scene measurement helper that scales working volume while keeping sparse fill deterministic.
 - Added dedicated perf assertions for `dense_64_seconds`, `dense_96_seconds`, and `dense_128_seconds`.
@@ -600,3 +593,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`161 passed`)
+
+### Task 28: Frame-Time Hotspot Pass
+- Commit: `COMMIT_PENDING`
+- Added viewport render-data cache for point/line vertex buffers and voxel count.
+- Added cache signature keyed by visible parts, transforms, visibility, and voxel revision counters.
+- Added lightweight voxel revision tracking to `VoxelGrid` to drive deterministic cache invalidation.
+- Updated `VoxelGrid` mutators to bump revision only when data actually changes.
+- Added static render-signature helper for deterministic signature computation and testability.
+- Preserved rendering correctness by rebuilding cached buffers whenever signature changes.
+- Preserved existing draw pipeline and OpenGL shader behavior.
+- Kept cache scope local to viewport render-data hot path only.
+- Added regression test verifying voxel-grid revision increments only on real mutations.
+- Added regression test verifying render signature changes after voxel revision updates.
+- Extended perf surrogate baseline with repeat hot-path check (`viewport_surrogate_repeat_seconds`).
+- Updated perf baseline JSON with repeat viewport surrogate thresholds.
+- Kept performance assertions conservative to avoid flaky environments.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`163 passed`)

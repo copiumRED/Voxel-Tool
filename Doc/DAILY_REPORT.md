@@ -1464,3 +1464,16 @@
   - Optionally inspect `tests/perf_baseline.json` for tiered baseline values.
 - Risks/issues:
   - Viewport frame-time hotspot optimization remains pending Task 28.
+
+### Roadmap 28 (Day-Cycle 40): Frame-Time Hotspot Pass
+- What was done:
+  - Added viewport render-data caching keyed by visible-scene signature to reduce repeated geometry rebuild work.
+  - Added voxel-grid revision counters to support cheap and reliable cache invalidation.
+  - Added regression tests for revision mutation behavior and render-signature updates.
+  - Extended perf baseline checks with a repeated viewport surrogate hot-path threshold.
+- How to test quickly:
+  - Navigate dense scenes (orbit/pan/zoom) and verify viewport remains responsive.
+  - Run `pytest -q` and confirm viewport surrogate + repeat surrogate perf checks pass.
+  - Run: `pytest -q` (current: `163 passed`).
+- Risks/issues:
+  - Memory budget instrumentation remains pending Task 29.

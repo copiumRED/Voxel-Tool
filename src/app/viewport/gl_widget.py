@@ -92,6 +92,10 @@ class GLViewportWidget(QOpenGLWidget):
         self._hover_preview_erase = False
         self._shape_preview_cells: set[tuple[int, int, int]] = set()
         self._shape_preview_erase = False
+        self._cached_render_signature: tuple[tuple[object, ...], ...] | None = None
+        self._cached_point_vertices: array | None = None
+        self._cached_line_vertices: array | None = None
+        self._cached_voxel_count: int = 0
 
     def set_context(self, ctx: "AppContext") -> None:
         self._app_context = ctx
@@ -1424,6 +1428,13 @@ class GLViewportWidget(QOpenGLWidget):
         voxel_count = 0
         if self._app_context is None:
             return point_vertices, line_vertices, voxel_count
+        signature = self._visible_render_signature()
+        if (
+            self._cached_render_signature == signature
+            and self._cached_point_vertices is not None
+            and self._cached_line_vertices is not None
+        ):
+            return self._cached_point_vertices, self._cached_line_vertices, self._cached_voxel_count
         for part in self._app_context.current_project.scene.iter_visible_parts():
             transform = self._part_transform_matrix(part)
             part_rows = part.voxels.to_list()
@@ -1433,7 +1444,32 @@ class GLViewportWidget(QOpenGLWidget):
                 mapped = transform.map(QVector3D(float(x), float(y), float(z)))
                 point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
             line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
+        self._cached_render_signature = signature
+        self._cached_point_vertices = point_vertices
+        self._cached_line_vertices = line_vertices
+        self._cached_voxel_count = voxel_count
         return point_vertices, line_vertices, voxel_count
+
+    def _visible_render_signature(self) -> tuple[tuple[object, ...], ...]:
+        return self._compute_visible_render_signature(self._app_context)
+
+    @staticmethod
+    def _compute_visible_render_signature(app_context: "AppContext | None") -> tuple[tuple[object, ...], ...]:
+        if app_context is None:
+            return tuple()
+        signature: list[tuple[object, ...]] = []
+        for part in app_context.current_project.scene.iter_visible_parts():
+            signature.append(
+                (
+                    part.part_id,
+                    part.visible,
+                    part.position,
+                    part.rotation,
+                    part.scale,
+                    part.voxels.revision,
+                )
+            )
+        return tuple(signature)
 
     @staticmethod
     def _part_transform_matrix(part) -> QMatrix4x4:

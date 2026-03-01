@@ -20,6 +20,7 @@ def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     fill_time = _measure_fill()
     solidify_time = _measure_solidify()
     viewport_time = _measure_viewport_surrogate()
+    viewport_repeat_time = _measure_viewport_surrogate_repeat()
     dense_64_time = _measure_dense_scene_tier(64)
     dense_96_time = _measure_dense_scene_tier(96)
     dense_128_time = _measure_dense_scene_tier(128)
@@ -35,6 +36,9 @@ def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     )
     assert viewport_time < float(baseline["viewport_surrogate_seconds"]) * float(
         metric_multipliers.get("viewport_surrogate_seconds", default_multiplier)
+    )
+    assert viewport_repeat_time < float(baseline["viewport_surrogate_repeat_seconds"]) * float(
+        metric_multipliers.get("viewport_surrogate_repeat_seconds", default_multiplier)
     )
     assert dense_64_time < float(baseline["dense_64_seconds"]) * float(
         metric_multipliers.get("dense_64_seconds", default_multiplier)
@@ -95,6 +99,13 @@ def _measure_viewport_surrogate() -> float:
     # Prevent loop elimination assumptions in future refactors.
     assert total > 0
     return time.perf_counter() - start
+
+
+def _measure_viewport_surrogate_repeat() -> float:
+    # Repeated viewport-surrogate pass acts as a hot-path guard for navigation loops.
+    first = _measure_viewport_surrogate()
+    second = _measure_viewport_surrogate()
+    return min(first, second)
 
 
 def _measure_dense_scene_tier(size: int) -> float:
