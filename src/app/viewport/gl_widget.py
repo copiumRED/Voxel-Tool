@@ -352,9 +352,14 @@ class GLViewportWidget(QOpenGLWidget):
         mirror_label = self._mirror_overlay_label(self._app_context)
         if mirror_label:
             painter.drawText(12, 74, mirror_label)
+        badges = self._hud_badges(self._app_context)
+        if badges:
+            painter.setPen(QColor(200, 240, 255))
+            painter.drawText(12, 92, " | ".join(badges))
+            painter.setPen(QColor(230, 230, 230))
         if error_text:
             painter.setPen(QColor(255, 180, 90))
-            painter.drawText(12, 92, error_text)
+            painter.drawText(12, 110, error_text)
         painter.end()
 
     def _viewport_status_message(self, readiness: str) -> str:
@@ -844,6 +849,28 @@ class GLViewportWidget(QOpenGLWidget):
         if not labels:
             return ""
         return "Mirror planes: " + " ".join(labels)
+
+    @staticmethod
+    def _hud_badges(app_context: "AppContext | None") -> list[str]:
+        if app_context is None:
+            return []
+        mirror_axes = "".join(
+            axis
+            for axis, enabled in (
+                ("X", app_context.mirror_x_enabled),
+                ("Y", app_context.mirror_y_enabled),
+                ("Z", app_context.mirror_z_enabled),
+            )
+            if enabled
+        ) or "-"
+        return [
+            f"Tool:{app_context.voxel_tool_shape}/{app_context.voxel_tool_mode}",
+            f"Pick:{app_context.pick_mode}",
+            f"Plane:{app_context.edit_plane.upper()}",
+            f"Mirror:{mirror_axes}",
+            f"Proj:{app_context.camera_projection}",
+            f"Nav:{app_context.navigation_profile}",
+        ]
 
     @staticmethod
     def _mirror_guide_segments(

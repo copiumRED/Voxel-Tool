@@ -152,3 +152,21 @@ def test_quick_toolbar_action_labels_include_expected_core_actions() -> None:
     assert "Undo" in labels and "Redo" in labels
     assert "Solidify" in labels
     assert "Export OBJ" in labels and "Export glTF" in labels and "Export VOX" in labels
+
+
+def test_hud_badges_reflect_core_editing_state() -> None:
+    ctx = AppContext(current_project=Project(name="HUD"))
+    ctx.set_voxel_tool_shape(AppContext.TOOL_SHAPE_LINE)
+    ctx.set_voxel_tool_mode(AppContext.TOOL_MODE_ERASE)
+    ctx.set_pick_mode(AppContext.PICK_MODE_SURFACE)
+    ctx.set_edit_plane(AppContext.EDIT_PLANE_YZ)
+    ctx.set_camera_projection(AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC)
+    ctx.set_navigation_profile(AppContext.NAV_PROFILE_BLENDER_MIX)
+    ctx.set_mirror_axis("x", True)
+    badges = GLViewportWidget._hud_badges(ctx)
+    assert "Tool:line/erase" in badges
+    assert "Pick:surface" in badges
+    assert "Plane:YZ" in badges
+    assert "Mirror:X" in badges
+    assert "Proj:orthographic" in badges
+    assert "Nav:blender_mix" in badges

@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 32: Interface Polish - Status HUD Badges
-- Goal: Show active tool, pick mode, plane, mirror, projection, and nav preset in viewport HUD.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
-- Acceptance criteria (human-testable): HUD badges always reflect current editing state.
-- Tests required: Add state-to-label formatting tests.
-- Risk/rollback note: Allow HUD toggle if visual noise is high.
-
 ### Task 33: Interface Polish - Command Palette (Quick Search)
 - Goal: Add command palette for fast action search/execute.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/ui/dialogs/`.
@@ -631,7 +624,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`169 passed`)
 
 ### Task 31: Interface Polish - Top Toolbar Quick Actions
-- Commit: `COMMIT_PENDING`
+- Commit: `f79723a`
 - Added top toolbar (`quick_actions_toolbar`) to main window for high-frequency actions.
 - Added quick actions for `New`, `Open`, `Save`.
 - Added quick actions for `Undo`, `Redo`.
@@ -647,3 +640,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`170 passed`)
+
+### Task 32: Interface Polish - Status HUD Badges
+- Commit: `COMMIT_PENDING`
+- Added viewport HUD badge formatter for core editing context state.
+- Added badges for tool/mode, pick mode, edit plane, mirror axes, projection, and navigation preset.
+- Rendered HUD badges in overlay with distinct color styling for quick glance readability.
+- Preserved existing overlay metrics (voxel count/camera/target) and mirror plane label.
+- Shifted error overlay line to avoid collision with new badge line.
+- Kept badge rendering optional with existing overlay toggle behavior.
+- Added regression test validating badge output for representative context state.
+- Kept badge logic static and testable (`_hud_badges` helper).
+- Preserved all edit/render behavior (display-only change).
+- No dependency additions.
+- Maintained compatibility with existing mirror overlay helpers.
+- Kept formatting compact to avoid excessive viewport clutter.
+- Added no new persistence or schema surface.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`171 passed`)

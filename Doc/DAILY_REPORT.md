@@ -1521,3 +1521,16 @@
   - Run: `pytest -q` (current: `170 passed`).
 - Risks/issues:
   - Status HUD badges remain pending Task 32.
+
+### Roadmap 32 (Day-Cycle 40): Interface Polish - Status HUD Badges
+- What was done:
+  - Added viewport HUD badges for active tool/mode, pick mode, edit plane, mirror axes, projection, and nav profile.
+  - Integrated badge rendering into existing debug overlay with readable badge separator format.
+  - Preserved existing camera/voxel diagnostics and mirror-plane overlay text.
+  - Added regression test validating state-to-badge formatting.
+- How to test quickly:
+  - Launch app and toggle tool/mode/pick/plane/projection/navigation settings.
+  - Confirm HUD badges update immediately to reflect current editing state.
+  - Run: `pytest -q` (current: `171 passed`).
+- Risks/issues:
+  - Command palette quick search remains pending Task 33.
