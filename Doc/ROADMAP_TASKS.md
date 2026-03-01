@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 21: VOX Transform Chunk Mapping v1
-- Goal: Parse and map common VOX transform chunk semantics into scene parts.
-- Likely files/modules touched: `src/core/io/vox_io.py`, `tests/test_vox_io.py`.
-- Acceptance criteria (human-testable): VOX files with transform chunks import with expected part offsets.
-- Tests required: Add fixture tests with transform chunk expectations.
-- Risk/rollback note: Maintain warning path for unsupported variants.
-
 ### Task 22: VOX Multi-part Naming and Grouping
 - Goal: Improve naming/group mapping for imported multi-model VOX files.
 - Likely files/modules touched: `src/core/io/vox_io.py`, `src/core/scene.py`.
@@ -499,7 +492,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`154 passed`)
 
 ### Task 20: glTF Material Baseline
-- Commit: `COMMIT_PENDING`
+- Commit: `d8bef92`
 - Added glTF material baseline helper (`_build_material_baseline`) in exporter.
 - Added `materials` array emission with one default PBR material.
 - Added primitive material binding (`material: 0`) on exported mesh primitive.
@@ -516,3 +509,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`154 passed`)
+
+### Task 21: VOX Transform Chunk Mapping v1
+- Commit: `COMMIT_PENDING`
+- Added bounded `nTRN` parsing support in VOX IO for translation frame extraction (`_t`).
+- Added VOX dict reader helper to parse key/value dictionaries used by scene-graph chunks.
+- Added nTRN translation parser that reads frame dictionaries and extracts integer XYZ offsets.
+- Applied parsed translation offsets to the next imported model's XYZI voxel coordinates.
+- Reset pending translation after model import to avoid leaking transform to subsequent models.
+- Preserved fallback behavior when no transform is present (`0,0,0` translation).
+- Preserved warning pathway for malformed/unsupported `nTRN` chunk payloads.
+- Kept unsupported chunk reporting unchanged for non-main unknown chunks.
+- Kept current public load APIs stable (`load_vox`, `load_vox_models`, warning wrapper).
+- Added VOX test helper for writing chunk dictionaries in fixture payloads.
+- Added regression test verifying nTRN translation offset maps into imported voxel coordinates.
+- Preserved backward compatibility for existing multi-model and unsupported-chunk tests.
+- Kept implementation bounded and non-invasive (translation only, no full scene graph resolver yet).
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`155 passed`)

@@ -59,8 +59,32 @@ def test_load_vox_models_with_warnings_reports_unsupported_chunks() -> None:
         path.unlink(missing_ok=True)
 
 
+def test_load_vox_models_applies_ntrn_translation_to_next_model() -> None:
+    path = get_app_temp_dir("VoxelTool") / f"vox-import-ntrn-{uuid.uuid4().hex}.vox"
+    try:
+        payload = _build_multi_model_vox_payload_with_ntrn_translation()
+        path.write_bytes(payload)
+        models, _palette, warnings = load_vox_models_with_warnings(str(path))
+        assert len(models) == 2
+        assert warnings == []
+        assert models[0].get(3, 2, 1) == 1
+        assert models[1].get(1, 0, 0) == 2
+    finally:
+        path.unlink(missing_ok=True)
+
+
 def _chunk(chunk_id: bytes, content: bytes, children: bytes = b"") -> bytes:
     return chunk_id + struct.pack("<II", len(content), len(children)) + content + children
+
+
+def _vox_dict(entries: dict[str, str]) -> bytes:
+    payload = struct.pack("<i", len(entries))
+    for key, value in entries.items():
+        key_bytes = key.encode("utf-8")
+        value_bytes = value.encode("utf-8")
+        payload += struct.pack("<i", len(key_bytes)) + key_bytes
+        payload += struct.pack("<i", len(value_bytes)) + value_bytes
+    return payload
 
 
 def _build_multi_model_vox_payload() -> bytes:
@@ -102,6 +126,26 @@ def _build_multi_model_vox_payload_with_unknown_chunk() -> bytes:
             rgba += struct.pack("<BBBB", 0, 0, 0, 255)
     rgba_chunk = _chunk(b"RGBA", rgba)
     children = size_a + xyzi_a + unknown + size_b + xyzi_b + rgba_chunk
+    main = _chunk(b"MAIN", b"", children)
+    return b"VOX " + struct.pack("<I", 150) + main
+
+
+def _build_multi_model_vox_payload_with_ntrn_translation() -> bytes:
+    ntrn_content = (
+        struct.pack("<i", 1)  # node id
+        + _vox_dict({})
+        + struct.pack("<i", 0)  # child id
+        + struct.pack("<i", -1)  # reserved id
+        + struct.pack("<i", 0)  # layer id
+        + struct.pack("<i", 1)  # num frames
+        + _vox_dict({"_t": "3 2 1"})
+    )
+    ntrn = _chunk(b"nTRN", ntrn_content)
+    size_a = _chunk(b"SIZE", struct.pack("<III", 2, 1, 1))
+    xyzi_a = _chunk(b"XYZI", struct.pack("<I", 1) + struct.pack("<BBBB", 0, 0, 0, 2))
+    size_b = _chunk(b"SIZE", struct.pack("<III", 2, 1, 1))
+    xyzi_b = _chunk(b"XYZI", struct.pack("<I", 1) + struct.pack("<BBBB", 1, 0, 0, 3))
+    children = ntrn + size_a + xyzi_a + size_b + xyzi_b
     main = _chunk(b"MAIN", b"", children)
     return b"VOX " + struct.pack("<I", 150) + main
 

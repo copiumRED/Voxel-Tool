@@ -1368,3 +1368,18 @@
   - Run: `pytest -q` (current: `154 passed`).
 - Risks/issues:
   - VOX transform chunk mapping improvements remain pending Task 21.
+
+### Roadmap 21 (Day-Cycle 40): VOX Transform Chunk Mapping v1
+- What was done:
+  - Added bounded `nTRN` transform parsing in VOX loader for translation (`_t`) extraction.
+  - Added VOX dictionary parser helper used by transform chunk parsing.
+  - Applied parsed translation offsets to imported model voxel coordinates (next model mapping path).
+  - Preserved warning behavior for malformed/unsupported `nTRN` payloads.
+  - Added regression test verifying translated import coordinates from a synthetic nTRN payload.
+- How to test quickly:
+  - Import a VOX fixture containing `nTRN` translation frame data.
+  - Verify imported model voxels are offset by expected translation values.
+  - Import malformed `nTRN` fixture and verify warning path remains active.
+  - Run: `pytest -q` (current: `155 passed`).
+- Risks/issues:
+  - VOX multi-part naming/group mapping remains pending Task 22.
