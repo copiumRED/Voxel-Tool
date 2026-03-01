@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 15: Mirror Visual Plane Overlays
-- Goal: Render active mirror planes and offsets in viewport.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
-- Acceptance criteria (human-testable): Enabling mirror axes shows clear plane guides at proper offsets.
-- Tests required: Add geometry helper tests for mirror guide generation.
-- Risk/rollback note: Allow guide toggle for performance-sensitive scenes.
-
 ### Task 16: Palette Metadata Schema v1
 - Goal: Add optional palette metadata fields (name/tags/source).
 - Likely files/modules touched: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
@@ -427,7 +420,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`146 passed`)
 
 ### Task 14: Fill Preview Confidence Layer
-- Commit: `COMMIT_PENDING`
+- Commit: `f27010b`
 - Added `compute_fill_preview_cells` helper in command module for previewing connected fill regions.
 - Implemented plane-mode preview region computation using bounded flood-fill over current edit plane.
 - Implemented volume-mode preview region computation using bounded 3D flood-fill.
@@ -444,3 +437,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`148 passed`)
+
+### Task 15: Mirror Visual Plane Overlays
+- Commit: `COMMIT_PENDING`
+- Refactored mirror guide rendering to use a dedicated geometry helper (`_mirror_guide_segments`).
+- Added deterministic mirror-guide segment generation for X/Y/Z axes with configurable extent and step.
+- Preserved axis color coding (X red, Y green, Z blue) for visual clarity.
+- Preserved offset-driven plane placement and ensured guide geometry respects configured mirror offsets.
+- Simplified draw path by converting helper segments directly into GL line vertices.
+- Added mirror overlay HUD label with active axis offsets (`X@`, `Y@`, `Z@`) for fast visual confirmation.
+- Shifted error-text overlay line down to avoid overlap with new mirror HUD label.
+- Kept rendering scope non-destructive (visualization only; no voxel edit behavior changes).
+- Added regression test for mirror segment helper behavior under enabled/disabled axis states.
+- Added regression test for mirror segment offset correctness on generated geometry.
+- Added regression test for mirror HUD label content with enabled axes and offsets.
+- Kept implementation dependency-free and viewport-scoped.
+- Maintained compatibility with existing mirror edit behavior and existing tool flows.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`150 passed`)

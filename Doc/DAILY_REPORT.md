@@ -1283,3 +1283,17 @@
   - Run: `pytest -q` (current: `148 passed`).
 - Risks/issues:
   - Mirror visual plane overlays remain pending Task 15.
+
+### Roadmap 15 (Day-Cycle 40): Mirror Visual Plane Overlays
+- What was done:
+  - Refactored mirror guide rendering through a dedicated geometry helper for active mirror planes.
+  - Added mirror HUD text showing active mirror offsets (`X@`, `Y@`, `Z@`) for quick verification.
+  - Preserved mirror axis color coding and offset placement while improving overlay clarity.
+  - Added regression tests for mirror guide geometry generation and overlay label content.
+- How to test quickly:
+  - Launch app and toggle `Mirror X/Y/Z` in Tools panel.
+  - Adjust each mirror offset and verify guide planes shift correctly in viewport.
+  - Confirm HUD text shows enabled mirror axes and current offsets.
+  - Run: `pytest -q` (current: `150 passed`).
+- Risks/issues:
+  - Palette metadata editing + persistence remains pending Task 16.

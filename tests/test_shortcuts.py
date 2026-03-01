@@ -84,3 +84,28 @@ def test_selection_move_delta_map_covers_arrow_and_page_keys() -> None:
     assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_PageUp) == (0, 0, 1)
     assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_PageDown) == (0, 0, -1)
     assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_A) is None
+
+
+def test_mirror_guide_segments_respect_enabled_axes_and_offsets() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    assert GLViewportWidget._mirror_guide_segments(ctx) == []
+    ctx.set_mirror_axis("x", True)
+    ctx.set_mirror_offset("x", 3)
+
+    segments = GLViewportWidget._mirror_guide_segments(ctx, extent=10.0, step=5)
+    assert len(segments) > 0
+    for start, end, _ in segments:
+        assert start[0] == pytest.approx(3.0)
+        assert end[0] == pytest.approx(3.0)
+
+
+def test_mirror_overlay_label_lists_enabled_axes() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    assert GLViewportWidget._mirror_overlay_label(ctx) == ""
+    ctx.set_mirror_axis("x", True)
+    ctx.set_mirror_axis("z", True)
+    ctx.set_mirror_offset("x", -2)
+    ctx.set_mirror_offset("z", 4)
+    label = GLViewportWidget._mirror_overlay_label(ctx)
+    assert "X@-2" in label
+    assert "Z@4" in label

@@ -327,35 +327,10 @@ class GLViewportWidget(QOpenGLWidget):
     def _draw_mirror_guides(self, funcs, mvp: QMatrix4x4) -> None:
         if self._app_context is None:
             return
-        guide_extent = 20.0
         vertices = array("f")
-
-        if self._app_context.mirror_x_enabled:
-            color = (0.95, 0.35, 0.35)
-            offset = float(self._app_context.mirror_x_offset)
-            for i in range(-20, 21, 2):
-                vertices.extend((offset, float(i), -guide_extent, color[0], color[1], color[2]))
-                vertices.extend((offset, float(i), guide_extent, color[0], color[1], color[2]))
-                vertices.extend((offset, -guide_extent, float(i), color[0], color[1], color[2]))
-                vertices.extend((offset, guide_extent, float(i), color[0], color[1], color[2]))
-
-        if self._app_context.mirror_y_enabled:
-            color = (0.35, 0.95, 0.35)
-            offset = float(self._app_context.mirror_y_offset)
-            for i in range(-20, 21, 2):
-                vertices.extend((float(i), offset, -guide_extent, color[0], color[1], color[2]))
-                vertices.extend((float(i), offset, guide_extent, color[0], color[1], color[2]))
-                vertices.extend((-guide_extent, offset, float(i), color[0], color[1], color[2]))
-                vertices.extend((guide_extent, offset, float(i), color[0], color[1], color[2]))
-
-        if self._app_context.mirror_z_enabled:
-            color = (0.35, 0.6, 0.95)
-            offset = float(self._app_context.mirror_z_offset)
-            for i in range(-20, 21, 2):
-                vertices.extend((float(i), -guide_extent, offset, color[0], color[1], color[2]))
-                vertices.extend((float(i), guide_extent, offset, color[0], color[1], color[2]))
-                vertices.extend((-guide_extent, float(i), offset, color[0], color[1], color[2]))
-                vertices.extend((guide_extent, float(i), offset, color[0], color[1], color[2]))
+        for start, end, color in self._mirror_guide_segments(self._app_context):
+            vertices.extend((start[0], start[1], start[2], color[0], color[1], color[2]))
+            vertices.extend((end[0], end[1], end[2], color[0], color[1], color[2]))
 
         if vertices:
             self._draw_colored_vertices(funcs, vertices, self._GL_LINES, mvp)
@@ -370,9 +345,12 @@ class GLViewportWidget(QOpenGLWidget):
             56,
             f"Target: {self.target.x():.2f} {self.target.y():.2f} {self.target.z():.2f}",
         )
+        mirror_label = self._mirror_overlay_label(self._app_context)
+        if mirror_label:
+            painter.drawText(12, 74, mirror_label)
         if error_text:
             painter.setPen(QColor(255, 180, 90))
-            painter.drawText(12, 74, error_text)
+            painter.drawText(12, 92, error_text)
         painter.end()
 
     def _viewport_status_message(self, readiness: str) -> str:
@@ -847,6 +825,62 @@ class GLViewportWidget(QOpenGLWidget):
         if key == Qt.Key_PageDown:
             return (0, 0, -1)
         return None
+
+    @staticmethod
+    def _mirror_overlay_label(app_context: "AppContext | None") -> str:
+        if app_context is None:
+            return ""
+        labels: list[str] = []
+        if app_context.mirror_x_enabled:
+            labels.append(f"X@{int(app_context.mirror_x_offset)}")
+        if app_context.mirror_y_enabled:
+            labels.append(f"Y@{int(app_context.mirror_y_offset)}")
+        if app_context.mirror_z_enabled:
+            labels.append(f"Z@{int(app_context.mirror_z_offset)}")
+        if not labels:
+            return ""
+        return "Mirror planes: " + " ".join(labels)
+
+    @staticmethod
+    def _mirror_guide_segments(
+        app_context: "AppContext | None",
+        *,
+        extent: float = 20.0,
+        step: int = 2,
+    ) -> list[
+        tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+    ]:
+        if app_context is None:
+            return []
+        segments: list[
+            tuple[
+                tuple[float, float, float],
+                tuple[float, float, float],
+                tuple[float, float, float],
+            ]
+        ] = []
+        for i in range(-20, 21, max(1, int(step))):
+            fi = float(i)
+            if app_context.mirror_x_enabled:
+                color = (0.95, 0.35, 0.35)
+                x = float(app_context.mirror_x_offset)
+                segments.append(((x, fi, -extent), (x, fi, extent), color))
+                segments.append(((x, -extent, fi), (x, extent, fi), color))
+            if app_context.mirror_y_enabled:
+                color = (0.35, 0.95, 0.35)
+                y = float(app_context.mirror_y_offset)
+                segments.append(((fi, y, -extent), (fi, y, extent), color))
+                segments.append(((-extent, y, fi), (extent, y, fi), color))
+            if app_context.mirror_z_enabled:
+                color = (0.35, 0.6, 0.95)
+                z = float(app_context.mirror_z_offset)
+                segments.append(((fi, -extent, z), (fi, extent, z), color))
+                segments.append(((-extent, fi, z), (extent, fi, z), color))
+        return segments
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)
