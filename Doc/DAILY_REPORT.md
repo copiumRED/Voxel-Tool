@@ -767,3 +767,15 @@
 - Risks/issues:
   - Legacy IDs are intentionally preserved; no automatic migration rewrite is performed.
 - Process deviation note (Task 09): commit `cba9626` was made directly on `main` due branch context error; code/tests are green and no functional regression observed.
+
+### Roadmap 10 (Day-Cycle 30): Non-Brush Preview Accuracy Sweep
+- What was done:
+  - Added shared shape-cell helper for line/box preview generation.
+  - Switched viewport drag preview path to that shared helper.
+  - Added parity tests comparing mirrored preview cells vs command-applied voxels for box/line.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Enable mirror, drag line/box previews, and confirm final applied voxels match preview outlines.
+  - Run: `pytest -q` (current: `98 passed`)
+- Risks/issues:
+  - Orthographic precision workflow remains pending Task 11.

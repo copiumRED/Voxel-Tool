@@ -13,6 +13,7 @@ from core.commands.demo_commands import (
     build_box_plane_cells,
     build_brush_cells,
     build_line_plane_cells,
+    build_shape_plane_cells,
     rasterize_brush_stroke_segment,
 )
 from core.project import Project
@@ -297,6 +298,29 @@ def test_build_box_plane_cells_for_preview_generation() -> None:
 def test_build_line_plane_cells_for_preview_generation() -> None:
     cells = build_line_plane_cells(0, 0, 3, 2, 0)
     assert cells == {(0, 0, 0), (1, 1, 0), (2, 1, 0), (3, 2, 0)}
+
+
+def test_build_shape_plane_cells_matches_box_and_line_generators() -> None:
+    box_cells = build_shape_plane_cells("box", 0, 0, 2, 1, 0)
+    line_cells = build_shape_plane_cells("line", 0, 0, 3, 2, 0)
+    assert box_cells == build_box_plane_cells(0, 0, 2, 1, 0)
+    assert line_cells == build_line_plane_cells(0, 0, 3, 2, 0)
+
+
+def test_preview_apply_parity_for_mirrored_box_and_line() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_mirror_axis("x", True)
+
+    preview_box = ctx.expand_mirrored_cells(build_shape_plane_cells("box", 0, 0, 1, 1, 0))
+    ctx.command_stack.do(BoxVoxelCommand(0, 0, 1, 1, z=0, mode="paint", color_index=2), ctx)
+    applied_box = {(x, y, z) for x, y, z, _ in ctx.current_project.voxels.to_list()}
+    assert applied_box == preview_box
+
+    ctx.command_stack.do(ClearVoxelsCommand(), ctx)
+    preview_line = ctx.expand_mirrored_cells(build_shape_plane_cells("line", 0, 0, 2, 1, 0))
+    ctx.command_stack.do(LineVoxelCommand(0, 0, 2, 1, z=0, mode="paint", color_index=2), ctx)
+    applied_line = {(x, y, z) for x, y, z, _ in ctx.current_project.voxels.to_list()}
+    assert applied_line == preview_line
 
 
 def test_app_context_pick_mode_validation() -> None:

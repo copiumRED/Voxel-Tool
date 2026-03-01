@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **85%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **86%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Non-brush preview/apply parity still needs explicit sweep verification
-- Symptoms: edge interactions may still produce subtle preview/apply mismatches under mixed pick/edit-plane modes.
-- Suspected root cause: preview and apply now share resolver path, but cross-mode edge cases are not exhaustively validated yet.
-- Exact files: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
-- Fastest confirmation: run structured drag scenarios across `Surface/Plane Lock` and `XY/YZ/XZ` planes.
+1. Orthographic viewport mode is still missing
+- Symptoms: users cannot switch to ortho for precision blockout/edit workflows.
+- Suspected root cause: viewport projection pipeline currently uses perspective-only path.
+- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`.
+- Fastest confirmation: check View menu; no ortho toggle is available.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

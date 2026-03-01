@@ -360,6 +360,22 @@ def build_line_plane_cells(
     return {(x, y, z) for x, y in _rasterize_line(start_x, start_y, end_x, end_y)}
 
 
+def build_shape_plane_cells(
+    shape: str,
+    start_x: int,
+    start_y: int,
+    end_x: int,
+    end_y: int,
+    z: int,
+) -> set[tuple[int, int, int]]:
+    normalized = shape.strip().lower()
+    if normalized == "box":
+        return build_box_plane_cells(start_x, start_y, end_x, end_y, z)
+    if normalized == "line":
+        return build_line_plane_cells(start_x, start_y, end_x, end_y, z)
+    raise ValueError(f"Unsupported shape for plane cell generation: {shape}")
+
+
 def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
     points: list[tuple[int, int]] = []
     x0, y0, x1, y1 = start_x, start_y, end_x, end_y

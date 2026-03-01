@@ -16,7 +16,7 @@ from PySide6.QtOpenGL import (
     QOpenGLVertexArrayObject,
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from core.commands.demo_commands import build_box_plane_cells, build_brush_cells, build_line_plane_cells
+from core.commands.demo_commands import build_brush_cells, build_shape_plane_cells
 from core.voxels.raycast import (
     intersect_axis_plane,
     resolve_brush_target_cell,
@@ -943,10 +943,7 @@ class GLViewportWidget(QOpenGLWidget):
         end_cell, should_erase = end_result
         start_x, start_y, z = start_cell
         end_x, end_y, _ = end_cell
-        if shape == self._app_context.TOOL_SHAPE_BOX:
-            cells = build_box_plane_cells(start_x, start_y, end_x, end_y, z)
-        else:
-            cells = build_line_plane_cells(start_x, start_y, end_x, end_y, z)
+        cells = build_shape_plane_cells(shape, start_x, start_y, end_x, end_y, z)
         cells = self._app_context.expand_mirrored_cells(cells)
         if cells != self._shape_preview_cells or should_erase != self._shape_preview_erase:
             self._shape_preview_cells = cells

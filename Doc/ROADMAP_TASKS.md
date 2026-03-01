@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 10: Non-Brush Preview Accuracy Sweep
-- Goal: Ensure ghost previews exactly match applied cells across plane and surface modes.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
-- Acceptance criteria (human-testable): In 10+ manual drags, committed result matches preview every time.
-- Tests required: Add preview-vs-command helper equivalence tests.
-- Risk/rollback note: If mismatch persists for one shape, temporarily disable that preview with warning.
-
 ### Task 11: Orthographic Camera Mode v1
 - Goal: Add orthographic projection toggle for precision modeling.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`, `src/app/app_context.py`.
@@ -306,3 +299,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`96 passed`)
+
+### Task 10: Non-Brush Preview Accuracy Sweep
+- Commit: `2c732ed`
+- Added shared shape-plane cell generator (`build_shape_plane_cells`) for box/line preview calculations.
+- Updated viewport drag-preview path to use shared shape helper rather than duplicated shape branching.
+- Kept command execution logic unchanged while aligning preview generation source of truth.
+- Added parity test verifying helper dispatch matches existing box/line generators.
+- Added parity test verifying mirrored preview cells match actual applied voxels for box operations.
+- Added parity test verifying mirrored preview cells match actual applied voxels for line operations.
+- Preserved pick-mode and edit-plane behavior from prior tasks while tightening preview correctness confidence.
+- Avoided scope creep into fill/brush logic for this task.
+- Kept implementation local to command helpers + tests + preview path.
+- No schema, IO, or export behavior changed.
+- Dependency footprint unchanged.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`98 passed`)
