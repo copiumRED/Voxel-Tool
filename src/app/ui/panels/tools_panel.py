@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -25,6 +25,7 @@ class ToolsPanel(QWidget):
     pick_mode_changed = Signal(str)
     edit_plane_changed = Signal(str)
     fill_connectivity_changed = Signal(str)
+    selection_mode_changed = Signal(bool)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -71,6 +72,9 @@ class ToolsPanel(QWidget):
         self.fill_connectivity_combo.addItems(["Plane", "3D"])
         self.fill_connectivity_combo.currentTextChanged.connect(self._on_fill_connectivity_changed)
         layout.addWidget(self.fill_connectivity_combo)
+        self.selection_mode_checkbox = QCheckBox("Voxel Selection Mode", self)
+        self.selection_mode_checkbox.stateChanged.connect(self._on_selection_mode_toggled)
+        layout.addWidget(self.selection_mode_checkbox)
         layout.addWidget(QLabel("Action"))
 
         self.paint_radio = QRadioButton("Paint", self)
@@ -148,6 +152,7 @@ class ToolsPanel(QWidget):
         self.pick_mode_combo.blockSignals(True)
         self.edit_plane_combo.blockSignals(True)
         self.fill_connectivity_combo.blockSignals(True)
+        self.selection_mode_checkbox.blockSignals(True)
         self.paint_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_PAINT)
         self.erase_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_ERASE)
         self.brush_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH)
@@ -167,6 +172,7 @@ class ToolsPanel(QWidget):
         self.edit_plane_combo.setCurrentText(self._context.edit_plane.upper())
         fill_mode = "3D" if self._context.fill_connectivity == AppContext.FILL_CONNECTIVITY_VOLUME else "Plane"
         self.fill_connectivity_combo.setCurrentText(fill_mode)
+        self.selection_mode_checkbox.setChecked(self._context.voxel_selection_mode)
         self.paint_radio.blockSignals(False)
         self.erase_radio.blockSignals(False)
         self.brush_shape_radio.blockSignals(False)
@@ -184,6 +190,7 @@ class ToolsPanel(QWidget):
         self.pick_mode_combo.blockSignals(False)
         self.edit_plane_combo.blockSignals(False)
         self.fill_connectivity_combo.blockSignals(False)
+        self.selection_mode_checkbox.blockSignals(False)
         is_brush = self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH
         self.brush_size_spin.setEnabled(is_brush)
         self.brush_shape_combo.setEnabled(is_brush)
@@ -260,6 +267,15 @@ class ToolsPanel(QWidget):
         )
         self._context.set_fill_connectivity(mode)
         self.fill_connectivity_changed.emit(mode)
+
+    def _on_selection_mode_toggled(self, state: int) -> None:
+        if self._context is None:
+            return
+        enabled = state == Qt.Checked
+        self._context.set_voxel_selection_mode(enabled)
+        if not enabled:
+            self._context.clear_selected_voxels()
+        self.selection_mode_changed.emit(enabled)
 
     def set_tool_shape(self, shape: str) -> None:
         if shape == AppContext.TOOL_SHAPE_BRUSH:

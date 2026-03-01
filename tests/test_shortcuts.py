@@ -67,3 +67,10 @@ def test_project_io_error_detail_includes_action_path_and_message() -> None:
     assert "Save Project failed." in detail
     assert "C:/tmp/demo.json" in detail
     assert "disk full" in detail
+
+
+def test_selection_mode_flag_enables_selection_interaction_mode() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    ctx.set_voxel_selection_mode(True)
+    assert GLViewportWidget._is_selection_mode_enabled(ctx) is True
+    assert GLViewportWidget._resolve_left_interaction_mode(ctx) == GLViewportWidget._LEFT_INTERACTION_EDIT

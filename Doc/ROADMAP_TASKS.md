@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 11: Voxel Selection Set v1
-- Goal: Add explicit voxel selection mode (box-select cells) independent of paint.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/core/commands/demo_commands.py`.
-- Acceptance criteria (human-testable): User can select voxel region and see highlighted selection.
-- Tests required: Add selection set model tests and viewport selection interaction tests.
-- Risk/rollback note: Keep selection optional and non-destructive.
-
 ### Task 12: Selected Voxel Move Tool
 - Goal: Add move operation for selected voxel sets.
 - Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/viewport/gl_widget.py`.
@@ -397,3 +390,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`138 passed`)
+
+### Task 11: Voxel Selection Set v1
+- Commit: `COMMIT_PENDING`
+- Added voxel selection mode state in app context (`voxel_selection_mode`) with validated setter.
+- Added selected voxel set state in app context (`selected_voxels`) with explicit set/clear helpers.
+- Added tools-panel checkbox (`Voxel Selection Mode`) and signal wiring to toggle selection mode from UI.
+- Synced tools-panel refresh path so checkbox mirrors context state on project/editor updates.
+- Connected main-window tools signal to context handler and persisted selection mode in editor-state capture/apply.
+- Added selection-mode apply safety to clear selected voxels when mode is turned off.
+- Added viewport selection rendering path with highlighted wireframe for selected cells.
+- Added selection click behavior (single replace, `Ctrl` add/remove toggle).
+- Added selection drag-box behavior on active edit plane with live preview.
+- Disabled edit hover preview while selection mode is active to reduce visual conflict.
+- Added interaction-mode resolver override so selection mode routes left input into selection flow.
+- Added regression tests for app-context selection state and selection interaction routing helper.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`140 passed`)

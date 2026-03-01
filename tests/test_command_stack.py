@@ -399,6 +399,16 @@ def test_app_context_camera_sensitivity_validation() -> None:
     assert ctx.camera_zoom_sensitivity == 2.0
 
 
+def test_app_context_voxel_selection_mode_and_selection_set() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_voxel_selection_mode(True)
+    ctx.set_selected_voxels({(1, 2, 3), (2, 2, 3)})
+    assert ctx.voxel_selection_mode is True
+    assert len(ctx.selected_voxels) == 2
+    ctx.clear_selected_voxels()
+    assert len(ctx.selected_voxels) == 0
+
+
 def test_app_context_fill_connectivity_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_fill_connectivity("volume")

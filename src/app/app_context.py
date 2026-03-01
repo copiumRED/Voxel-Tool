@@ -59,6 +59,8 @@ class AppContext:
     fill_max_cells: int = 5000
     fill_connectivity: str = FILL_CONNECTIVITY_PLANE
     locked_palette_slots: set[int] = field(default_factory=set)
+    voxel_selection_mode: bool = False
+    selected_voxels: set[tuple[int, int, int]] = field(default_factory=set)
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
     _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
     _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
@@ -144,6 +146,15 @@ class AppContext:
         if mode_value not in self._VALID_FILL_CONNECTIVITY:
             raise ValueError(f"Unsupported fill connectivity: {mode_value}")
         self.fill_connectivity = mode_value
+
+    def set_voxel_selection_mode(self, enabled: bool) -> None:
+        self.voxel_selection_mode = bool(enabled)
+
+    def set_selected_voxels(self, cells: set[tuple[int, int, int]]) -> None:
+        self.selected_voxels = {tuple(cell) for cell in cells}
+
+    def clear_selected_voxels(self) -> None:
+        self.selected_voxels.clear()
 
     def set_palette_slot_locked(self, index: int, locked: bool) -> None:
         slot = int(index)

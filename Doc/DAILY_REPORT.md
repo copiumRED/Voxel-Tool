@@ -1216,3 +1216,19 @@
   - Run: `pytest -q` (current: `138 passed`).
 - Risks/issues:
   - Voxel selection-set workflow remains pending Task 11.
+
+### Roadmap 11 (Day-Cycle 40): Voxel Selection Set v1
+- What was done:
+  - Added explicit voxel selection mode and selected-voxel set state to `AppContext`.
+  - Added tools-panel toggle for selection mode and wired it into context/main-window editor state.
+  - Added viewport selection interactions: click-select, Ctrl-toggle, drag-box selection preview and commit.
+  - Added selected-voxel wireframe overlay rendering and disabled edit hover preview while in selection mode.
+  - Added regression tests for selection-mode state handling and selection interaction routing.
+- How to test quickly:
+  - Launch app and enable `Voxel Selection Mode` in the tools panel.
+  - Click a voxel to select it; Ctrl-click to add/remove selection.
+  - Drag on the edit plane to box-select cells and confirm highlighted selection appears.
+  - Disable selection mode and confirm selection is cleared.
+  - Run: `pytest -q` (current: `140 passed`).
+- Risks/issues:
+  - Move/duplicate operations for selected voxel sets are still pending Task 12/13.

@@ -191,6 +191,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.pick_mode_changed.connect(self._on_pick_mode_changed)
         self.tools_panel.edit_plane_changed.connect(self._on_edit_plane_changed)
         self.tools_panel.fill_connectivity_changed.connect(self._on_fill_connectivity_changed)
+        self.tools_panel.selection_mode_changed.connect(self._on_selection_mode_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -958,6 +959,10 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Fill connectivity: {mode}")
         self._refresh_ui_state()
 
+    def _on_selection_mode_changed(self, enabled: bool) -> None:
+        self._show_voxel_status(f"Voxel selection mode: {'on' if enabled else 'off'}")
+        self._refresh_ui_state()
+
     def _on_create_test_voxels(self) -> None:
         center_color = self.context.active_color_index
         arm_color = (center_color + 3) % len(self.context.palette)
@@ -1012,6 +1017,7 @@ class MainWindow(QMainWindow):
             "pick_mode": self.context.pick_mode,
             "edit_plane": self.context.edit_plane,
             "fill_connectivity": self.context.fill_connectivity,
+            "voxel_selection_mode": self.context.voxel_selection_mode,
             "locked_palette_slots": sorted(self.context.locked_palette_slots),
             "grid_visible": self.context.grid_visible,
             "grid_spacing": self.context.grid_spacing,
@@ -1071,6 +1077,11 @@ class MainWindow(QMainWindow):
             AppContext.FILL_CONNECTIVITY_VOLUME,
         ):
             self.context.fill_connectivity = fill_connectivity
+        self.context.voxel_selection_mode = bool(
+            state.get("voxel_selection_mode", self.context.voxel_selection_mode)
+        )
+        if not self.context.voxel_selection_mode:
+            self.context.clear_selected_voxels()
         raw_locked_slots = state.get("locked_palette_slots", [])
         next_locked_slots: set[int] = set()
         if isinstance(raw_locked_slots, list):

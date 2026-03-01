@@ -230,6 +230,7 @@ class GLViewportWidget(QOpenGLWidget):
 
         self._draw_hover_preview(funcs, mvp)
         self._draw_shape_preview(funcs, mvp)
+        self._draw_selection_preview(funcs, mvp)
 
         if self.debug_overlay_enabled:
             self._draw_overlay_text(voxel_count, error_text=None)
@@ -394,6 +395,17 @@ class GLViewportWidget(QOpenGLWidget):
         color = (1.0, 0.45, 0.20) if self._shape_preview_erase else (0.25, 0.85, 1.0)
         outline_vertices = array("f")
         for cell in sorted(self._shape_preview_cells):
+            outline_vertices.extend(self._build_cell_outline_vertices(cell, color))
+        self._draw_colored_vertices(funcs, outline_vertices, self._GL_LINES, mvp)
+
+    def _draw_selection_preview(self, funcs, mvp: QMatrix4x4) -> None:
+        if self._app_context is None:
+            return
+        if not self._app_context.selected_voxels:
+            return
+        color = (1.0, 1.0, 0.25)
+        outline_vertices = array("f")
+        for cell in sorted(self._app_context.selected_voxels):
             outline_vertices.extend(self._build_cell_outline_vertices(cell, color))
         self._draw_colored_vertices(funcs, outline_vertices, self._GL_LINES, mvp)
 
@@ -598,8 +610,11 @@ class GLViewportWidget(QOpenGLWidget):
             self._left_dragging = False
             self._left_interaction_mode = self._resolve_left_interaction_mode(self._app_context)
             if self._left_interaction_mode == self._LEFT_INTERACTION_EDIT:
-                self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
-                self._update_drag_preview(self._left_press_pos, self._left_press_pos, event.modifiers())
+                if self._is_selection_mode_enabled(self._app_context):
+                    self._update_selection_drag_preview(self._left_press_pos, self._left_press_pos)
+                else:
+                    self._begin_brush_stroke_if_applicable(event.position(), event.modifiers())
+                    self._update_drag_preview(self._left_press_pos, self._left_press_pos, event.modifiers())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:
@@ -636,7 +651,10 @@ class GLViewportWidget(QOpenGLWidget):
                         self.pitch_deg = round(self.pitch_deg / step) * step
                     self.update()
             if self._left_interaction_mode == self._LEFT_INTERACTION_EDIT:
-                if self._brush_stroke_active:
+                if self._is_selection_mode_enabled(self._app_context):
+                    if self._left_press_pos is not None:
+                        self._update_selection_drag_preview(self._left_press_pos, pos)
+                elif self._brush_stroke_active:
                     self._continue_brush_stroke(pos, event.modifiers())
                 elif self._left_press_pos is not None:
                     self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
@@ -672,7 +690,12 @@ class GLViewportWidget(QOpenGLWidget):
 
     def mouseReleaseEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
-            if self._brush_stroke_active:
+            if self._is_selection_mode_enabled(self._app_context):
+                if self._left_press_pos is not None and self._left_dragging:
+                    self._handle_selection_drag(self._left_press_pos, event.position())
+                else:
+                    self._handle_selection_click(event.position(), event.modifiers())
+            elif self._brush_stroke_active:
                 self._end_brush_stroke()
             elif (
                 self._app_context is not None
@@ -734,6 +757,8 @@ class GLViewportWidget(QOpenGLWidget):
     def _resolve_left_interaction_mode(cls, app_context: "AppContext | None") -> str:
         if app_context is None:
             return cls._LEFT_INTERACTION_NAVIGATE
+        if cls._is_selection_mode_enabled(app_context):
+            return cls._LEFT_INTERACTION_EDIT
         edit_shapes = {
             app_context.TOOL_SHAPE_BRUSH,
             app_context.TOOL_SHAPE_BOX,
@@ -783,6 +808,12 @@ class GLViewportWidget(QOpenGLWidget):
         if app_context is None:
             return 1.0
         return max(0.1, min(3.0, float(app_context.camera_zoom_sensitivity)))
+
+    @staticmethod
+    def _is_selection_mode_enabled(app_context: "AppContext | None") -> bool:
+        if app_context is None:
+            return False
+        return bool(app_context.voxel_selection_mode)
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)
@@ -974,6 +1005,12 @@ class GLViewportWidget(QOpenGLWidget):
     def _update_hover_preview(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None:
             return
+        if self._is_selection_mode_enabled(self._app_context):
+            if self._hover_preview_cells:
+                self._hover_preview_cells = set()
+                self._hover_preview_source = None
+                self.update()
+            return
         shape = self._app_context.voxel_tool_shape
         if shape == self._app_context.TOOL_SHAPE_FILL:
             fill_cell = self._screen_to_plane_cell(pos)
@@ -1067,6 +1104,54 @@ class GLViewportWidget(QOpenGLWidget):
             self._shape_preview_cells = cells
             self._shape_preview_erase = should_erase
             self.update()
+
+    def _update_selection_drag_preview(self, start_pos: QPointF, end_pos: QPointF) -> None:
+        if self._app_context is None:
+            return
+        start_cell = self._screen_to_plane_cell(start_pos)
+        end_cell = self._screen_to_plane_cell(end_pos)
+        if start_cell is None or end_cell is None:
+            if self._shape_preview_cells:
+                self._shape_preview_cells = set()
+                self.update()
+            return
+        sx, sy, sz = start_cell
+        ex, ey, _ = end_cell
+        cells = build_shape_plane_cells("box", sx, sy, ex, ey, sz)
+        if cells != self._shape_preview_cells:
+            self._shape_preview_cells = cells
+            self._shape_preview_erase = False
+            self.update()
+
+    def _handle_selection_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
+        if self._app_context is None:
+            return
+        cell = self._screen_to_plane_cell(pos)
+        if cell is None:
+            return
+        with_append = bool(modifiers & Qt.ControlModifier)
+        next_selection = set(self._app_context.selected_voxels) if with_append else set()
+        if with_append and cell in next_selection:
+            next_selection.remove(cell)
+        else:
+            next_selection.add(cell)
+        self._app_context.set_selected_voxels(next_selection)
+        self.voxel_edit_applied.emit(f"Selected voxels: {len(next_selection)}")
+        self.update()
+
+    def _handle_selection_drag(self, start_pos: QPointF, end_pos: QPointF) -> None:
+        if self._app_context is None:
+            return
+        start_cell = self._screen_to_plane_cell(start_pos)
+        end_cell = self._screen_to_plane_cell(end_pos)
+        if start_cell is None or end_cell is None:
+            return
+        sx, sy, sz = start_cell
+        ex, ey, _ = end_cell
+        cells = build_shape_plane_cells("box", sx, sy, ex, ey, sz)
+        self._app_context.set_selected_voxels(cells)
+        self.voxel_edit_applied.emit(f"Selected voxels: {len(cells)}")
+        self.update()
 
     def _handle_box_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None or self._active_part_is_locked():
