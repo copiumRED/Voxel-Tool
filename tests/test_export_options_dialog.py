@@ -9,10 +9,10 @@ def test_export_dialog_capabilities_obj_exposes_only_supported_controls() -> Non
     assert capabilities["scale_preset"] is True
 
 
-def test_export_dialog_capabilities_gltf_hides_unsupported_controls() -> None:
+def test_export_dialog_capabilities_gltf_exposes_scale_preset_only() -> None:
     capabilities = _export_dialog_capabilities("glTF")
     assert capabilities["obj_controls"] is False
-    assert capabilities["scale_preset"] is False
+    assert capabilities["scale_preset"] is True
 
 
 def test_export_dialog_capabilities_vox_hides_unsupported_controls() -> None:

@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **81%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **82%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. glTF export still lacks scale preset application
-- Symptoms: glTF output does not yet honor scale presets from export workflow.
-- Suspected root cause: glTF exporter has no scale-factor input path.
-- Exact files: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
-- Fastest confirmation: export same model with different presets and compare position magnitudes.
+1. glTF export still lacks normal attribute output
+- Symptoms: glTF files export geometry but no explicit `NORMAL` attribute for lighting parity.
+- Suspected root cause: exporter currently writes POSITION + indices only.
+- Exact files: `src/core/export/gltf_exporter.py`.
+- Fastest confirmation: inspect exported glTF primitive attributes; only `POSITION` is present.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

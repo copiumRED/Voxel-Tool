@@ -713,3 +713,17 @@
   - Run: `pytest -q` (current: `93 passed`)
 - Risks/issues:
   - glTF scale support itself is still pending Task 06.
+
+### Roadmap 06 (Day-Cycle 30): glTF Scale Preset Application
+- What was done:
+  - Added `scale_factor` input to glTF exporter and applied scaling to exported positions.
+  - Wired glTF export action to pass scale factor from export preset.
+  - Re-enabled scale preset control for glTF export dialog.
+  - Added regression test validating scaled glTF bounds.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Export glTF once with `Unity (1m)` and once with `Unreal (1cm)`.
+  - Compare exported bounds/positions; Unreal export should be scaled up.
+  - Run: `pytest -q` (current: `94 passed`)
+- Risks/issues:
+  - glTF normals/UV/material attributes are still pending Task 07+.

@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 06: glTF Scale Preset Application
-- Goal: Apply export scale presets to glTF output positions.
-- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Unity vs Unreal preset produces expected scaled geometry.
-- Tests required: Add glTF numeric coordinate scale regression test.
-- Risk/rollback note: If binary payload alignment breaks, keep JSON path with tested alignment padding.
-
 ### Task 07: glTF Normals Export v1
 - Goal: Add vertex normals to glTF primitive attributes.
 - Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/core/meshing/mesh.py`.
@@ -266,3 +259,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`93 passed`)
+
+### Task 06: glTF Scale Preset Application
+- Commit: `b6a6219`
+- Extended glTF exporter API to accept `scale_factor` and apply it to exported vertex positions.
+- Wired MainWindow glTF export path to pass scale factor derived from current export preset.
+- Updated glTF export status messaging to include applied scale preset now that it is functional.
+- Updated export dialog capability mapping so glTF exposes scale preset control.
+- Preserved VOX dialog behavior (scale remains hidden there until explicit support exists).
+- Kept OBJ export behavior unchanged while sharing existing preset conversion helper.
+- Added numeric regression test validating glTF accessor bounds scale proportionally with scale factor.
+- Updated export-capability tests to reflect glTF scale support.
+- Confirmed exporter output remains valid JSON glTF with unchanged topology/indices semantics.
+- Avoided introducing binary layout changes beyond scaled position values.
+- Maintained dependency-free implementation and roadmap-aligned scope.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`94 passed`)

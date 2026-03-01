@@ -16,7 +16,13 @@ class GltfExportStats:
     triangle_count: int
 
 
-def export_voxels_to_gltf(voxels: VoxelGrid, path: str, mesh: SurfaceMesh | None = None) -> GltfExportStats:
+def export_voxels_to_gltf(
+    voxels: VoxelGrid,
+    path: str,
+    mesh: SurfaceMesh | None = None,
+    *,
+    scale_factor: float = 1.0,
+) -> GltfExportStats:
     export_mesh = mesh or build_solid_mesh(voxels, greedy=True)
     if export_mesh.face_count == 0:
         payload = {
@@ -30,7 +36,8 @@ def export_voxels_to_gltf(voxels: VoxelGrid, path: str, mesh: SurfaceMesh | None
             json.dump(payload, file_obj, indent=2)
         return GltfExportStats(vertex_count=0, triangle_count=0)
 
-    positions = export_mesh.vertices
+    scale = float(scale_factor)
+    positions = [(x * scale, y * scale, z * scale) for x, y, z in export_mesh.vertices]
     indices: list[int] = []
     for a, b, c, d in export_mesh.quads:
         indices.extend((a, b, c, a, c, d))

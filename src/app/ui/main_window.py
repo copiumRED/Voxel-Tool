@@ -118,7 +118,7 @@ def _export_dialog_capabilities(format_name: str) -> dict[str, bool]:
     normalized = format_name.strip().upper()
     return {
         "obj_controls": normalized == "OBJ",
-        "scale_preset": normalized == "OBJ",
+        "scale_preset": normalized in {"OBJ", "GLTF"},
     }
 
 
@@ -537,6 +537,7 @@ class MainWindow(QMainWindow):
         stats = export_voxels_to_gltf(
             self.context.current_project.voxels,
             path,
+            scale_factor=_scale_factor_from_preset(export_options.scale_preset),
             mesh=(
                 self.context.active_part.mesh_cache
                 if self.context.active_part.dirty_bounds is None
@@ -545,14 +546,14 @@ class MainWindow(QMainWindow):
         )
         if stats.triangle_count == 0:
             self.statusBar().showMessage(
-                f"No voxels to export | Exported glTF: {path}",
+                f"No voxels to export | Exported glTF: {path} | Scale: {export_options.scale_preset}",
                 5000,
             )
             return
         self.statusBar().showMessage(
             (
                 f"Exported glTF: {path} | Vertices: {stats.vertex_count} | "
-                f"Triangles: {stats.triangle_count}"
+                f"Triangles: {stats.triangle_count} | Scale: {export_options.scale_preset}"
             ),
             5000,
         )
