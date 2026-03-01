@@ -17,6 +17,7 @@ from app.ui.main_window import (
     _vox_import_part_name,
 )
 from app.ui.panels.palette_panel import PalettePanel
+from core.meshing.mesh import SurfaceMesh
 from core.project import Project
 from PySide6.QtCore import Qt
 from pathlib import Path
@@ -80,6 +81,33 @@ def test_camera_sensitivity_helpers_follow_context_values() -> None:
 def test_precision_scale_factor_reduces_camera_motion_when_alt_is_held() -> None:
     assert GLViewportWidget._precision_scale_factor(Qt.NoModifier) == pytest.approx(1.0)
     assert GLViewportWidget._precision_scale_factor(Qt.AltModifier) == pytest.approx(0.2)
+
+
+def test_palette_color_rgb_uses_context_palette_values() -> None:
+    ctx = AppContext(current_project=Project(name="Palette Color"))
+    ctx.palette = [(255, 128, 0), (0, 0, 255)]
+    assert GLViewportWidget._palette_color_rgb(ctx, 0) == pytest.approx((1.0, 128.0 / 255.0, 0.0))
+    assert GLViewportWidget._palette_color_rgb(ctx, 1) == pytest.approx((0.0, 0.0, 1.0))
+
+
+def test_mesh_triangles_from_surface_emits_two_triangles_per_quad() -> None:
+    ctx = AppContext(current_project=Project(name="Mesh Triangles"))
+    ctx.palette = [(255, 0, 0)]
+    mesh = SurfaceMesh(
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.0, 1.0, 0.0),
+        ],
+        quads=[(0, 1, 2, 3)],
+        face_colors=[0],
+    )
+    transform = GLViewportWidget._part_transform_matrix(ctx.active_part)
+    triangles = GLViewportWidget._mesh_triangles_from_surface(mesh, transform, ctx)
+    assert len(triangles) == 36  # 6 vertices * (pos3 + color3)
+    assert triangles[0:3] == pytest.approx([0.0, 0.0, 0.0])
+    assert triangles[3:6] == pytest.approx([1.0, 0.0, 0.0])
 
 
 def test_project_io_error_detail_includes_action_path_and_message() -> None:

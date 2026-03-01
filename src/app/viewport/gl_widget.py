@@ -38,6 +38,7 @@ class GLViewportWidget(QOpenGLWidget):
     _GL_DEPTH_BUFFER_BIT = 0x00000100
     _GL_POINTS = 0x0000
     _GL_LINES = 0x0001
+    _GL_TRIANGLES = 0x0004
     _GL_FLOAT = 0x1406
     _GL_DEPTH_TEST = 0x0B71
     _GL_ARRAY_BUFFER = 0x8892
@@ -219,6 +220,9 @@ class GLViewportWidget(QOpenGLWidget):
         mvp = self._build_view_projection_matrix()
         self._draw_world_grid(funcs, mvp)
         self._draw_mirror_guides(funcs, mvp)
+        mesh_vertices = self._build_visible_mesh_vertices()
+        if mesh_vertices:
+            self._draw_colored_vertices(funcs, mesh_vertices, self._GL_TRIANGLES, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
         if point_vertices:
@@ -555,7 +559,7 @@ class GLViewportWidget(QOpenGLWidget):
         )
         vertices = array("f")
         for x, y, z, color_index in voxel_rows:
-            color = self._PALETTE[color_index % len(self._PALETTE)]
+            color = self._palette_color_rgb(self._app_context, color_index)
             fx = float(x)
             fy = float(y)
             fz = float(z)
@@ -1458,7 +1462,7 @@ class GLViewportWidget(QOpenGLWidget):
             transform = self._part_transform_matrix(part)
             part_rows = part.voxels.to_list()
             for x, y, z, color_index in part_rows:
-                color = self._PALETTE[color_index % len(self._PALETTE)]
+                color = self._palette_color_rgb(self._app_context, color_index)
                 mapped = transform.map(QVector3D(float(x), float(y), float(z)))
                 point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
             line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
@@ -1482,7 +1486,7 @@ class GLViewportWidget(QOpenGLWidget):
             part_rows = part.voxels.to_list()
             voxel_count += len(part_rows)
             for x, y, z, color_index in part_rows:
-                color = self._PALETTE[color_index % len(self._PALETTE)]
+                color = self._palette_color_rgb(self._app_context, color_index)
                 mapped = transform.map(QVector3D(float(x), float(y), float(z)))
                 point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
             line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
@@ -1512,6 +1516,47 @@ class GLViewportWidget(QOpenGLWidget):
                 )
             )
         return tuple(signature)
+
+    def _build_visible_mesh_vertices(self) -> array:
+        vertices = array("f")
+        if self._app_context is None:
+            return vertices
+        for part in self._app_context.current_project.scene.iter_visible_parts():
+            if part.mesh_cache is None or not part.mesh_cache.quads:
+                continue
+            transform = self._part_transform_matrix(part)
+            vertices.extend(
+                self._mesh_triangles_from_surface(
+                    part.mesh_cache,
+                    transform,
+                    self._app_context,
+                )
+            )
+        return vertices
+
+    @classmethod
+    def _palette_color_rgb(cls, app_context: "AppContext | None", color_index: int) -> tuple[float, float, float]:
+        if app_context is not None and app_context.palette:
+            r, g, b = app_context.palette[int(color_index) % len(app_context.palette)]
+            return (float(r) / 255.0, float(g) / 255.0, float(b) / 255.0)
+        return cls._PALETTE[int(color_index) % len(cls._PALETTE)]
+
+    @classmethod
+    def _mesh_triangles_from_surface(cls, mesh, transform: QMatrix4x4, app_context: "AppContext | None") -> array:
+        vertices = array("f")
+        for face_index, quad in enumerate(mesh.quads):
+            if len(quad) != 4:
+                continue
+            tri_indices = (quad[0], quad[1], quad[2], quad[0], quad[2], quad[3])
+            face_color = 0
+            if face_index < len(mesh.face_colors):
+                face_color = int(mesh.face_colors[face_index])
+            color = cls._palette_color_rgb(app_context, face_color)
+            for index in tri_indices:
+                vx, vy, vz = mesh.vertices[index]
+                mapped = transform.map(QVector3D(float(vx), float(vy), float(vz)))
+                vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
+        return vertices
 
     @staticmethod
     def _part_transform_matrix(part) -> QMatrix4x4:
