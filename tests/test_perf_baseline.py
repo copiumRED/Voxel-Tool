@@ -13,17 +13,26 @@ from core.project import Project
 def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     baseline_path = Path(__file__).with_name("perf_baseline.json")
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
-    multiplier = float(baseline.get("regression_multiplier", 20.0))
+    default_multiplier = float(baseline.get("regression_multiplier", 12.0))
+    metric_multipliers = baseline.get("metric_multipliers", {})
 
     brush_time = _measure_brush_paint()
     fill_time = _measure_fill()
     solidify_time = _measure_solidify()
     viewport_time = _measure_viewport_surrogate()
 
-    assert brush_time < float(baseline["brush_paint_seconds"]) * multiplier
-    assert fill_time < float(baseline["fill_seconds"]) * multiplier
-    assert solidify_time < float(baseline["solidify_seconds"]) * multiplier
-    assert viewport_time < float(baseline["viewport_surrogate_seconds"]) * multiplier
+    assert brush_time < float(baseline["brush_paint_seconds"]) * float(
+        metric_multipliers.get("brush_paint_seconds", default_multiplier)
+    )
+    assert fill_time < float(baseline["fill_seconds"]) * float(
+        metric_multipliers.get("fill_seconds", default_multiplier)
+    )
+    assert solidify_time < float(baseline["solidify_seconds"]) * float(
+        metric_multipliers.get("solidify_seconds", default_multiplier)
+    )
+    assert viewport_time < float(baseline["viewport_surrogate_seconds"]) * float(
+        metric_multipliers.get("viewport_surrogate_seconds", default_multiplier)
+    )
 
 
 def _measure_brush_paint() -> float:

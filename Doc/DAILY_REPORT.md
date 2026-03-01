@@ -934,3 +934,13 @@
   - Run: `pytest -q` (current: `115 passed`)
 - Risks/issues:
   - Perf gate tightening thresholds are still pending Task 23.
+
+### Roadmap 23 (Day-Cycle 30): Performance Gate Tightening
+- What was done:
+  - Tightened global perf multiplier and introduced per-metric multipliers.
+  - Updated perf harness to use tiered per-metric thresholds.
+- How to test quickly:
+  - Run: `pytest -q` and confirm perf harness passes.
+  - Inspect `tests/perf_baseline.json` for metric-specific multipliers.
+- Risks/issues:
+  - Runtime stats label clarity still pending Task 24.

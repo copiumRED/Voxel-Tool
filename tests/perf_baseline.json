@@ -3,5 +3,11 @@
   "fill_seconds": 0.020,
   "solidify_seconds": 0.120,
   "viewport_surrogate_seconds": 0.030,
-  "regression_multiplier": 20.0
+  "regression_multiplier": 12.0,
+  "metric_multipliers": {
+    "brush_paint_seconds": 10.0,
+    "fill_seconds": 10.0,
+    "solidify_seconds": 12.0,
+    "viewport_surrogate_seconds": 10.0
+  }
 }

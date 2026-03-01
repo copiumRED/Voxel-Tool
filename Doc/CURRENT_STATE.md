@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **98%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **99%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Performance baseline thresholds remain intentionally loose
-- Symptoms: CI perf harness allows large slowdowns before failing.
-- Suspected root cause: high global regression multiplier for stability.
-- Exact files: `tests/perf_baseline.json`, `tests/test_perf_baseline.py`.
-- Fastest confirmation: inspect threshold multiplier and allowed baseline factors.
+1. Runtime stats labels still mix scene-level and active-part context
+- Symptoms: runtime row is informative but active-part vs scene scope can still be ambiguous.
+- Suspected root cause: label wording does not explicitly separate scope for each metric.
+- Exact files: `src/app/ui/panels/stats_panel.py`, `src/app/ui/main_window.py`.
+- Fastest confirmation: inspect Stats panel labels in multi-part scenes.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

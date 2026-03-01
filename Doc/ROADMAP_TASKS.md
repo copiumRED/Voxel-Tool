@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 23: Performance Gate Tightening (CI-friendly)
-- Goal: Reduce permissive perf multiplier and add tiered thresholds.
-- Likely files/modules touched: `tests/perf_baseline.json`, `tests/test_perf_baseline.py`.
-- Acceptance criteria (human-testable): Perf tests remain stable locally while catching meaningful regressions.
-- Tests required: Update perf baseline tests with tiered budgets.
-- Risk/rollback note: If flakiness rises, tune percentile-based tolerance.
-
 ### Task 24: Runtime Stats Label Clarity Pass
 - Goal: Distinguish active-part vs scene-level runtime stats.
 - Likely files/modules touched: `src/app/ui/panels/stats_panel.py`, `src/app/ui/main_window.py`.
@@ -421,7 +414,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`115 passed`)
 
 ### Task 22: Viewport Per-Frame Data Caching
-- Commit: `TASK22_HASH_PENDING`
+- Commit: `0a5ea93`
 - Reduced redundant per-frame visibility traversal in `paintGL` by building render buffers and voxel count in one pass.
 - Added unified helper that returns point vertices, line vertices, and visible voxel count together.
 - Replaced separate per-frame calls that previously recomputed visibility data for count and render buffers.
@@ -433,6 +426,23 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Preserved conservative non-blocking multiplier strategy in this task.
 - Kept implementation dependency-free and low-risk.
 - No project schema or export behavior changes introduced.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`115 passed`)
+
+### Task 23: Performance Gate Tightening (CI-friendly)
+- Commit: `TASK23_HASH_PENDING`
+- Tightened global perf regression multiplier from 20x to 12x baseline.
+- Added per-metric multipliers for brush/fill/solidify/viewport-surrogate metrics.
+- Updated perf harness assertions to consume metric-specific multipliers with fallback to global multiplier.
+- Preserved non-blocking philosophy while increasing regression sensitivity.
+- Kept baseline thresholds conservative enough to remain stable on current machine.
+- Retained existing perf metrics and baseline file structure compatibility.
+- Added tiered budget behavior without introducing external benchmarking dependencies.
+- No runtime/editor code changes in this task (test-gate hardening only).
+- Maintained deterministic baseline parsing and float conversion safeguards.
+- Prepared harness for further tightening in future cycles by metric.
+- Scope aligns with roadmap risk note for CI-friendly tightening.
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`115 passed`)
