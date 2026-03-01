@@ -657,3 +657,16 @@
   - Run: `pytest -q` (current: `85 passed`)
 - Risks/issues:
   - This task intentionally does not yet add full 3D non-brush targeting; that is scheduled in Task 02.
+
+### Roadmap 02 (Day-Cycle 30): Non-Brush 3D Target Resolver v1
+- What was done:
+  - Added `resolve_shape_target_cell()` to shared raycast core for line/box/fill targeting.
+  - Updated viewport box/line/fill handlers to use 3D surface targeting with plane fallback.
+  - Updated non-brush drag preview targeting to use the same resolver path as command apply.
+  - Added raycast tests for non-brush paint/erase/fallback target behavior.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create elevated voxels, use line/box/fill near those surfaces, and confirm operations target surface context rather than only flat-plane assumptions.
+  - Run: `pytest -q` (current: `88 passed`)
+- Risks/issues:
+  - Pick mode is not yet applied to non-brush tools (scheduled in Task 03).

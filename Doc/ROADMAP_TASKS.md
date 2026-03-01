@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 02: Non-Brush 3D Target Resolver v1
-- Goal: Add shared 3D target resolution for line/box/fill so they are not hard-locked to Z=0.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/voxels/raycast.py`.
-- Acceptance criteria (human-testable): Box/Line/Fill can target elevated voxel surfaces correctly.
-- Tests required: Add raycast + interaction tests for non-brush tools on elevated geometry.
-- Risk/rollback note: If target jitter appears, keep brush resolver and disable new path via flag.
-
 ### Task 03: Apply Pick Mode to Line/Box/Fill
 - Goal: Ensure Surface/Plane Lock affects all shape tools, not brush only.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
@@ -226,3 +219,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`85 passed`)
+
+### Task 02: Non-Brush 3D Target Resolver v1
+- Commit: `0181e89`
+- Added shared non-brush target resolver (`resolve_shape_target_cell`) in voxel raycast core with surface-adjacent paint and surface-hit erase behavior.
+- Updated viewport non-brush execution paths (box/line/fill) to use shared 3D ray-hit targeting with plane fallback.
+- Updated line/box drag preview targeting to reuse the same resolver path, keeping preview/apply behavior aligned.
+- Removed hard dependency on direct `_screen_to_plane_cell()` for non-brush tool application path.
+- Preserved brush targeting behavior unchanged to avoid cross-tool regressions in this task.
+- Preserved fill threshold and command transaction behavior while swapping target resolution source.
+- Kept default fallback behavior on empty space (plane fallback) for continuity before Task 03 mode expansion.
+- Added raycast unit tests for non-brush resolver behavior in paint, erase, and fallback scenarios.
+- Confirmed no project schema, palette, export, or packaging code changes were introduced.
+- Established shared targeting foundation for Task 03 pick-mode parity work.
+- Maintained production-safe scope with no dependency additions.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`88 passed`)

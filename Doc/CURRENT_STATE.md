@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **77%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **78%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Non-brush tools are locked to Z=0 plane
-- Symptoms: box/line/fill always apply on ground plane regardless of viewed surface.
-- Suspected root cause: `_screen_to_plane_cell()` hard-codes `z = 0` and is used by box/line/fill flows.
-- Exact files: `src/app/viewport/gl_widget.py`.
-- Fastest confirmation: place voxels at z=5, attempt line/box/fill on that surface; edits still occur on z=0.
+1. Non-brush targeting still lacks explicit pick-mode parity controls
+- Symptoms: line/box/fill now use 3D resolver, but user cannot yet switch their behavior between strict surface and plane-lock modes.
+- Suspected root cause: pick-mode toggle is only wired through brush-target resolution paths.
+- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
+- Fastest confirmation: toggle pick mode and compare brush vs line/box/fill behavior.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

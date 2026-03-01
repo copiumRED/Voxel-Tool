@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from core.voxels.raycast import intersect_axis_plane, raycast_voxel_surface, resolve_brush_target_cell
+from core.voxels.raycast import (
+    intersect_axis_plane,
+    raycast_voxel_surface,
+    resolve_brush_target_cell,
+    resolve_shape_target_cell,
+)
 from core.voxels.voxel_grid import VoxelGrid
 
 
@@ -122,3 +127,41 @@ def test_intersect_axis_plane_rejects_hits_behind_origin() -> None:
         value=0.0,
     )
     assert hit is None
+
+
+def test_resolve_shape_target_prefers_surface_adjacent_for_paint() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 1)
+    result = resolve_shape_target_cell(
+        voxels,
+        origin=(-5.0, 0.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        erase_mode=False,
+        plane_fallback_cell=(10, 10, 0),
+    )
+    assert result == ((-1, 0, 0), "surface-adjacent")
+
+
+def test_resolve_shape_target_uses_surface_for_erase() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 1)
+    result = resolve_shape_target_cell(
+        voxels,
+        origin=(-5.0, 0.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        erase_mode=True,
+        plane_fallback_cell=(10, 10, 0),
+    )
+    assert result == ((0, 0, 0), "surface")
+
+
+def test_resolve_shape_target_uses_plane_fallback_without_surface_hit() -> None:
+    voxels = VoxelGrid()
+    result = resolve_shape_target_cell(
+        voxels,
+        origin=(0.0, 10.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        erase_mode=False,
+        plane_fallback_cell=(3, 4, 0),
+    )
+    assert result == ((3, 4, 0), "plane-fallback")

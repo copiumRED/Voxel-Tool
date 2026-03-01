@@ -88,3 +88,25 @@ def resolve_brush_target_cell(
     if plane_fallback_cell is not None:
         return plane_fallback_cell, "plane-fallback"
     return None
+
+
+def resolve_shape_target_cell(
+    voxels: VoxelGrid,
+    origin: tuple[float, float, float],
+    direction: tuple[float, float, float],
+    *,
+    erase_mode: bool,
+    plane_fallback_cell: tuple[int, int, int] | None = None,
+) -> tuple[tuple[int, int, int], str] | None:
+    hit_result = raycast_voxel_surface(voxels, origin, direction)
+    if hit_result is None:
+        if plane_fallback_cell is None:
+            return None
+        return plane_fallback_cell, "plane-fallback"
+
+    hit_cell, previous_cell = hit_result
+    if erase_mode:
+        return hit_cell, "surface"
+    if previous_cell is not None:
+        return previous_cell, "surface-adjacent"
+    return hit_cell, "surface"

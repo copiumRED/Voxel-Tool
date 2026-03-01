@@ -17,7 +17,11 @@ from PySide6.QtOpenGL import (
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from core.commands.demo_commands import build_box_plane_cells, build_brush_cells, build_line_plane_cells
-from core.voxels.raycast import intersect_axis_plane, resolve_brush_target_cell
+from core.voxels.raycast import (
+    intersect_axis_plane,
+    resolve_brush_target_cell,
+    resolve_shape_target_cell,
+)
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -755,6 +759,31 @@ class GLViewportWidget(QOpenGLWidget):
             return None
         return target[0], should_erase
 
+    def _resolve_shape_target(
+        self,
+        pos: QPointF,
+        modifiers: Qt.KeyboardModifier,
+    ) -> tuple[tuple[int, int, int], bool] | None:
+        if self._app_context is None:
+            return None
+        temporary_erase = bool(modifiers & Qt.ShiftModifier)
+        mode = self._app_context.voxel_tool_mode
+        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
+        ray = self._screen_to_world_ray(pos.x(), pos.y())
+        if ray is None:
+            return None
+        origin, direction = ray
+        target = resolve_shape_target_cell(
+            self._app_context.current_project.voxels,
+            (origin.x(), origin.y(), origin.z()),
+            (direction.x(), direction.y(), direction.z()),
+            erase_mode=should_erase,
+            plane_fallback_cell=self._screen_to_plane_cell(pos),
+        )
+        if target is None:
+            return None
+        return target[0], should_erase
+
     def _begin_brush_stroke_if_applicable(
         self,
         pos: QPointF,
@@ -891,13 +920,15 @@ class GLViewportWidget(QOpenGLWidget):
         shape = self._app_context.voxel_tool_shape
         if shape not in (self._app_context.TOOL_SHAPE_BOX, self._app_context.TOOL_SHAPE_LINE):
             return
-        start_cell = self._screen_to_plane_cell(start_pos)
-        end_cell = self._screen_to_plane_cell(end_pos)
-        if start_cell is None or end_cell is None:
+        start_result = self._resolve_shape_target(start_pos, modifiers)
+        end_result = self._resolve_shape_target(end_pos, modifiers)
+        if start_result is None or end_result is None:
             if self._shape_preview_cells:
                 self._shape_preview_cells = set()
                 self.update()
             return
+        start_cell, _ = start_result
+        end_cell, should_erase = end_result
         start_x, start_y, z = start_cell
         end_x, end_y, _ = end_cell
         if shape == self._app_context.TOOL_SHAPE_BOX:
@@ -905,9 +936,6 @@ class GLViewportWidget(QOpenGLWidget):
         else:
             cells = build_line_plane_cells(start_x, start_y, end_x, end_y, z)
         cells = self._app_context.expand_mirrored_cells(cells)
-        temporary_erase = bool(modifiers & Qt.ShiftModifier)
-        mode = self._app_context.voxel_tool_mode
-        should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE
         if cells != self._shape_preview_cells or should_erase != self._shape_preview_erase:
             self._shape_preview_cells = cells
             self._shape_preview_erase = should_erase
@@ -916,16 +944,16 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_box_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None or self._active_part_is_locked():
             return
-        start_cell = self._screen_to_plane_cell(start_pos)
-        end_cell = self._screen_to_plane_cell(end_pos)
-        if start_cell is None or end_cell is None:
+        start_result = self._resolve_shape_target(start_pos, modifiers)
+        end_result = self._resolve_shape_target(end_pos, modifiers)
+        if start_result is None or end_result is None:
             return
+        start_cell, _ = start_result
+        end_cell, should_erase = end_result
 
         start_x, start_y, z = start_cell
         end_x, end_y, _ = end_cell
-        temporary_erase = modifiers & Qt.ShiftModifier
-        mode = self._app_context.voxel_tool_mode
-        command_mode = "erase" if temporary_erase or mode == self._app_context.TOOL_MODE_ERASE else "paint"
+        command_mode = "erase" if should_erase else "paint"
 
         from core.commands.demo_commands import BoxVoxelCommand
 
@@ -948,16 +976,16 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_line_drag(self, start_pos: QPointF, end_pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None or self._active_part_is_locked():
             return
-        start_cell = self._screen_to_plane_cell(start_pos)
-        end_cell = self._screen_to_plane_cell(end_pos)
-        if start_cell is None or end_cell is None:
+        start_result = self._resolve_shape_target(start_pos, modifiers)
+        end_result = self._resolve_shape_target(end_pos, modifiers)
+        if start_result is None or end_result is None:
             return
+        start_cell, _ = start_result
+        end_cell, should_erase = end_result
 
         start_x, start_y, z = start_cell
         end_x, end_y, _ = end_cell
-        temporary_erase = modifiers & Qt.ShiftModifier
-        mode = self._app_context.voxel_tool_mode
-        command_mode = "erase" if temporary_erase or mode == self._app_context.TOOL_MODE_ERASE else "paint"
+        command_mode = "erase" if should_erase else "paint"
 
         from core.commands.demo_commands import LineVoxelCommand
 
@@ -980,13 +1008,12 @@ class GLViewportWidget(QOpenGLWidget):
     def _handle_fill_click(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:
         if self._app_context is None or self._active_part_is_locked():
             return
-        hit_cell = self._screen_to_plane_cell(pos)
-        if hit_cell is None:
+        resolved = self._resolve_shape_target(pos, modifiers)
+        if resolved is None:
             return
+        hit_cell, should_erase = resolved
         x, y, z = hit_cell
-        temporary_erase = modifiers & Qt.ShiftModifier
-        mode = self._app_context.voxel_tool_mode
-        command_mode = "erase" if temporary_erase or mode == self._app_context.TOOL_MODE_ERASE else "paint"
+        command_mode = "erase" if should_erase else "paint"
 
         from core.commands.demo_commands import FillVoxelCommand
 
