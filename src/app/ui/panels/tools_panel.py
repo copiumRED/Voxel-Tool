@@ -23,6 +23,7 @@ class ToolsPanel(QWidget):
     mirror_offset_changed = Signal(str, int)
     brush_profile_changed = Signal(int, str)
     pick_mode_changed = Signal(str)
+    edit_plane_changed = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -61,6 +62,10 @@ class ToolsPanel(QWidget):
         self.pick_mode_combo.addItems(["Plane Lock", "Surface"])
         self.pick_mode_combo.currentTextChanged.connect(self._on_pick_mode_changed)
         layout.addWidget(self.pick_mode_combo)
+        self.edit_plane_combo = QComboBox(self)
+        self.edit_plane_combo.addItems(["XY", "YZ", "XZ"])
+        self.edit_plane_combo.currentTextChanged.connect(self._on_edit_plane_changed)
+        layout.addWidget(self.edit_plane_combo)
         layout.addWidget(QLabel("Action"))
 
         self.paint_radio = QRadioButton("Paint", self)
@@ -136,6 +141,7 @@ class ToolsPanel(QWidget):
         self.brush_size_spin.blockSignals(True)
         self.brush_shape_combo.blockSignals(True)
         self.pick_mode_combo.blockSignals(True)
+        self.edit_plane_combo.blockSignals(True)
         self.paint_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_PAINT)
         self.erase_radio.setChecked(self._context.voxel_tool_mode == AppContext.TOOL_MODE_ERASE)
         self.brush_shape_radio.setChecked(self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH)
@@ -152,6 +158,7 @@ class ToolsPanel(QWidget):
         self.brush_shape_combo.setCurrentText(self._context.brush_shape.capitalize())
         pick_mode_label = "Plane Lock" if self._context.pick_mode == AppContext.PICK_MODE_PLANE_LOCK else "Surface"
         self.pick_mode_combo.setCurrentText(pick_mode_label)
+        self.edit_plane_combo.setCurrentText(self._context.edit_plane.upper())
         self.paint_radio.blockSignals(False)
         self.erase_radio.blockSignals(False)
         self.brush_shape_radio.blockSignals(False)
@@ -167,10 +174,12 @@ class ToolsPanel(QWidget):
         self.brush_size_spin.blockSignals(False)
         self.brush_shape_combo.blockSignals(False)
         self.pick_mode_combo.blockSignals(False)
+        self.edit_plane_combo.blockSignals(False)
         is_brush = self._context.voxel_tool_shape == AppContext.TOOL_SHAPE_BRUSH
         self.brush_size_spin.setEnabled(is_brush)
         self.brush_shape_combo.setEnabled(is_brush)
         self.pick_mode_combo.setEnabled(is_brush)
+        self.edit_plane_combo.setEnabled(True)
         self.hints_label.setText(self._build_hint_text())
 
     def _on_mode_toggled(self, checked: bool) -> None:
@@ -225,6 +234,12 @@ class ToolsPanel(QWidget):
         self._context.set_pick_mode(mode)
         self.pick_mode_changed.emit(mode)
 
+    def _on_edit_plane_changed(self, value: str) -> None:
+        if self._context is None:
+            return
+        self._context.set_edit_plane(value.lower())
+        self.edit_plane_changed.emit(self._context.edit_plane)
+
     def set_tool_shape(self, shape: str) -> None:
         if shape == AppContext.TOOL_SHAPE_BRUSH:
             self.brush_shape_radio.setChecked(True)
@@ -269,8 +284,9 @@ class ToolsPanel(QWidget):
             tool_hint = "Fill: click a connected region. Large fills are safety-limited."
 
         mode_hint = f"Current mode: {mode.upper()} | Shortcuts: B/X/L/F tools, P/E mode, Shift+F frame."
+        plane_hint = f"Edit plane: {self._context.edit_plane.upper()}."
         first_use = (
             "First-use flow: 1) Debug -> Create Test Voxels (Cross) 2) View -> Frame Voxels "
             "3) Paint/Edit 4) File -> Export OBJ/glTF/VOX."
         )
-        return f"{tool_hint}\n{mode_hint}\n{first_use}"
+        return f"{tool_hint}\n{mode_hint} {plane_hint}\n{first_use}"

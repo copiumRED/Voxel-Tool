@@ -49,8 +49,6 @@ class GLViewportWidget(QOpenGLWidget):
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
     _VOXEL_HALF_EXTENT = 0.45
-    _EDIT_PLANE_AXIS = "z"
-    _EDIT_PLANE_VALUE = 0.0
 
     _PALETTE: tuple[tuple[float, float, float], ...] = (
         (0.95, 0.35, 0.35),
@@ -301,13 +299,24 @@ class GLViewportWidget(QOpenGLWidget):
             spacing = max(1, int(self._app_context.grid_spacing))
         grid_min = -20
         grid_max = 20
-        plane_z = float(self._EDIT_PLANE_VALUE)
+        plane_axis, plane_value = self._active_edit_plane()
         for i in range(grid_min, grid_max + 1, spacing):
             shade = 0.45 if i == 0 else 0.30
-            line_vertices.extend((float(i), float(grid_min), plane_z, shade, shade, shade))
-            line_vertices.extend((float(i), float(grid_max), plane_z, shade, shade, shade))
-            line_vertices.extend((float(grid_min), float(i), plane_z, shade, shade, shade))
-            line_vertices.extend((float(grid_max), float(i), plane_z, shade, shade, shade))
+            if plane_axis == "z":
+                line_vertices.extend((float(i), float(grid_min), plane_value, shade, shade, shade))
+                line_vertices.extend((float(i), float(grid_max), plane_value, shade, shade, shade))
+                line_vertices.extend((float(grid_min), float(i), plane_value, shade, shade, shade))
+                line_vertices.extend((float(grid_max), float(i), plane_value, shade, shade, shade))
+            elif plane_axis == "y":
+                line_vertices.extend((float(i), plane_value, float(grid_min), shade, shade, shade))
+                line_vertices.extend((float(i), plane_value, float(grid_max), shade, shade, shade))
+                line_vertices.extend((float(grid_min), plane_value, float(i), shade, shade, shade))
+                line_vertices.extend((float(grid_max), plane_value, float(i), shade, shade, shade))
+            else:
+                line_vertices.extend((plane_value, float(i), float(grid_min), shade, shade, shade))
+                line_vertices.extend((plane_value, float(i), float(grid_max), shade, shade, shade))
+                line_vertices.extend((plane_value, float(grid_min), float(i), shade, shade, shade))
+                line_vertices.extend((plane_value, float(grid_max), float(i), shade, shade, shade))
 
         self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
 
@@ -1040,16 +1049,26 @@ class GLViewportWidget(QOpenGLWidget):
         if ray is None:
             return None
         origin, direction = ray
+        plane_axis, plane_value = self._active_edit_plane()
         hit = intersect_axis_plane(
             (origin.x(), origin.y(), origin.z()),
             (direction.x(), direction.y(), direction.z()),
-            axis=self._EDIT_PLANE_AXIS,
-            value=self._EDIT_PLANE_VALUE,
+            axis=plane_axis,
+            value=plane_value,
         )
         if hit is None:
             return None
         hx, hy, hz = hit
         return int(round(hx)), int(round(hy)), int(round(hz))
+
+    def _active_edit_plane(self) -> tuple[str, float]:
+        if self._app_context is None:
+            return "z", 0.0
+        if self._app_context.edit_plane == self._app_context.EDIT_PLANE_YZ:
+            return "x", 0.0
+        if self._app_context.edit_plane == self._app_context.EDIT_PLANE_XZ:
+            return "y", 0.0
+        return "z", 0.0
 
     def _screen_to_world_ray(self, x: float, y: float) -> tuple[QVector3D, QVector3D] | None:
         width = max(1, self.width())

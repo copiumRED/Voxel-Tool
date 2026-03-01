@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 04: Edit Plane Selector UI (XY/YZ/XZ)
-- Goal: Add explicit active edit-plane selection and display.
-- Likely files/modules touched: `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`, `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): User can switch XY/YZ/XZ and tool placement follows selected plane.
-- Tests required: Add context/state persistence tests for plane selector.
-- Risk/rollback note: If shortcuts conflict, keep menu-only selector for this iteration.
-
 ### Task 05: Export Options Truthfulness Pass
 - Goal: Show only options that actually affect each export format.
 - Likely files/modules touched: `src/app/ui/main_window.py`.
@@ -246,3 +239,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`89 passed`)
+
+### Task 04: Edit Plane Selector UI (XY/YZ/XZ)
+- Commit: `deb5010`
+- Added explicit edit-plane state (`xy/yz/xz`) in `AppContext` with validation API.
+- Added Tools panel edit-plane selector (`XY/YZ/XZ`) and change signal wiring.
+- Wired MainWindow to react to edit-plane changes with status updates and UI refresh.
+- Persisted `edit_plane` in editor-state capture/apply flow for save/open continuity.
+- Updated viewport plane hit-testing to use selected plane axis dynamically.
+- Updated grid rendering to visualize the currently selected edit plane orientation.
+- Preserved existing pick-mode and mirror behavior while extending plane-selection capability.
+- Added app-context validation test coverage for edit-plane API.
+- Added project IO roundtrip coverage that includes `editor_state.edit_plane`.
+- Kept task scope atomic without introducing orthographic or camera-control changes.
+- Implementation remained dependency-free and aligned to roadmap sequence.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`90 passed`)

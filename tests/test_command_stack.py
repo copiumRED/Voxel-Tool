@@ -305,6 +305,12 @@ def test_app_context_pick_mode_validation() -> None:
     assert ctx.pick_mode == AppContext.PICK_MODE_SURFACE
 
 
+def test_app_context_edit_plane_validation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_edit_plane("yz")
+    assert ctx.edit_plane == AppContext.EDIT_PLANE_YZ
+
+
 def test_command_stack_respects_max_undo_depth_cap() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.command_stack.set_max_undo_steps(2)

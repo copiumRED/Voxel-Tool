@@ -141,6 +141,7 @@ class MainWindow(QMainWindow):
         self.tools_panel.mirror_offset_changed.connect(self._on_mirror_offset_changed)
         self.tools_panel.brush_profile_changed.connect(self._on_brush_profile_changed)
         self.tools_panel.pick_mode_changed.connect(self._on_pick_mode_changed)
+        self.tools_panel.edit_plane_changed.connect(self._on_edit_plane_changed)
         self.tools_dock = self._add_dock("Tools", self.tools_panel, Qt.LeftDockWidgetArea)
         self.inspector_panel = InspectorPanel(self)
         self.inspector_panel.set_context(self.context)
@@ -802,6 +803,10 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Pick mode: {mode}")
         self._refresh_ui_state()
 
+    def _on_edit_plane_changed(self, plane: str) -> None:
+        self._show_voxel_status(f"Edit plane: {plane.upper()}")
+        self._refresh_ui_state()
+
     def _on_create_test_voxels(self) -> None:
         center_color = self.context.active_color_index
         arm_color = (center_color + 3) % len(self.context.palette)
@@ -853,6 +858,7 @@ class MainWindow(QMainWindow):
             "brush_size": self.context.brush_size,
             "brush_shape": self.context.brush_shape,
             "pick_mode": self.context.pick_mode,
+            "edit_plane": self.context.edit_plane,
             "grid_visible": self.context.grid_visible,
             "grid_spacing": self.context.grid_spacing,
             "camera_snap_enabled": self.context.camera_snap_enabled,
@@ -891,6 +897,13 @@ class MainWindow(QMainWindow):
         pick_mode = str(state.get("pick_mode", self.context.pick_mode)).strip().lower()
         if pick_mode in (AppContext.PICK_MODE_SURFACE, AppContext.PICK_MODE_PLANE_LOCK):
             self.context.pick_mode = pick_mode
+        edit_plane = str(state.get("edit_plane", self.context.edit_plane)).strip().lower()
+        if edit_plane in (
+            AppContext.EDIT_PLANE_XY,
+            AppContext.EDIT_PLANE_YZ,
+            AppContext.EDIT_PLANE_XZ,
+        ):
+            self.context.edit_plane = edit_plane
         self.context.grid_visible = bool(state.get("grid_visible", self.context.grid_visible))
         self.context.grid_spacing = max(1, int(state.get("grid_spacing", self.context.grid_spacing)))
         self.context.camera_snap_enabled = bool(

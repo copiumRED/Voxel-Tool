@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **79%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **80%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Non-brush edit-plane selection is not user-configurable yet
-- Symptoms: line/box/fill honor pick mode now, but users still cannot explicitly switch XY/YZ/XZ edit planes.
-- Suspected root cause: no active edit-plane selector in app context and tools UI.
-- Exact files: `src/app/app_context.py`, `src/app/ui/panels/tools_panel.py`, `src/app/viewport/gl_widget.py`.
-- Fastest confirmation: inspect tools panel; no edit-plane selector exists.
+1. Export options still expose format-mismatched controls
+- Symptoms: export dialogs can imply options that are not honored for some formats.
+- Suspected root cause: shared options model is partially format-agnostic.
+- Exact files: `src/app/ui/main_window.py`, `src/core/export/gltf_exporter.py`, `src/core/export/vox_exporter.py`.
+- Fastest confirmation: compare dialog options and output changes across OBJ/glTF/VOX.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

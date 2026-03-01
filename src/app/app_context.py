@@ -17,6 +17,9 @@ class AppContext:
     TOOL_SHAPE_FILL = "fill"
     PICK_MODE_SURFACE = "surface"
     PICK_MODE_PLANE_LOCK = "plane_lock"
+    EDIT_PLANE_XY = "xy"
+    EDIT_PLANE_YZ = "yz"
+    EDIT_PLANE_XZ = "xz"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
     _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX, TOOL_SHAPE_LINE, TOOL_SHAPE_FILL}
 
@@ -30,6 +33,7 @@ class AppContext:
     brush_size: int = 1
     brush_shape: str = "cube"
     pick_mode: str = PICK_MODE_PLANE_LOCK
+    edit_plane: str = EDIT_PLANE_XY
     grid_visible: bool = True
     grid_spacing: int = 1
     camera_snap_enabled: bool = False
@@ -43,6 +47,7 @@ class AppContext:
     fill_max_cells: int = 5000
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
     _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
+    _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
 
     @property
     def active_part(self) -> Part:
@@ -82,6 +87,12 @@ class AppContext:
         if mode_value not in self._VALID_PICK_MODES:
             raise ValueError(f"Unsupported pick mode: {mode_value}")
         self.pick_mode = mode_value
+
+    def set_edit_plane(self, plane: str) -> None:
+        plane_value = str(plane).strip().lower()
+        if plane_value not in self._VALID_EDIT_PLANES:
+            raise ValueError(f"Unsupported edit plane: {plane_value}")
+        self.edit_plane = plane_value
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":

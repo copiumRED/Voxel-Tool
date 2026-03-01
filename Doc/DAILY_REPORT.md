@@ -684,3 +684,18 @@
   - Run: `pytest -q` (current: `89 passed`)
 - Risks/issues:
   - Edit-plane axis selection UX is still pending Task 04.
+
+### Roadmap 04 (Day-Cycle 30): Edit Plane Selector UI (XY/YZ/XZ)
+- What was done:
+  - Added `edit_plane` state (`xy/yz/xz`) to `AppContext` with validation.
+  - Added Tools panel selector for edit plane and connected updates into main window.
+  - Persisted edit plane in editor state save/open flow.
+  - Updated viewport plane-hit targeting and grid rendering to follow selected edit plane.
+  - Added tests for edit-plane validation and editor-state persistence roundtrip.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Tools panel, switch edit plane `XY -> YZ -> XZ`; verify grid orientation and tool placement follow selected plane.
+  - Save project, reopen, and verify selected edit plane is restored.
+  - Run: `pytest -q` (current: `90 passed`)
+- Risks/issues:
+  - Orthographic projection mode for precision workflows is still pending Task 11.
