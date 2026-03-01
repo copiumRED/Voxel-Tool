@@ -341,6 +341,13 @@ class MainWindow(QMainWindow):
         )
         orthographic_action.toggled.connect(self._on_toggle_orthographic_projection)
         view_menu.addAction(orthographic_action)
+        mmb_orbit_action = QAction("MMB Orbit Navigation", self)
+        mmb_orbit_action.setCheckable(True)
+        mmb_orbit_action.setChecked(
+            self.context.navigation_profile == AppContext.NAV_PROFILE_MMB_ORBIT
+        )
+        mmb_orbit_action.toggled.connect(self._on_toggle_mmb_orbit_navigation)
+        view_menu.addAction(mmb_orbit_action)
 
         view_menu.addSeparator()
 
@@ -842,6 +849,12 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Projection: {projection}")
         self.viewport.update()
 
+    def _on_toggle_mmb_orbit_navigation(self, enabled: bool) -> None:
+        profile = AppContext.NAV_PROFILE_MMB_ORBIT if enabled else AppContext.NAV_PROFILE_CLASSIC
+        self.context.set_navigation_profile(profile)
+        self._show_voxel_status(f"Navigation profile: {profile}")
+        self.viewport.update()
+
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
         self._autosave_debounce_timer.start()
         self._show_voxel_status(message)
@@ -949,6 +962,7 @@ class MainWindow(QMainWindow):
             "camera_snap_enabled": self.context.camera_snap_enabled,
             "camera_snap_degrees": self.context.camera_snap_degrees,
             "camera_projection": self.context.camera_projection,
+            "navigation_profile": self.context.navigation_profile,
             "undo_depth": self.context.command_stack.max_undo_steps,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
@@ -1024,6 +1038,14 @@ class MainWindow(QMainWindow):
             AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC,
         ):
             self.context.camera_projection = projection
+        navigation_profile = str(
+            state.get("navigation_profile", self.context.navigation_profile)
+        ).strip().lower()
+        if navigation_profile in (
+            AppContext.NAV_PROFILE_CLASSIC,
+            AppContext.NAV_PROFILE_MMB_ORBIT,
+        ):
+            self.context.navigation_profile = navigation_profile
         self.context.command_stack.set_max_undo_steps(
             int(state.get("undo_depth", self.context.command_stack.max_undo_steps))
         )

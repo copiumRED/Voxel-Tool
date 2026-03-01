@@ -24,6 +24,8 @@ class AppContext:
     FILL_CONNECTIVITY_VOLUME = "volume"
     CAMERA_PROJECTION_PERSPECTIVE = "perspective"
     CAMERA_PROJECTION_ORTHOGRAPHIC = "orthographic"
+    NAV_PROFILE_CLASSIC = "classic"
+    NAV_PROFILE_MMB_ORBIT = "mmb_orbit"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
     _VALID_TOOL_SHAPES = {TOOL_SHAPE_BRUSH, TOOL_SHAPE_BOX, TOOL_SHAPE_LINE, TOOL_SHAPE_FILL}
 
@@ -43,6 +45,7 @@ class AppContext:
     camera_snap_enabled: bool = False
     camera_snap_degrees: int = 15
     camera_projection: str = CAMERA_PROJECTION_PERSPECTIVE
+    navigation_profile: str = NAV_PROFILE_CLASSIC
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
@@ -57,6 +60,7 @@ class AppContext:
     _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
     _VALID_FILL_CONNECTIVITY = {FILL_CONNECTIVITY_PLANE, FILL_CONNECTIVITY_VOLUME}
     _VALID_CAMERA_PROJECTIONS = {CAMERA_PROJECTION_PERSPECTIVE, CAMERA_PROJECTION_ORTHOGRAPHIC}
+    _VALID_NAVIGATION_PROFILES = {NAV_PROFILE_CLASSIC, NAV_PROFILE_MMB_ORBIT}
 
     @property
     def active_part(self) -> Part:
@@ -108,6 +112,12 @@ class AppContext:
         if projection_value not in self._VALID_CAMERA_PROJECTIONS:
             raise ValueError(f"Unsupported camera projection: {projection_value}")
         self.camera_projection = projection_value
+
+    def set_navigation_profile(self, profile: str) -> None:
+        profile_value = str(profile).strip().lower()
+        if profile_value not in self._VALID_NAVIGATION_PROFILES:
+            raise ValueError(f"Unsupported navigation profile: {profile_value}")
+        self.navigation_profile = profile_value
 
     def set_fill_connectivity(self, mode: str) -> None:
         mode_value = str(mode).strip().lower()

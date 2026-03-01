@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 02: MMB Orbit Navigation Profile
-- Goal: Add middle-mouse orbit as selectable navigation profile.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): With new profile enabled, MMB drag orbits and RMB pans consistently.
-- Tests required: Add profile persistence tests and input mapping unit tests.
-- Risk/rollback note: Keep existing default profile available as fallback.
-
 ### Task 03: Blender-Mix Navigation Preset
 - Goal: Add alternate navigation preset inspired by Blender conventions.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
@@ -298,3 +291,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`123 passed`)
+
+### Task 02: MMB Orbit Navigation Profile
+- Commit: `COMMIT_PENDING`
+- Added navigation profile state in app context with explicit validated modes (`classic`, `mmb_orbit`).
+- Added app-context setter validation for navigation profile updates.
+- Added View menu toggle action (`MMB Orbit Navigation`) to switch profiles at runtime.
+- Added status feedback when navigation profile is changed.
+- Added editor-state persistence for navigation profile in capture flow.
+- Added editor-state restore handling for navigation profile in apply flow.
+- Updated viewport input handling to track middle-button drag state.
+- Added middle-button orbit behavior when `mmb_orbit` profile is active.
+- Kept right-button pan behavior intact for both navigation profiles.
+- Disabled left-button navigate orbit when `mmb_orbit` profile is active to avoid dual-orbit ambiguity.
+- Added regression tests for navigation profile validation and orbit-routing helpers.
+- Extended project IO roundtrip editor-state test to include navigation profile persistence key.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`125 passed`)

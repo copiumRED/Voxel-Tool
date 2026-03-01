@@ -359,6 +359,12 @@ def test_app_context_camera_projection_validation() -> None:
     assert ctx.camera_projection == AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
 
 
+def test_app_context_navigation_profile_validation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_navigation_profile("mmb_orbit")
+    assert ctx.navigation_profile == AppContext.NAV_PROFILE_MMB_ORBIT
+
+
 def test_app_context_fill_connectivity_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_fill_connectivity("volume")

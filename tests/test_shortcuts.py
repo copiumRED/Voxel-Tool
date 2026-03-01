@@ -33,3 +33,11 @@ def test_left_interaction_mode_defaults_to_navigate_without_context() -> None:
     assert (
         GLViewportWidget._resolve_left_interaction_mode(None) == GLViewportWidget._LEFT_INTERACTION_NAVIGATE
     )
+
+
+def test_mmb_orbit_profile_switches_left_navigate_orbit_behavior() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    assert GLViewportWidget._left_navigate_orbits(ctx) is True
+    ctx.set_navigation_profile(AppContext.NAV_PROFILE_MMB_ORBIT)
+    assert GLViewportWidget._is_mmb_orbit_enabled(ctx) is True
+    assert GLViewportWidget._left_navigate_orbits(ctx) is False

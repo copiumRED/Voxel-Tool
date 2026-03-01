@@ -590,7 +590,7 @@ class GLViewportWidget(QOpenGLWidget):
         return vertices
 
     def mousePressEvent(self, event) -> None:
-        if event.button() in (Qt.LeftButton, Qt.RightButton):
+        if event.button() in (Qt.LeftButton, Qt.MiddleButton, Qt.RightButton):
             pos = event.position()
             self._last_mouse_pos = (pos.x(), pos.y())
         if event.button() == Qt.LeftButton:
@@ -619,7 +619,10 @@ class GLViewportWidget(QOpenGLWidget):
                 if (press_dx * press_dx + press_dy * press_dy) >= 9.0:
                     self._left_dragging = True
             if self._left_dragging:
-                if self._left_interaction_mode == self._LEFT_INTERACTION_NAVIGATE:
+                if (
+                    self._left_interaction_mode == self._LEFT_INTERACTION_NAVIGATE
+                    and self._left_navigate_orbits(self._app_context)
+                ):
                     self.yaw_deg += dx * 0.4
                     self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
                     if (
@@ -636,6 +639,19 @@ class GLViewportWidget(QOpenGLWidget):
                     self._continue_brush_stroke(pos, event.modifiers())
                 elif self._left_press_pos is not None:
                     self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
+        elif event.buttons() & Qt.MiddleButton:
+            if self._is_mmb_orbit_enabled(self._app_context):
+                self.yaw_deg += dx * 0.4
+                self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                if (
+                    self._app_context is not None
+                    and self._app_context.camera_snap_enabled
+                    and self._app_context.camera_snap_degrees > 0
+                ):
+                    step = float(self._app_context.camera_snap_degrees)
+                    self.yaw_deg = round(self.yaw_deg / step) * step
+                    self.pitch_deg = round(self.pitch_deg / step) * step
+                self.update()
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
             pan_scale = self.distance * 0.0025
@@ -674,7 +690,7 @@ class GLViewportWidget(QOpenGLWidget):
             self._left_press_pos = None
             self._left_dragging = False
             self._left_interaction_mode = self._LEFT_INTERACTION_NAVIGATE
-        if event.button() in (Qt.LeftButton, Qt.RightButton):
+        if event.button() in (Qt.LeftButton, Qt.MiddleButton, Qt.RightButton):
             self._last_mouse_pos = None
         self._update_hover_preview(event.position(), event.modifiers())
         super().mouseReleaseEvent(event)
@@ -711,6 +727,16 @@ class GLViewportWidget(QOpenGLWidget):
         if app_context.voxel_tool_shape in edit_shapes:
             return cls._LEFT_INTERACTION_EDIT
         return cls._LEFT_INTERACTION_NAVIGATE
+
+    @staticmethod
+    def _is_mmb_orbit_enabled(app_context: "AppContext | None") -> bool:
+        if app_context is None:
+            return False
+        return app_context.navigation_profile == app_context.NAV_PROFILE_MMB_ORBIT
+
+    @classmethod
+    def _left_navigate_orbits(cls, app_context: "AppContext | None") -> bool:
+        return not cls._is_mmb_orbit_enabled(app_context)
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)

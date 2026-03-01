@@ -1087,3 +1087,19 @@
   - Run: `pytest -q` (current: `123 passed`).
 - Risks/issues:
   - MMB orbit and Blender-style navigation profile are not in this task and remain pending Task 02/03.
+
+### Roadmap 02 (Day-Cycle 40): MMB Orbit Navigation Profile
+- What was done:
+  - Added validated navigation profile state (`classic` / `mmb_orbit`) to `AppContext`.
+  - Added `View -> MMB Orbit Navigation` toggle in main window.
+  - Persisted navigation profile in editor-state capture/apply flow.
+  - Updated viewport input handling so MMB drag orbits when the profile is enabled.
+  - Kept RMB pan behavior stable and disabled LMB navigate-orbit in MMB profile to avoid ambiguity.
+  - Added tests for profile validation, helper routing behavior, and project editor-state roundtrip.
+- How to test quickly:
+  - Launch app and enable `View -> MMB Orbit Navigation`.
+  - Confirm MMB drag orbits and RMB drag pans.
+  - Disable toggle and confirm classic navigation behavior returns.
+  - Run: `pytest -q` (current: `125 passed`).
+- Risks/issues:
+  - Blender-mix navigation variant and sensitivity controls remain pending Task 03/04.

@@ -25,6 +25,7 @@ def test_project_save_load_roundtrip() -> None:
         "mirror_x_enabled": True,
         "edit_plane": "yz",
         "camera_projection": "orthographic",
+        "navigation_profile": "mmb_orbit",
         "fill_connectivity": "volume",
         "locked_palette_slots": [0, 3],
     }
