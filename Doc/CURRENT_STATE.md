@@ -4,207 +4,149 @@ Date: 2026-03-01
 Branch baseline: `main`
 
 ## Phase Completion Estimates
-- Phase 0 (Foundations): **99%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **100% (for current roadmap scope)**
-- Phase 2 (Mesh Edit MVP): **9%**
+- Phase 0 (Core Editor Foundations): **98%**
+- Phase 1 (Qubicle-competitive voxel workflow): **74%**
+- Phase 2 (Mesh Edit MVP): **10%**
 
 Reasoning:
-- Phase 0 is effectively complete for current packaging/runtime baseline with diagnostics, recovery, and guardrail checks in place.
-- Phase 1 roadmap scope for this cycle is complete (Tasks 01-30 delivered on main); residual parity polish remains for future cycles.
-- Phase 2 is still mostly unimplemented by design: no half-edge edit mode, no vertex/edge/face selection workflows.
-
-## Correction vs Prior Docs
-- Correction 1: prior docs describe broad "Qubicle parity" progress, but code truth shows important gaps remain in targeting behavior and edit-plane semantics.
-- Correction 2: prior docs reported export options as mostly complete; current code applies scale only for OBJ and does not apply scale to glTF/VOX output.
-- Correction 3: prior docs implied strong import parity; VOX import supports SIZE/XYZI/RGBA but not transform/hierarchy chunks common in richer VOX scenes.
-- Correction 4: prior docs mention near-finished viewport UX parity; current viewport has view presets but no orthographic projection mode.
-- Correction 5: prior docs emphasize current-path stability, but duplicate source trees (`src/app` and `src/voxel_tool`) still create maintenance risk.
-- Correction 6: Task 01 completed canonical edit-plane alignment by wiring grid rendering and plane-hit targeting to the same `z=0` contract.
+- Phase 0 is mostly complete: app shell, viewport, parts/palette, undo/redo, save/load, autosave/recovery, meshing, and baseline exports are implemented and tested.
+- Phase 1 is partially complete: core voxel editing is usable, but full Qubicle parity is still blocked by missing advanced selection workflows, richer viewport controls, and broad import/export compatibility.
+- Phase 2 remains early: no production mesh-edit mode (vertex/edge/face selection + editing ops) in the current runtime path.
 
 ## Implemented vs Not Implemented
 
 ### UI
 Implemented:
-- Main window with File/Edit/View/Voxels/Debug menus.
-- Tools panel: shape/mode, brush profile, pick mode, mirror + offsets.
-- Inspector panel: part add/rename/duplicate/delete, move up/down, visibility/lock, transform fields, grouping controls.
-- Palette panel: swatches, RGB edit, add/remove/swap, save/load preset.
-- Stats panel with scene/object stats and runtime metrics.
+- Main window with menu actions for file/view/voxel/debug flows.
+- Tools panel with shape/mode/pick/edit-plane/fill-connectivity and mirror controls.
+- Inspector panel for parts/groups management and transforms.
+- Palette panel with slot editing, GPL/JSON import-export, slot locking.
+- Stats panel with scene and active-part metrics.
 
 Not Implemented:
-- Shortcut customization UI.
-- Palette metadata/tagging and richer preset browser.
-- Contextual tooltip/help system beyond static hints.
-- Orthographic toggle UX.
-
-### Project/IO
-Implemented:
-- JSON project save/load with scene parts, groups, editor state.
-- Legacy voxels field fallback path.
-- Autosave snapshot + startup recovery prompt.
-
-Not Implemented:
-- Forward-compatible schema handling for unknown keys.
-- Project migration/version strategy beyond strict schema acceptance.
-- Import/export of full scene transform metadata from VOX ecosystem formats.
-
-### Voxels
-Implemented:
-- Sparse voxel grid storage.
-- Paint/erase, box, line, fill commands.
-- Mirror XYZ + per-axis offset expansion.
-- Brush size/shape (cube/sphere).
-
-Not Implemented:
-- Volume (3D) box/line/fill operations.
-- Layer/part-level voxel masking and selection sets.
-- Advanced brush falloff/noise/smoothing profiles.
-
-### Tools
-Implemented:
-- Brush continuous drag with transaction-grouped undo.
-- Fill safety threshold.
-- Pick mode for brush (`surface` / `plane_lock`).
-
-Not Implemented:
-- Full pick-mode parity for line/box/fill.
-- Face-normal/axis lock editing controls.
-- Selection tools and transform gizmo for voxel subsets.
+- Shortcut editor/custom keymap UI.
+- Context-sensitive tooltips/onboarding overlays.
+- Dedicated precision modeling HUD (axis lock indicators, snap state badges).
 
 ### Viewport
 Implemented:
-- OpenGL viewport, grid, orbit/pan/zoom, frame/reset.
-- View presets (top/front/left/right/back/bottom).
-- Grid visibility/spacing and camera snap settings.
-- Hover/ghost previews and mirror guides.
+- OpenGL viewport with perspective + orthographic projections.
+- Orbit/pan/zoom, frame voxels, camera snap options.
+- Hover and drag previews for voxel tools.
+- Debug test-voxel workflow and grid controls.
 
 Not Implemented:
-- Orthographic camera mode.
-- Robust large-scene LOD/culling strategy.
-- Multi-plane editing workflow UI.
+- Industry-standard control profile (MMB orbit variant / Blender-like navigation profile).
+- Ortho quad-view layout (front/top/side simultaneous).
+- High-density scene culling and level-of-detail strategy.
+
+### Tools
+Implemented:
+- Brush paint/erase with drag stroke + grouped undo.
+- Box/line/fill tools with preview and mirror support.
+- Pick modes (`surface` vs `plane_lock`) and fill plane/volume connectivity.
+- Brush shape/size and cycle hotkey support.
+
+Not Implemented:
+- Lasso/rect voxel selection and transform of selected voxel sets.
+- Tool-level symmetry visualization overlays per axis plane.
+- Macro tools (stamp library, noise/falloff brushes).
+
+### Scene
+Implemented:
+- Multi-part scene with UUID part/group IDs.
+- Part reorder/duplicate/delete and visibility/lock.
+- Group creation, assignment, lock/visibility propagation.
+
+Not Implemented:
+- Nested hierarchy (groups inside groups).
+- Scene outliner filtering/search and bulk operations.
+- Per-part instancing workflow.
+
+### IO
+Implemented:
+- Project save/load with editor-state persistence.
+- Forward-compatible top-level unknown-key tolerance.
+- Recovery snapshots with version marker and compatibility checks.
+
+Not Implemented:
+- Full schema migration framework with explicit version transforms.
+- Crash report bundle export for failed recovery cases.
+- Multi-file project package format (`.vxlproj` container) from spec.
 
 ### Export
 Implemented:
-- OBJ export with greedy/triangulate toggles, pivot mode, UV output, MTL output, vertex-color extension.
-- glTF export (geometry-only baseline).
-- VOX export and VOX import (single/multi-model basic chunks).
+- OBJ export with greedy/triangulate/pivot/scale/UV/vertex-color options.
+- OBJ multi-material by color and explicit vertex-color policy.
+- glTF export with scale and normals.
+- VOX export and VOX import warning path for unsupported chunks.
 
 Not Implemented:
-- FBX export.
-- glTF normals/UV/color/material support.
-- OBJ per-palette material strategy and strict DCC compatibility path.
+- FBX exporter path.
+- glTF color/material/UV payload parity.
 - Qubicle `.qb` import/export.
+- Rich VOX transform/hierarchy chunk reconstruction.
+
+### Solidify
+Implemented:
+- Surface extraction + greedy meshing.
+- Incremental rebuild with correctness fallback to full rebuild.
+- Mesh cache integration with part dirty-bounds tracking.
+
+Not Implemented:
+- Mesh diagnostics panel (non-manifold/degenerate counters).
+- Optional AO/smoothing toggles at solidify stage.
+- Advanced incremental chunk scheduling for huge scenes.
 
 ### Perf
 Implemented:
-- Runtime frame/rebuild metrics in Stats panel.
-- Perf baseline test harness.
-- Incremental mesh rebuild v1 using dirty bounds.
+- Runtime frame/rebuild metrics.
+- Perf baseline tests with per-metric thresholds.
+- Reduced redundant viewport per-frame traversal.
 
 Not Implemented:
-- Performance budget enforcement thresholds in CI.
-- Memory profiling dashboard.
-- Chunked meshing/streaming strategy for very large scenes.
+- CI-enforced strict perf budgets per scene tier.
+- Memory profile instrumentation for 64^3/96^3/128^3 targets.
+- Stress scene replay harness with trend history.
 
 ### Packaging
 Implemented:
-- PyInstaller spec + packaging script.
-- Packaged EXE launch smoke path.
-- Packaging checklist doc.
+- PyInstaller script/spec and deterministic artifact diagnostics.
+- Portable zip workflow checklist and SHA256 recording steps.
+- Legacy-tree guardrail test to avoid editing wrong source path.
 
 Not Implemented:
-- Installer build (Inno Setup or equivalent).
-- Portable zip artifact pipeline with hash/signing checks.
-- Clean-machine matrix validation record.
+- Installer authoring and unattended install/uninstall tests.
+- Signed release pipeline and clean-machine matrix evidence.
+- Automatic artifact publishing workflow.
 
-## Top 10 Known Issues / Bugs (Ranked)
-1. Duplicate source trees remain and require manifest maintenance discipline
-- Symptoms: intentional legacy-tree updates now require manifest refresh to keep guardrail passing.
-- Suspected root cause: historical dual-tree layout still exists while guardrail freezes legacy files by default.
-- Exact files: `src/app/**`, `src/voxel_tool/**`, `tests/test_source_tree_guard.py`, `tests/fixtures/legacy_tree_manifest.txt`.
-- Fastest confirmation: modify a legacy `.py` file under `src/voxel_tool` and run `pytest -q`; guardrail test fails until manifest is updated.
+## Top 10 Blockers / Risks + Confirmation Experiments
+1. Missing mesh edit mode blocks "full MVP" target from project spec
+- Confirmation experiment: search runtime code paths for active vertex/edge/face edit mode and execute manual UI pass; verify no usable mesh-edit toolchain is exposed.
 
-2. Pick mode only affects brush, not line/box/fill
-- Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.
-- Suspected root cause: non-brush handlers do not call surface ray-hit resolver.
-- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
-- Fastest confirmation: toggle pick mode and run box/line/fill; behavior remains unchanged.
+2. No FBX export path despite spec target
+- Confirmation experiment: run export menu smoke and code search for FBX exporter integration; verify no functional FBX export action exists.
 
-3. Non-brush tool plane selection is not user-configurable yet
-- Symptoms: line/box/fill operate on canonical plane only and cannot switch XY/YZ/XZ interactively.
-- Suspected root cause: no active edit-plane selector in context/UI.
-- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`.
-- Fastest confirmation: attempt to change non-brush edit plane in UI (control does not exist).
+3. No `.qb` interoperability
+- Confirmation experiment: attempt to import/export `.qb` via UI and verify option absence; confirm no parser/writer in `src/core/io`.
 
-4. glTF export ignores scale preset and outputs positions/indices only
-- Symptoms: scale preset shown in UI but does not affect glTF geometry; no normals/UV/colors/materials.
-- Suspected root cause: exporter API lacks options and writes only POSITION + indices.
-- Exact files: `src/app/ui/main_window.py`, `src/core/export/gltf_exporter.py`.
-- Fastest confirmation: export with Unity vs Unreal preset and diff files; geometry values remain unchanged.
+4. Navigation controls are not industry-standard yet (no MMB orbit profile)
+- Confirmation experiment: perform viewport input test; verify orbit is left-drag (non-brush), pan is right-drag, no MMB orbit mode toggle.
 
-5. VOX export ignores scale preset (UI shows setting without effect)
-- Symptoms: status includes scale, but VOX payload is unaffected.
-- Suspected root cause: VOX exporter has no scale parameter and always writes raw grid-local coordinates.
-- Exact files: `src/app/ui/main_window.py`, `src/core/export/vox_exporter.py`.
-- Fastest confirmation: export VOX with different presets and compare XYZI coordinates.
+5. glTF parity is partial (normals yes, but no UV/colors/materials)
+- Confirmation experiment: export glTF and inspect JSON accessors/primitives for `TEXCOORD_0`, `COLOR_0`, and material references.
 
-6. Strict project schema rejects unknown keys
-- Symptoms: opening a project with extra metadata fails instead of tolerant load.
-- Suspected root cause: `load_project()` hard-fails on any unexpected top-level key.
-- Exact files: `src/core/io/project_io.py`.
-- Fastest confirmation: add harmless top-level field to saved JSON, reopen, observe failure.
+6. VOX import does not reconstruct hierarchy/transform semantics
+- Confirmation experiment: import VOX containing transform/scene chunks and verify warning + flattened behavior.
 
-7. Part/group IDs are non-deterministic per process and may collide across sessions in merged scenes
-- Symptoms: IDs are counter-based, reset per run, not globally unique.
-- Suspected root cause: `_PART_ID_COUNTER`/`_GROUP_ID_COUNTER` global counters.
-- Exact files: `src/core/scene.py`.
-- Fastest confirmation: create projects in separate runs and inspect repeated IDs (`part-1`, `group-1`).
+7. Duplicate source trees still carry maintenance risk
+- Confirmation experiment: modify legacy file under `src/voxel_tool`; verify guard test failure and developer friction for intentional changes.
 
-8. OBJ material strategy collapses all faces into one material
-- Symptoms: exported MTL has one `voxel_default`; palette/material richness lost.
-- Suspected root cause: single-material write path and no face-group material split.
-- Exact files: `src/core/export/obj_exporter.py`.
-- Fastest confirmation: build multi-color model, inspect OBJ/MTL for multiple `usemtl` entries (none).
+8. Incremental meshing safety currently relies on fallback checks that may impact large-scene performance
+- Confirmation experiment: run repeated localized edits on dense scenes and log rebuild timings with fallback frequency.
 
-9. Duplicate source trees can drift (`src/app` vs `src/voxel_tool`)
-- Symptoms: contributors may edit wrong tree and ship stale paths.
-- Suspected root cause: historical layout retained without deprecation guardrails.
-- Exact files: `src/app/**`, `src/voxel_tool/**`.
-- Fastest confirmation: compare files with same conceptual role (e.g., `main.py`, `gl_widget.py`).
+9. Packaging confidence is still environment-biased
+- Confirmation experiment: run packaging + smoke on clean VM and second machine; compare failures and missing runtime deps.
 
-10. Crash recovery cadence can miss up to autosave interval of edits
-- Symptoms: forced-close may lose recent edits if timer has not fired.
-- Suspected root cause: interval-based autosave only; no edit-triggered debounce save.
-- Exact files: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
-- Fastest confirmation: make edit and force-close immediately before 60s tick; recovery lacks latest change.
-
-## Top 10 Technical Risks (Ranked) + Mitigation
-1. Full 3D targeting consistency remains incomplete for non-brush tools
-- Mitigation: complete shared non-brush 3D resolver and pick-mode parity tests (Tasks 02-03).
-
-2. Export-format trust gap (glTF/OBJ parity deficits)
-- Mitigation: add goldens + external roundtrip smoke matrix (Blender, Unity, Qubicle).
-
-3. Duplicate source-tree drift risk
-- Mitigation: freeze `src/voxel_tool` as legacy with manifest guardrail (implemented), and plan full tree deprecation/removal.
-
-4. Strict schema parser blocks forward compatibility
-- Mitigation: tolerate unknown fields with warnings and preserve pass-through metadata.
-
-5. Counter-based IDs reduce interoperability robustness
-- Mitigation: migrate to UUID-based part/group IDs with loader compatibility fallback.
-
-6. Incremental meshing v1 complexity could hide subtle geometry defects
-- Mitigation: increase equivalence tests on random edit sequences and force periodic full-rebuild checks.
-
-7. Command-stack transaction handling can regress under nested/aborted interactions
-- Mitigation: add nested transaction guard tests and UI-level cancellation tests.
-
-8. Performance baseline thresholds are permissive (20x)
-- Mitigation: tighten thresholds progressively and add scene-size tiers.
-
-9. Autosave snapshot lifecycle may not cover all failure modes
-- Mitigation: add debounce-on-edit saves and recovery version stamping.
-
-10. Packaging confidence remains environment-biased
-- Mitigation: run checklist on clean Windows VM + second physical machine before stable promotion.
+10. Day-scale delivery risk for "Qubicle + better" scope is high without strict task slicing and acceptance gates
+- Confirmation experiment: track completion burn-down at task 10/20/30 checkpoints against pass/fail gates.

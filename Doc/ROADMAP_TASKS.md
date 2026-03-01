@@ -1,520 +1,291 @@
-# ROADMAP_TASKS (Next Day-Cycle Board)
+# ROADMAP_TASKS (Day Start Board)
 
 Date: 2026-03-01
-Scope: Full workday plan with exactly 30 atomic tasks.
-Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, merge to `main` only after gates pass.
+Mode: Docs-planned execution board for next coding run.
+Correction: expanded from 30 to 40 tasks per operator direction (30 core delivery + 10 interface polish).
+Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
-- None. All tasks for this day-cycle are completed.
+
+### Task 01: Input State Machine Split (Edit vs Navigate)
+- Goal: Separate camera-navigation state from tool-edit state to remove LMB ambiguity.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `tests/test_shortcuts.py`.
+- Acceptance criteria (human-testable): Drag operations never unexpectedly orbit when user is in active shape drag workflow.
+- Tests required: Add viewport input-sequence tests for drag begin/drag end in brush/box/line/fill.
+- Risk/rollback note: If regressions appear, keep legacy input branch behind temporary flag for one cycle.
+
+### Task 02: MMB Orbit Navigation Profile
+- Goal: Add middle-mouse orbit as selectable navigation profile.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/app/ui/main_window.py`.
+- Acceptance criteria (human-testable): With new profile enabled, MMB drag orbits and RMB pans consistently.
+- Tests required: Add profile persistence tests and input mapping unit tests.
+- Risk/rollback note: Keep existing default profile available as fallback.
+
+### Task 03: Blender-Mix Navigation Preset
+- Goal: Add alternate navigation preset inspired by Blender conventions.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
+- Acceptance criteria (human-testable): User can switch between default and Blender-mix navigation presets at runtime.
+- Tests required: Add context/state roundtrip tests for nav preset.
+- Risk/rollback note: Avoid hard replacement of current controls.
+
+### Task 04: Navigation Sensitivity Controls
+- Goal: Add orbit/pan/zoom sensitivity controls in settings.
+- Likely files/modules touched: `src/app/app_context.py`, `src/app/ui/panels/tools_panel.py`, `src/app/viewport/gl_widget.py`.
+- Acceptance criteria (human-testable): Sensitivity sliders visibly change camera responsiveness and persist on save/open.
+- Tests required: Add clamping and persistence tests.
+- Risk/rollback note: Clamp ranges to prevent unusable camera behavior.
+
+### Task 05: Drag Transaction Abort Hardening
+- Goal: Ensure interrupted drags always close or abort transactions cleanly.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/command_stack.py`.
+- Acceptance criteria (human-testable): Focus loss/cancel leaves undo stack valid with no phantom entries.
+- Tests required: Add aborted transaction tests in `tests/test_command_stack.py`.
+- Risk/rollback note: Preserve existing successful transaction path.
+
+### Task 06: Recovery Diagnostic Report
+- Goal: Add structured diagnostics when recovery load fails.
+- Likely files/modules touched: `src/core/io/recovery_io.py`, `src/app/ui/main_window.py`, `tests/test_recovery_io.py`.
+- Acceptance criteria (human-testable): Recovery failure surfaces clear reason and writes a small diagnostics file.
+- Tests required: Add failure-path tests for diagnostics emission.
+- Risk/rollback note: Never block app startup due to diagnostics write failure.
+
+### Task 07: Project Schema Version Handshake
+- Goal: Introduce explicit schema version check and migration hook scaffolding.
+- Likely files/modules touched: `src/core/io/project_io.py`, `src/core/project.py`, `tests/test_project_io.py`.
+- Acceptance criteria (human-testable): Older/newer project versions produce deterministic load behavior with clear messages.
+- Tests required: Add version mismatch and migration hook tests.
+- Risk/rollback note: Keep current valid project files fully loadable.
+
+### Task 08: Save/Open Robustness Sweep
+- Goal: Harden save/open around invalid paths and permission failures.
+- Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/project_io.py`.
+- Acceptance criteria (human-testable): Save/open failures show actionable messages and do not corrupt loaded state.
+- Tests required: Add IO exception-path tests.
+- Risk/rollback note: Preserve current successful path behavior.
+
+### Task 09: Scene Outliner Search Filter
+- Goal: Add filter/search for parts/groups in inspector.
+- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `tests/test_scene_parts.py`.
+- Acceptance criteria (human-testable): Typing filter instantly narrows visible parts/groups.
+- Tests required: Add UI logic tests for filtered list results.
+- Risk/rollback note: Keep default full list view when filter empty.
+
+### Task 10: Multi-select Part Actions
+- Goal: Support multi-select visibility/lock/delete operations in inspector.
+- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`, `src/core/scene.py`.
+- Acceptance criteria (human-testable): Multiple selected parts can be toggled/locked/deleted in one action.
+- Tests required: Add scene operation tests for batch actions.
+- Risk/rollback note: Guard against deleting last remaining part.
+
+### Task 11: Voxel Selection Set v1
+- Goal: Add explicit voxel selection mode (box-select cells) independent of paint.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`, `src/core/commands/demo_commands.py`.
+- Acceptance criteria (human-testable): User can select voxel region and see highlighted selection.
+- Tests required: Add selection set model tests and viewport selection interaction tests.
+- Risk/rollback note: Keep selection optional and non-destructive.
+
+### Task 12: Selected Voxel Move Tool
+- Goal: Add move operation for selected voxel sets.
+- Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/viewport/gl_widget.py`.
+- Acceptance criteria (human-testable): Selected voxels move by axis step with undo/redo support.
+- Tests required: Add command tests for selection move with undo/redo.
+- Risk/rollback note: Validate destination collisions deterministically.
+
+### Task 13: Selected Voxel Duplicate Tool
+- Goal: Duplicate selected voxel sets with offset.
+- Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`.
+- Acceptance criteria (human-testable): Duplicate action creates copy at configured offset.
+- Tests required: Add selection duplicate tests including mirror mode interactions.
+- Risk/rollback note: Hard cap voxel count growth to prevent accidental explosions.
+
+### Task 14: Fill Preview Confidence Layer
+- Goal: Add preview indicators for fill reach before commit.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
+- Acceptance criteria (human-testable): Fill tool previews affected region boundary prior to click confirm.
+- Tests required: Add fill preview cell-count tests for plane and volume modes.
+- Risk/rollback note: Keep preview bounded and lightweight.
+
+### Task 15: Mirror Visual Plane Overlays
+- Goal: Render active mirror planes and offsets in viewport.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
+- Acceptance criteria (human-testable): Enabling mirror axes shows clear plane guides at proper offsets.
+- Tests required: Add geometry helper tests for mirror guide generation.
+- Risk/rollback note: Allow guide toggle for performance-sensitive scenes.
+
+### Task 16: Palette Metadata Schema v1
+- Goal: Add optional palette metadata fields (name/tags/source).
+- Likely files/modules touched: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
+- Acceptance criteria (human-testable): Palette metadata can be edited, saved, and reloaded.
+- Tests required: Add metadata roundtrip tests for JSON/GPL compatibility behavior.
+- Risk/rollback note: Preserve backward compatibility with existing palette files.
+
+### Task 17: Palette Browser and Quick Filter
+- Goal: Add palette preset browser with search/filter.
+- Likely files/modules touched: `src/app/ui/panels/palette_panel.py`.
+- Acceptance criteria (human-testable): Users can search presets quickly and apply one-click load.
+- Tests required: Add panel logic tests for filter/apply actions.
+- Risk/rollback note: Keep current slot editor behavior unchanged.
+
+### Task 18: glTF UV Export
+- Goal: Emit `TEXCOORD_0` in glTF export.
+- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
+- Acceptance criteria (human-testable): Exported glTF contains valid UV accessor and attribute binding.
+- Tests required: Add glTF structure tests for UV accessor count/type.
+- Risk/rollback note: Keep fallback path for geometry-only export if UV generation fails.
+
+### Task 19: glTF Vertex Color Export
+- Goal: Emit `COLOR_0` in glTF export.
+- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
+- Acceptance criteria (human-testable): Multi-color model exports with vertex colors recognized by viewers.
+- Tests required: Add color accessor + primitive attribute tests.
+- Risk/rollback note: Clamp and normalize color ranges consistently.
+
+### Task 20: glTF Material Baseline
+- Goal: Add basic material block generation for glTF exports.
+- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/app/ui/main_window.py`.
+- Acceptance criteria (human-testable): Exported glTF includes minimal valid materials and references.
+- Tests required: Add material presence and index wiring tests.
+- Risk/rollback note: Keep simple default material if richer mapping is unstable.
+
+### Task 21: VOX Transform Chunk Mapping v1
+- Goal: Parse and map common VOX transform chunk semantics into scene parts.
+- Likely files/modules touched: `src/core/io/vox_io.py`, `tests/test_vox_io.py`.
+- Acceptance criteria (human-testable): VOX files with transform chunks import with expected part offsets.
+- Tests required: Add fixture tests with transform chunk expectations.
+- Risk/rollback note: Maintain warning path for unsupported variants.
+
+### Task 22: VOX Multi-part Naming and Grouping
+- Goal: Improve naming/group mapping for imported multi-model VOX files.
+- Likely files/modules touched: `src/core/io/vox_io.py`, `src/core/scene.py`.
+- Acceptance criteria (human-testable): Imported models have stable names and optional grouping.
+- Tests required: Add VOX import naming/grouping tests.
+- Risk/rollback note: Keep deterministic fallback naming when metadata absent.
+
+### Task 23: Qubicle QB Import Feasibility Slice
+- Goal: Implement bounded `.qb` importer for core voxel data only.
+- Likely files/modules touched: `src/core/io/qb_io.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_io.py` (new).
+- Acceptance criteria (human-testable): Import simple `.qb` fixture into scene parts without crash.
+- Tests required: Add parser tests using curated tiny fixtures.
+- Risk/rollback note: Gate unsupported features with explicit warnings.
+
+### Task 24: Qubicle QB Export Feasibility Slice
+- Goal: Implement bounded `.qb` exporter for current scene voxel data.
+- Likely files/modules touched: `src/core/export/qb_exporter.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_exporter.py` (new).
+- Acceptance criteria (human-testable): Exported `.qb` from simple scene can be re-imported by our importer.
+- Tests required: Add roundtrip tests for small scenes.
+- Risk/rollback note: Keep feature flagged if compatibility is partial.
+
+### Task 25: Solidify QA Diagnostics
+- Goal: Add mesh QA counters (degenerate quads, non-manifold risk hints).
+- Likely files/modules touched: `src/core/meshing/solidify.py`, `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
+- Acceptance criteria (human-testable): Solidify reports QA counters in stats panel.
+- Tests required: Add diagnostic computation tests with synthetic meshes.
+- Risk/rollback note: Diagnostics should not block mesh generation.
+
+### Task 26: Incremental Rebuild Telemetry
+- Goal: Track and display incremental fallback frequency.
+- Likely files/modules touched: `src/core/meshing/solidify.py`, `src/app/ui/panels/stats_panel.py`.
+- Acceptance criteria (human-testable): User can see when incremental path falls back to full rebuild.
+- Tests required: Add telemetry counter tests and UI formatting tests.
+- Risk/rollback note: Keep telemetry lightweight.
+
+### Task 27: Dense Scene Stress Harness (64/96/128)
+- Goal: Add repeatable dense-scene perf harness for key operations.
+- Likely files/modules touched: `tests/test_perf_baseline.py`, `tests/perf_baseline.json`.
+- Acceptance criteria (human-testable): Perf suite reports separate budgets for 64^3, 96^3, 128^3 workloads.
+- Tests required: Add tiered perf tests and baseline update.
+- Risk/rollback note: Start with conservative thresholds to avoid flaky CI.
+
+### Task 28: Frame-Time Hotspot Pass
+- Goal: Reduce viewport frame-time hotspots during dense scene navigation.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`.
+- Acceptance criteria (human-testable): Noticeably smoother orbit/pan on dense test scenes.
+- Tests required: Extend perf surrogate checks for viewport path.
+- Risk/rollback note: Preserve rendering correctness over aggressive optimization.
+
+### Task 29: Memory Budget Instrumentation
+- Goal: Add basic memory usage stats for scene/mesh buffers.
+- Likely files/modules touched: `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
+- Acceptance criteria (human-testable): Stats panel shows estimated voxel/mesh memory usage.
+- Tests required: Add deterministic memory estimate tests.
+- Risk/rollback note: Clearly label as estimate, not OS-level exact measure.
+
+### Task 30: End-to-End Correctness Sweep
+- Goal: Consolidate and validate tool/IO/export correctness with expanded regression tests.
+- Likely files/modules touched: `tests/test_command_stack.py`, `tests/test_project_io.py`, `tests/test_vox_io.py`, `tests/test_gltf_exporter.py`.
+- Acceptance criteria (human-testable): Full `pytest -q` remains green with new parity coverage.
+- Tests required: Add cross-feature regression matrix tests.
+- Risk/rollback note: If failures spike, split high-risk assertions behind temporary xfail notes with follow-up tasks.
+
+### Task 31: Interface Polish - Top Toolbar Quick Actions
+- Goal: Add compact top toolbar for frequent actions (new/save/open/undo/redo/solidify/export).
+- Likely files/modules touched: `src/app/ui/main_window.py`.
+- Acceptance criteria (human-testable): Key actions available without menu diving.
+- Tests required: Add action wiring tests where feasible.
+- Risk/rollback note: Keep menu actions as source of truth.
+
+### Task 32: Interface Polish - Status HUD Badges
+- Goal: Show active tool, pick mode, plane, mirror, projection, and nav preset in viewport HUD.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
+- Acceptance criteria (human-testable): HUD badges always reflect current editing state.
+- Tests required: Add state-to-label formatting tests.
+- Risk/rollback note: Allow HUD toggle if visual noise is high.
+
+### Task 33: Interface Polish - Command Palette (Quick Search)
+- Goal: Add command palette for fast action search/execute.
+- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/ui/dialogs/`.
+- Acceptance criteria (human-testable): Press shortcut, search command name, execute action.
+- Tests required: Add command registry/filter tests.
+- Risk/rollback note: Keep all actions reachable via existing UI paths.
+
+### Task 34: Interface Polish - Dock Layout Presets
+- Goal: Add save/restore UI dock layout presets.
+- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/settings.py`.
+- Acceptance criteria (human-testable): User can save and restore at least two layouts.
+- Tests required: Add settings persistence tests for layout blobs.
+- Risk/rollback note: Fallback to default layout on corrupt settings.
+
+### Task 35: Interface Polish - Theme and Contrast Pass
+- Goal: Improve readability and visual hierarchy across panels.
+- Likely files/modules touched: `src/app/ui/main_window.py`, panel widgets styles.
+- Acceptance criteria (human-testable): Labels, controls, and active states are clearly distinguishable.
+- Tests required: Add snapshot/smoke checks for style loading.
+- Risk/rollback note: Keep high-contrast default option.
+
+### Task 36: Interface Polish - Numeric Field Drag Scrub
+- Goal: Add drag-scrub interaction for numeric transform fields.
+- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`.
+- Acceptance criteria (human-testable): Dragging numeric labels adjusts transform smoothly.
+- Tests required: Add value clamping and delta mapping tests.
+- Risk/rollback note: Preserve direct text entry mode.
+
+### Task 37: Interface Polish - Tool Hotkey Overlay
+- Goal: Add in-app hotkey cheat-sheet overlay.
+- Likely files/modules touched: `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
+- Acceptance criteria (human-testable): Overlay lists current active hotkeys and closes quickly.
+- Tests required: Add hotkey registry tests for duplicate conflicts.
+- Risk/rollback note: Keep overlay non-modal where possible.
+
+### Task 38: Interface Polish - Precision Input Mode
+- Goal: Add temporary precision modifier for camera and transform operations.
+- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/inspector_panel.py`.
+- Acceptance criteria (human-testable): Holding precision modifier reduces movement sensitivity.
+- Tests required: Add precision scale factor tests.
+- Risk/rollback note: Do not alter default speed when modifier is not held.
+
+### Task 39: Interface Polish - Startup Workspace Recovery UX
+- Goal: Improve startup dialogs for recovery + last project continuity.
+- Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
+- Acceptance criteria (human-testable): Startup presents clear choices: restore, discard, open recent.
+- Tests required: Add startup choice-path tests.
+- Risk/rollback note: Safe default must avoid data loss.
+
+### Task 40: Interface Polish - Final UX Regression and Operator Pack
+- Goal: Run final UX polish QA pass and prepare operator validation scripts/checklists.
+- Likely files/modules touched: `Doc/DAILY_REPORT.md`, `Doc/NEXT_WORKDAY.md`, `Doc/PACKAGING_CHECKLIST.md`.
+- Acceptance criteria (human-testable): Operator can execute full validation checklist with no ambiguity.
+- Tests required: Full `pytest -q` and documented manual smoke matrix.
+- Risk/rollback note: If unresolved P0 remains, hold merge and document blocker clearly.
 
 ## Completed Today
-### Task 01: Unify Edit Plane Axis Contract
-- Commit: `6658fd1`
-- Added shared axis-plane intersection helper (`intersect_axis_plane`) in voxel raycast core for consistent plane hit math.
-- Wired viewport plane-hit placement (`_screen_to_plane_cell`) to the shared helper and canonical edit-plane constants.
-- Updated world-grid rendering to use the same canonical edit plane (`z=0`) as default placement operations.
-- Added regression tests for plane-hit semantics: valid hit, parallel ray miss, and behind-origin miss cases.
-- Kept camera/orbit input behavior unchanged to avoid introducing movement regressions in this task.
-- Preserved brush and non-brush command behavior scope (no tool-mode expansion in Task 01).
-- Maintained mirror/palette/export logic untouched to keep task scope atomic.
-- Confirmed startup viewport initialization remains successful with active OpenGL pipeline.
-- Verified task does not change persisted project schema or editor-state compatibility.
-- Established groundwork for Task 02/03 shared targeting improvements with reusable core helper.
-- Kept implementation minimal and production-safe with no new dependencies.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`85 passed`)
-
-### Task 02: Non-Brush 3D Target Resolver v1
-- Commit: `0181e89`
-- Added shared non-brush target resolver (`resolve_shape_target_cell`) in voxel raycast core with surface-adjacent paint and surface-hit erase behavior.
-- Updated viewport non-brush execution paths (box/line/fill) to use shared 3D ray-hit targeting with plane fallback.
-- Updated line/box drag preview targeting to reuse the same resolver path, keeping preview/apply behavior aligned.
-- Removed hard dependency on direct `_screen_to_plane_cell()` for non-brush tool application path.
-- Preserved brush targeting behavior unchanged to avoid cross-tool regressions in this task.
-- Preserved fill threshold and command transaction behavior while swapping target resolution source.
-- Kept default fallback behavior on empty space (plane fallback) for continuity before Task 03 mode expansion.
-- Added raycast unit tests for non-brush resolver behavior in paint, erase, and fallback scenarios.
-- Confirmed no project schema, palette, export, or packaging code changes were introduced.
-- Established shared targeting foundation for Task 03 pick-mode parity work.
-- Maintained production-safe scope with no dependency additions.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`88 passed`)
-
-### Task 03: Apply Pick Mode to Line/Box/Fill
-- Commit: `47a3437`
-- Updated non-brush target resolution path to respect global pick mode semantics.
-- Added plane-fallback gating for non-brush tools: fallback is enabled only in `Plane Lock` and paint mode.
-- Ensured `Surface` mode for non-brush tools now rejects empty-space paint targets (no implicit plane placement).
-- Kept erase behavior surface-hit-only, matching existing brush-mode semantics.
-- Reused shared resolver path so preview and apply behavior stay aligned under pick-mode changes.
-- Avoided UI refactors by leveraging existing pick-mode control already present in Tools panel.
-- Preserved command stack, fill threshold, and mirror workflows untouched in this task.
-- Added regression coverage for no-fallback target resolution behavior (shape resolver without fallback returns `None`).
-- Confirmed no changes to project schema, exporter behavior, or packaging scripts.
-- Completed scope exactly for pick-mode parity without introducing edit-plane selector changes (Task 04).
-- Implementation remains dependency-free and production-safe.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`89 passed`)
-
-### Task 04: Edit Plane Selector UI (XY/YZ/XZ)
-- Commit: `deb5010`
-- Added explicit edit-plane state (`xy/yz/xz`) in `AppContext` with validation API.
-- Added Tools panel edit-plane selector (`XY/YZ/XZ`) and change signal wiring.
-- Wired MainWindow to react to edit-plane changes with status updates and UI refresh.
-- Persisted `edit_plane` in editor-state capture/apply flow for save/open continuity.
-- Updated viewport plane hit-testing to use selected plane axis dynamically.
-- Updated grid rendering to visualize the currently selected edit plane orientation.
-- Preserved existing pick-mode and mirror behavior while extending plane-selection capability.
-- Added app-context validation test coverage for edit-plane API.
-- Added project IO roundtrip coverage that includes `editor_state.edit_plane`.
-- Kept task scope atomic without introducing orthographic or camera-control changes.
-- Implementation remained dependency-free and aligned to roadmap sequence.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`90 passed`)
-
-### Task 05: Export Options Truthfulness Pass
-- Commit: `a13d94a`
-- Added explicit export-dialog capability mapping to control per-format option visibility.
-- Restricted OBJ-only controls (greedy/triangulate/pivot) to OBJ export dialog only.
-- Hid unsupported scale preset control for glTF and VOX dialogs.
-- Updated option serialization flow so non-supported controls are not applied to non-OBJ formats.
-- Updated glTF/VOX status messaging to remove misleading scale text.
-- Preserved existing OBJ behavior and session option persistence for supported controls.
-- Added focused tests for export-dialog capability mapping (OBJ vs glTF vs VOX).
-- Confirmed no changes to exporter geometry logic in this task (format truthfulness only).
-- Kept implementation in UI/options layer without dependency changes.
-- Preserved compatibility with upcoming Task 06 (glTF scale support) by centralizing capability mapping.
-- Maintained atomic scope and production-safe behavior.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`93 passed`)
-
-### Task 06: glTF Scale Preset Application
-- Commit: `b6a6219`
-- Extended glTF exporter API to accept `scale_factor` and apply it to exported vertex positions.
-- Wired MainWindow glTF export path to pass scale factor derived from current export preset.
-- Updated glTF export status messaging to include applied scale preset now that it is functional.
-- Updated export dialog capability mapping so glTF exposes scale preset control.
-- Preserved VOX dialog behavior (scale remains hidden there until explicit support exists).
-- Kept OBJ export behavior unchanged while sharing existing preset conversion helper.
-- Added numeric regression test validating glTF accessor bounds scale proportionally with scale factor.
-- Updated export-capability tests to reflect glTF scale support.
-- Confirmed exporter output remains valid JSON glTF with unchanged topology/indices semantics.
-- Avoided introducing binary layout changes beyond scaled position values.
-- Maintained dependency-free implementation and roadmap-aligned scope.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`94 passed`)
-
-### Task 07: glTF Normals Export v1
-- Commit: `6d120b0`
-- Added per-vertex normal generation for glTF exports by accumulating mesh quad normals and normalizing per vertex.
-- Extended glTF buffer layout to include dedicated normal data block and accessor.
-- Updated glTF primitive attributes to emit both `POSITION` and `NORMAL`.
-- Updated index accessor wiring after introducing normals buffer view.
-- Preserved triangle topology and index ordering while extending attribute payload.
-- Added default fallback normal for degenerate/zero-length accumulations to keep export valid.
-- Kept exporter output as JSON `.gltf` with embedded data URI payload (no format migration).
-- Updated glTF tests to assert normal attribute presence.
-- Added count parity assertion between position and normal accessors.
-- Preserved scale-factor support added in Task 06 without behavioral regression.
-- Kept implementation dependency-free and contained to exporter/test scope.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`94 passed`)
-
-### Task 08: Project IO Forward-Compatibility Loader
-- Commit: `7dd9f09`
-- Removed strict rejection of unknown top-level project JSON keys during load.
-- Preserved required-key validation and existing structural schema checks.
-- Kept scene/part/editor_state parsing behavior unchanged for known fields.
-- Added forward-compat regression test with extra top-level metadata.
-- Verified legacy schema pathways (`scene` missing / root `voxels`) remain intact.
-- Maintained explicit error behavior for invalid required-key scenarios.
-- Avoided introducing metadata pass-through persistence in this task (load tolerance only).
-- Kept JSON save format stable to avoid unplanned migration behavior.
-- Confirmed no impact to runtime editor-state capture/apply logic.
-- Scope remained atomic to project IO compatibility objective.
-- Implementation remained dependency-free and production-safe.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`95 passed`)
-
-### Task 09: Scene IDs Migration to UUID
-- Commit: `cba9626`
-- Replaced counter-based part ID generation with UUID-backed IDs for newly created parts.
-- Replaced counter-based group ID generation with UUID-backed IDs for newly created groups.
-- Preserved compatibility with legacy scene files that already contain counter-style IDs.
-- Verified loader behavior remains stable when reading legacy IDs from project JSON.
-- Added mixed legacy/new-ID regression test path (load legacy `part-1`, then add a new UUID-based part).
-- Kept save/load schema unchanged (IDs remain opaque strings in project payload).
-- Avoided introducing any migration step that rewrites existing legacy IDs.
-- Preserved part/group operations (duplicate/delete/reorder/assign) without API changes.
-- Maintained deterministic behavior for active-part selection despite UUID migration.
-- Scoped changes to ID generation + compatibility tests only.
-- Kept implementation dependency-free and production-safe.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`96 passed`)
-
-### Task 10: Non-Brush Preview Accuracy Sweep
-- Commit: `2c732ed`
-- Added shared shape-plane cell generator (`build_shape_plane_cells`) for box/line preview calculations.
-- Updated viewport drag-preview path to use shared shape helper rather than duplicated shape branching.
-- Kept command execution logic unchanged while aligning preview generation source of truth.
-- Added parity test verifying helper dispatch matches existing box/line generators.
-- Added parity test verifying mirrored preview cells match actual applied voxels for box operations.
-- Added parity test verifying mirrored preview cells match actual applied voxels for line operations.
-- Preserved pick-mode and edit-plane behavior from prior tasks while tightening preview correctness confidence.
-- Avoided scope creep into fill/brush logic for this task.
-- Kept implementation local to command helpers + tests + preview path.
-- No schema, IO, or export behavior changed.
-- Dependency footprint unchanged.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`98 passed`)
-
-### Task 11: Orthographic Camera Mode v1
-- Commit: `61a34d1`
-- Added camera projection state to `AppContext` with validation (`perspective` / `orthographic`).
-- Added View menu toggle for orthographic projection mode.
-- Wired projection toggle through MainWindow to update viewport rendering immediately.
-- Added editor-state persistence for camera projection mode.
-- Updated editor-state restore logic to apply persisted projection mode safely.
-- Extended viewport projection matrix builder to support orthographic projection path.
-- Kept existing perspective camera behavior unchanged as default mode.
-- Added app-context validation test for camera projection setter.
-- Extended project IO editor_state roundtrip test with `camera_projection`.
-- Preserved tool behavior and input interactions while changing projection math only.
-- Implementation remained dependency-free and roadmap-scoped.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`99 passed`)
-
-### Task 12: Camera Preset + Plane Selector Integration
-- Commit: `1489b01`
-- Added explicit view-preset to edit-plane mapping helper (`top/bottom->XZ`, `left/right->YZ`, `front/back->XY`).
-- Updated view preset action handler to apply mapped edit plane automatically.
-- Improved status messaging to include both selected view preset and resulting edit plane.
-- Triggered UI refresh after preset selection so Tools panel reflects updated plane state immediately.
-- Preserved camera preset orientation logic while integrating plane-selection context.
-- Kept edit-plane selector manual override available after preset-based updates.
-- Added unit tests for preset-to-plane mapping across all preset groups.
-- Maintained orthographic/perspective handling unchanged from Task 11.
-- Avoided changes to command execution and picking logic in this task.
-- Implementation remained dependency-free and isolated to UI/view-flow alignment.
-- Scope aligned to roadmap acceptance for orientation feedback polish.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`102 passed`)
-
-### Task 13: Fill 3D Connectivity Mode (Optional Toggle)
-- Commit: `aafece9`
-- Added fill connectivity mode state in `AppContext` (`plane` / `volume`) with validation API.
-- Added Tools panel connectivity selector (`Plane` / `3D`) scoped to fill workflow.
-- Wired fill connectivity UI signal through MainWindow with status feedback refresh.
-- Added editor-state persistence for fill connectivity mode.
-- Extended editor-state restore logic to apply persisted fill connectivity safely.
-- Updated fill command execution to branch between plane flood and volume flood logic.
-- Added bounded 3D flood-fill implementation with threshold protection.
-- Preserved existing plane fill behavior as default mode.
-- Added tests validating plane-vs-volume fill behavior differences.
-- Added app-context validation coverage for fill connectivity setter.
-- Extended project IO editor_state roundtrip test with fill connectivity state.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`104 passed`)
-
-### Task 14: Brush Size Cycle Hotkey
-- Commit: `2def624`
-- Added deterministic brush-size cycle helper for 1->2->3->1 progression.
-- Added brush-size cycle shortcut binding (`]`) in main window shortcut map.
-- Wired shortcut action to update context brush size and refresh UI immediately.
-- Added status feedback message when cycling brush size from keyboard.
-- Preserved existing brush profile controls in Tools panel (hotkey complements UI control).
-- Kept brush shape and tool-mode behavior unchanged.
-- Added tests validating brush-size cycle progression and invalid-input fallback behavior.
-- Avoided key collisions with existing tool/mode/palette shortcuts.
-- Kept implementation scoped to shortcut behavior only (no command logic changes).
-- Maintained dependency-free implementation.
-- Scope matches roadmap acceptance for quick brush-size cycling.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`106 passed`)
-
-### Task 15: Group Membership Visibility in Inspector
-- Commit: `1314998`
-- Added scene API helper (`group_names_for_part`) to query ordered group memberships for a part.
-- Added active-part group membership summary label to inspector panel.
-- Updated inspector refresh path to render concise membership summary text.
-- Added fallback membership text when active part is not in any group.
-- Preserved existing group assignment/unassignment controls and behavior.
-- Preserved group visibility/lock controls and scene mutation logic unchanged.
-- Added scene regression test validating membership summary ordering/content.
-- Kept implementation lightweight (read-only summary, no interactive chips yet).
-- Avoided UI layout refactor beyond adding one summary label row.
-- Implementation remained dependency-free and roadmap-scoped.
-- No project schema changes were introduced.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`107 passed`)
-
-### Task 16: Palette Import/Export GPL Support v1
-- Commit: `23e9ee7`
-- Added palette preset IO support for GPL (`.gpl`) alongside existing JSON format.
-- Added GPL writer with standard header and RGB row emission.
-- Added GPL loader with header validation and robust row parsing.
-- Added extension-based format dispatch in palette save/load APIs.
-- Added file dialog filters for both JSON and GPL palette formats.
-- Preserved existing JSON preset behavior and schema compatibility.
-- Added GPL roundtrip test coverage for save/load fidelity.
-- Added GPL invalid-header validation test coverage.
-- Kept palette normalization behavior consistent across JSON and GPL paths.
-- Avoided introducing palette metadata migration in this task.
-- Implementation remained dependency-free and roadmap-scoped.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`109 passed`)
-
-### Task 17: Palette Slot Lock Protection
-- Commit: `5f23b46`
-- Added palette slot lock state to `AppContext` with lock/unlock APIs.
-- Added lock state persistence in editor-state capture/apply flow.
-- Added active-slot lock toggle control in palette panel.
-- Added lock guards that block RGB edits on locked active slot.
-- Added lock guards that block remove action when active slot is locked.
-- Added lock guards that block swap operations involving locked slots.
-- Added lock-index maintenance logic on add/remove operations to keep lock state aligned to slot indices.
-- Preserved existing palette add/remove/swap/edit behavior for unlocked slots.
-- Added app-context lock API regression test coverage.
-- Extended project IO editor_state roundtrip test with locked slot list.
-- Kept implementation dependency-free and scoped to palette safety behavior.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`110 passed`)
-
-### Task 18: OBJ Multi-Material Export Option
-- Commit: `2b7b00c`
-- Added OBJ export option to split materials by face color index.
-- Added OBJ export dialog control (`Split Materials By Color`) for OBJ path.
-- Wired UI export options into OBJ exporter multi-material strategy.
-- Extended MTL writer to emit per-color material entries when multi-material mode is enabled.
-- Added face-material switching (`usemtl`) during OBJ face emission by face color index.
-- Preserved single-material default behavior when option is disabled.
-- Kept existing UV/vertex-color output paths compatible with new material mode.
-- Added helper for used face-color index extraction to minimize emitted materials.
-- Added regression test asserting multi-material `newmtl`/`usemtl` output presence.
-- Maintained backward-compatible `voxel_default` material naming for color index 0.
-- Implementation remained dependency-free and exporter-scoped.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`111 passed`)
-
-### Task 19: OBJ Vertex Color Policy Clarification
-- Commit: `5dc16e8`
-- Added explicit OBJ vertex-color policy option (`first_face` / `last_face`) to exporter options.
-- Kept deterministic default policy as `first_face` for backward compatibility.
-- Added policy validation with clear error for unsupported mode values.
-- Wired vertex-color assignment logic through explicit policy branch instead of implicit behavior.
-- Preserved existing vertex-color extension output format (`v x y z r g b`).
-- Added shared-vertex fixture test validating `first_face` behavior.
-- Added shared-vertex fixture test validating `last_face` behavior.
-- Kept OBJ material/UV writing behavior unchanged in this task.
-- Avoided topology splitting or vertex duplication changes for this iteration.
-- Implementation remained dependency-free and exporter-scoped.
-- Clarified behavior through tests as executable policy documentation.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`113 passed`)
-
-### Task 20: VOX Import Unsupported-Chunk Diagnostics
-- Commit: `8cca40f`
-- Added warning-capable VOX loader path (`load_vox_models_with_warnings`) that reports unsupported chunk IDs.
-- Kept existing `load_vox_models` API backward-compatible by delegating and discarding warnings.
-- Added unsupported chunk collection logic in parser while preserving permissive import behavior.
-- Updated VOX import UI flow to consume warning-capable loader path.
-- Added user-facing warning dialog when unsupported chunks are encountered during import.
-- Preserved successful import behavior for supported model/palette chunks.
-- Added parser test using synthetic VOX payload with unknown chunk (`nTRN`) and warning assertion.
-- Added compatibility assertion that legacy loader wrapper still works on same payload.
-- Ensured unsupported chunk diagnostics do not block import success path.
-- Kept implementation dependency-free and parser/UI-scoped.
-- Fixed one indentation regression in import handler and re-ran full gate successfully.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`114 passed`)
-
-### Task 21: Incremental Solidify Stress Equivalence Expansion
-- Commit: `4a155e1`
-- Added multi-seed randomized localized-edit equivalence test for incremental vs full rebuild.
-- Stress test exposed real divergence cases in incremental patch merge path.
-- Added safety check in incremental rebuild path comparing mesh signatures against full rebuild.
-- Added automatic fallback to full rebuild when incremental signature diverges.
-- Preserved incremental path for matching cases while prioritizing correctness.
-- Kept dirty-bound threshold behavior unchanged.
-- Added shared mesh-signature helper in solidify module for correctness checks.
-- Maintained active part cache update flow and dirty-bound clearing behavior.
-- Strengthened reliability for export/stats consumers relying on mesh cache correctness.
-- Preserved dependency-free implementation.
-- Task includes corrective stabilization prompted by new stress coverage.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`115 passed`)
-
-### Task 22: Viewport Per-Frame Data Caching
-- Commit: `0a5ea93`
-- Reduced redundant per-frame visibility traversal in `paintGL` by building render buffers and voxel count in one pass.
-- Added unified helper that returns point vertices, line vertices, and visible voxel count together.
-- Replaced separate per-frame calls that previously recomputed visibility data for count and render buffers.
-- Preserved frame metrics emission and overlay behavior after data-path consolidation.
-- Kept existing scene iteration semantics (visible parts only) unchanged.
-- Avoided altering frame-to-voxels camera framing logic in this task.
-- Added viewport-surrogate performance timing path to perf baseline harness.
-- Extended perf baseline JSON with viewport-surrogate threshold.
-- Preserved conservative non-blocking multiplier strategy in this task.
-- Kept implementation dependency-free and low-risk.
-- No project schema or export behavior changes introduced.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`115 passed`)
-
-### Task 23: Performance Gate Tightening (CI-friendly)
-- Commit: `4ebaf93`
-- Tightened global perf regression multiplier from 20x to 12x baseline.
-- Added per-metric multipliers for brush/fill/solidify/viewport-surrogate metrics.
-- Updated perf harness assertions to consume metric-specific multipliers with fallback to global multiplier.
-- Preserved non-blocking philosophy while increasing regression sensitivity.
-- Kept baseline thresholds conservative enough to remain stable on current machine.
-- Retained existing perf metrics and baseline file structure compatibility.
-- Added tiered budget behavior without introducing external benchmarking dependencies.
-- No runtime/editor code changes in this task (test-gate hardening only).
-- Maintained deterministic baseline parsing and float conversion safeguards.
-- Prepared harness for further tightening in future cycles by metric.
-- Scope aligns with roadmap risk note for CI-friendly tightening.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`115 passed`)
-
-### Task 24: Runtime Stats Label Clarity Pass
-- Commit: `bda043c`
-- Updated stats label wording to clearly separate scene-level vs active-part voxel context.
-- Renamed active voxel label to `Active Part Voxels` for explicit scope.
-- Extended runtime row to include both `scene voxels` and `active-part voxels`.
-- Added dedicated runtime-label formatting helper for deterministic text generation.
-- Updated main window runtime updates to provide both scene voxel totals and active-part voxel counts.
-- Preserved existing scene/object triangle/face/edge/bounds statistics output.
-- Added unit test validating runtime label includes both scene and active-part scopes.
-- Kept runtime metrics sources unchanged (frame/rebuild timings preserved).
-- Avoided UI layout or panel hierarchy refactors in this task.
-- Implementation remained dependency-free and roadmap-scoped.
-- Human-facing stats readability improved for multi-part scenes.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`116 passed`)
-
-### Task 25: Autosave Debounce on Edit
-- Commit: `bcc7f7c`
-- Added edit-triggered autosave debounce timer in MainWindow (`AUTOSAVE_DEBOUNCE_MS`).
-- Kept existing periodic autosave timer and routed both through shared snapshot-save method.
-- Wired viewport voxel edit signal to schedule debounce snapshot save.
-- Ensured debounce timer is stopped on close to avoid late callbacks.
-- Added dedicated `_save_recovery_snapshot_now()` helper to centralize snapshot-save logic.
-- Preserved existing recovery prompt and snapshot lifecycle behavior.
-- Added recovery test verifying latest snapshot overwrites earlier state.
-- Kept autosave implementation dependency-free and UI-logic scoped.
-- Did not change recovery file format in this task.
-- Maintained existing exception logging behavior for snapshot save failures.
-- Scope aligns with roadmap requirement for reducing near-edit data loss risk.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`117 passed`)
-
-### Task 26: Recovery Snapshot Version Stamp
-- Commit: `3fdf567`
-- Added explicit recovery version marker key in snapshot editor-state payload.
-- Added recovery snapshot save path stamping with current recovery version.
-- Added recovery load validation for version marker type and compatibility.
-- Added explicit error path for incompatible recovery snapshot versions.
-- Preserved backward behavior for current version snapshots.
-- Stripped internal recovery version marker from editor_state after successful load.
-- Kept recovery prompt/error handling flow in MainWindow unchanged (already safe-fails and clears snapshot on failure).
-- Added recovery version mismatch regression test.
-- Added required test dependencies (`json`, `pytest`) in recovery test module.
-- Maintained snapshot storage path and filename behavior unchanged.
-- Implementation remained dependency-free and IO-scoped.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`118 passed`)
-
-### Task 27: Canonical Source Tree Guardrail
-- Commit: `3ace8b7`
-- Added immutable legacy-tree manifest (`tests/fixtures/legacy_tree_manifest.txt`) with file hashes.
-- Added `tests/test_source_tree_guard.py` to fail on accidental legacy-tree source edits.
-- Guardrail test only scans Python source files and ignores runtime `__pycache__` artifacts.
-- Added explicit failure guidance that tells developers to use canonical paths by default.
-- Added README section documenting canonical edit/runtime paths (`src/app`, `src/core`, `src/util`).
-- Documented legacy-tree policy and manifest update path in `Doc/INDEX.md`.
-- Preserved existing runtime/editor behavior (no feature logic changed in this task).
-- Kept implementation dependency-free and CI-friendly (`pytest` only).
-- Added deterministic, sorted manifest comparison to prevent order-based flakiness.
-- Corrected Task 26 completed-entry hash to the merged commit on `main`.
-- Moved Task 27 from Remaining Tasks to Completed Today as required.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`119 passed`)
-
-### Task 28: Packaging Script Hardening + Exit Diagnostics
-- Commit: `5d8f237`
-- Hardened `tools/package_windows.ps1` with strict mode and explicit step labels.
-- Added preflight spec-file existence validation and clear fail-fast messaging.
-- Added reusable `Assert-PathExists` helper for deterministic artifact checks.
-- Added build/dist cleanup diagnostics before packaging run.
-- Added packaged executable existence and non-zero size validation after build.
-- Added deterministic artifact outputs: executable path, size bytes, and SHA256 hash.
-- Updated packaging checklist with explicit pass criteria and required output lines.
-- Added packaging checklist step to record artifact hash/timestamp in daily report.
-- Added lightweight pytest coverage to enforce packaging diagnostics strings remain present.
-- Preserved existing packaging command path (`pyinstaller tools/build_pyinstaller.spec --noconfirm --clean`).
-- Kept task scope dependency-free and packaging/docs/test focused.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`121 passed`)
-
-### Task 29: Portable Zip + Installer Prep Checklist
-- Commit: `23a62ac`
-- Added portable zip creation workflow to packaging checklist (`Compress-Archive` path and validation).
-- Added explicit portable zip artifact verification steps (existence, size, timestamp).
-- Added portable zip SHA256 capture step for deterministic artifact tracking.
-- Added manual unzip launch smoke flow for portable artifact validation.
-- Added installer prerequisite checklist (tooling, metadata, signing decision, smoke expectations).
-- Updated next-workday smoke checklist with packaging prep verification items.
-- Added packaging verification template section in daily report for end-of-day reuse.
-- Kept scope docs/process-only with no installer build or codepath changes.
-- Preserved current packaging script workflow and PyInstaller path.
-- Moved Task 29 from Remaining Tasks to Completed Today.
-- Kept implementation aligned to roadmap risk note (no tooling dependency expansion).
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`121 passed`)
-
-### Task 30: Day-End Full QA + Handoff Pack
-- Commit: `COMMIT_PENDING`
-- Executed full launch smoke gate on task branch (`python src/app/main.py`) with successful startup.
-- Executed full automated test suite gate (`pytest -q`) with all tests passing.
-- Executed explicit programmatic IO smoke (project save/open) and verified roundtrip voxel integrity.
-- Executed explicit programmatic export smoke for OBJ, glTF, and VOX with non-empty artifacts.
-- Updated roadmap board to reflect zero remaining tasks for the day-cycle.
-- Added end-of-day operator-ready validation checklist in daily report.
-- Added end-of-day summary with completed task range and current risks/notes.
-- Updated current-state completion estimates for completed Phase 1 day-cycle scope.
-- Updated next-workday file with operator validation handoff checklist.
-- Kept stable untouched and retained merge target policy as `main` only.
-- Documented offline/publish note due intermittent GitHub connectivity failures.
-- Smoke tests passed on branch:
-  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
-  - `pytest -q` (`121 passed`)
-  - Programmatic IO/export smoke (`PASS`)
+- None yet (day start planning board).
