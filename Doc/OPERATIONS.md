@@ -96,3 +96,39 @@ Use this exact checklist before promoting `main` to `stable`.
 14. Packaging diagnostics
 - Action: Run `powershell -ExecutionPolicy Bypass -File .\\tools\\package_windows.ps1`.
 - Expected: packaging completes with artifact path, size, and SHA256 diagnostics.
+
+## Parity Closure Workday Execution
+
+Programmer-owned `1234` loop (repeat per roadmap task):
+1. Branch
+- `git checkout main`
+- `git pull` (if remote available)
+- `git checkout -b feature/roadmap-XX-<slug>`
+2. Build
+- Implement only the scoped task from `Doc/ROADMAP_TASKS.md`.
+3. Gate
+- `python src/app/main.py` (launch smoke + feature spot-check)
+- `pytest -q` (must be green)
+- Task-specific smoke where relevant:
+  - Viewport/editing: create test voxels + tool preview correctness.
+  - IO/import/export: at least one real roundtrip/export action.
+  - Packaging: run packaging command if packaging scripts touched.
+4. Merge
+- Update docs required by workflow.
+- Commit single task change.
+- Merge into `main` only.
+- Never touch `stable` during closure sprint.
+
+Required gates per task:
+- No merge when any gate fails.
+- Add/extend pytest coverage for each bugfix or core behavior change.
+- For parity-critical tasks (format/tooling/workflow): include at least one human-testable acceptance proof in daily notes.
+
+End-of-board analysis step (mandatory):
+1. Run full QA gate from `PRE-STABLE QA GATE (QUBICLE STANDARD)`.
+2. Execute `Doc/PARITY_RECHECK_PROMPT.md`.
+3. Update:
+- `Doc/PARITY_SCORECARD.md` (rescored)
+- `Doc/CURRENT_STATE.md` parity snapshot
+- `Doc/DAILY_REPORT.md` delta summary
+4. If any P0/P1 parity item remains below `1.0`, prepare next closure board and hold stable promotion.
