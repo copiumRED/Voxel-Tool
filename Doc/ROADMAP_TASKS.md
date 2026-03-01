@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 01: Unify Edit Plane Axis Contract
-- Goal: Remove render/input axis mismatch and define canonical voxel axis/edit-plane behavior.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `Doc/CURRENT_STATE.md`.
-- Acceptance criteria (human-testable): Grid orientation and default edit placement are visually and behaviorally aligned.
-- Tests required: Add/update viewport unit tests for plane intersection semantics.
-- Risk/rollback note: If camera interactions regress, rollback to previous axis mapping and keep contract doc-only.
-
 ### Task 02: Non-Brush 3D Target Resolver v1
 - Goal: Add shared 3D target resolution for line/box/fill so they are not hard-locked to Z=0.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/voxels/raycast.py`.
@@ -217,4 +210,19 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Risk/rollback note: If any gate fails, stop merges and document blocker with next experiment.
 
 ## Completed Today
-- None (day-start planning run only).
+### Task 01: Unify Edit Plane Axis Contract
+- Commit: `6658fd1`
+- Added shared axis-plane intersection helper (`intersect_axis_plane`) in voxel raycast core for consistent plane hit math.
+- Wired viewport plane-hit placement (`_screen_to_plane_cell`) to the shared helper and canonical edit-plane constants.
+- Updated world-grid rendering to use the same canonical edit plane (`z=0`) as default placement operations.
+- Added regression tests for plane-hit semantics: valid hit, parallel ray miss, and behind-origin miss cases.
+- Kept camera/orbit input behavior unchanged to avoid introducing movement regressions in this task.
+- Preserved brush and non-brush command behavior scope (no tool-mode expansion in Task 01).
+- Maintained mirror/palette/export logic untouched to keep task scope atomic.
+- Confirmed startup viewport initialization remains successful with active OpenGL pipeline.
+- Verified task does not change persisted project schema or editor-state compatibility.
+- Established groundwork for Task 02/03 shared targeting improvements with reusable core helper.
+- Kept implementation minimal and production-safe with no new dependencies.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`85 passed`)

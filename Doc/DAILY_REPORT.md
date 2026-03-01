@@ -644,3 +644,16 @@
   - Run `ping github.com` and `git ls-remote origin`.
   - Confirm proxy/VPN/firewall settings, then retry `git fetch origin` and `git push`.
 - Status: push/pull remains blocked; no new day-cycle tasks started.
+
+### Roadmap 01 (Day-Cycle 30): Unify Edit Plane Axis Contract
+- What was done:
+  - Added shared axis-plane intersection helper in `core.voxels.raycast` to define canonical plane-hit math.
+  - Updated viewport plane targeting path to use canonical edit-plane constants and shared intersection logic.
+  - Updated viewport grid rendering to the same canonical edit plane (`z=0`) to remove visual/input mismatch.
+  - Added regression tests for plane intersection semantics (hit, parallel miss, behind-origin miss).
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In app, confirm grid plane aligns with default paint placement plane.
+  - Run: `pytest -q` (current: `85 passed`)
+- Risks/issues:
+  - This task intentionally does not yet add full 3D non-brush targeting; that is scheduled in Task 02.

@@ -5,6 +5,31 @@ from math import floor, sqrt
 from core.voxels.voxel_grid import VoxelGrid
 
 
+def intersect_axis_plane(
+    origin: tuple[float, float, float],
+    direction: tuple[float, float, float],
+    *,
+    axis: str,
+    value: float = 0.0,
+) -> tuple[float, float, float] | None:
+    axis_key = axis.strip().lower()
+    if axis_key not in {"x", "y", "z"}:
+        raise ValueError(f"Unsupported axis plane: {axis}")
+    axis_index = {"x": 0, "y": 1, "z": 2}[axis_key]
+    denominator = direction[axis_index]
+    if abs(denominator) < 1e-6:
+        return None
+
+    t = (float(value) - origin[axis_index]) / denominator
+    if t <= 0.0:
+        return None
+    return (
+        origin[0] + (direction[0] * t),
+        origin[1] + (direction[1] * t),
+        origin[2] + (direction[2] * t),
+    )
+
+
 def raycast_voxel_surface(
     voxels: VoxelGrid,
     origin: tuple[float, float, float],

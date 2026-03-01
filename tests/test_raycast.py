@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.voxels.raycast import raycast_voxel_surface, resolve_brush_target_cell
+from core.voxels.raycast import intersect_axis_plane, raycast_voxel_surface, resolve_brush_target_cell
 from core.voxels.voxel_grid import VoxelGrid
 
 
@@ -91,3 +91,34 @@ def test_resolve_brush_target_in_erase_mode_requires_surface_hit() -> None:
     )
     assert hit_result == ((0, 0, 0), "surface")
     assert miss_result is None
+
+
+def test_intersect_axis_plane_hits_z_plane() -> None:
+    hit = intersect_axis_plane(
+        origin=(0.0, 0.0, 10.0),
+        direction=(1.0, 0.5, -2.0),
+        axis="z",
+        value=0.0,
+    )
+    assert hit is not None
+    assert abs(hit[2]) < 1e-6
+
+
+def test_intersect_axis_plane_returns_none_for_parallel_ray() -> None:
+    hit = intersect_axis_plane(
+        origin=(0.0, 0.0, 5.0),
+        direction=(1.0, 0.0, 0.0),
+        axis="z",
+        value=0.0,
+    )
+    assert hit is None
+
+
+def test_intersect_axis_plane_rejects_hits_behind_origin() -> None:
+    hit = intersect_axis_plane(
+        origin=(0.0, 0.0, -1.0),
+        direction=(0.0, 0.0, -1.0),
+        axis="z",
+        value=0.0,
+    )
+    assert hit is None

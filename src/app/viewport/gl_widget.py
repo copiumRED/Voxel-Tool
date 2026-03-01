@@ -17,7 +17,7 @@ from PySide6.QtOpenGL import (
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from core.commands.demo_commands import build_box_plane_cells, build_brush_cells, build_line_plane_cells
-from core.voxels.raycast import resolve_brush_target_cell
+from core.voxels.raycast import intersect_axis_plane, resolve_brush_target_cell
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -45,6 +45,8 @@ class GLViewportWidget(QOpenGLWidget):
     _DEFAULT_PITCH_DEG = -30.0
     _DEFAULT_DISTANCE = 25.0
     _VOXEL_HALF_EXTENT = 0.45
+    _EDIT_PLANE_AXIS = "z"
+    _EDIT_PLANE_VALUE = 0.0
 
     _PALETTE: tuple[tuple[float, float, float], ...] = (
         (0.95, 0.35, 0.35),
@@ -295,12 +297,13 @@ class GLViewportWidget(QOpenGLWidget):
             spacing = max(1, int(self._app_context.grid_spacing))
         grid_min = -20
         grid_max = 20
+        plane_z = float(self._EDIT_PLANE_VALUE)
         for i in range(grid_min, grid_max + 1, spacing):
             shade = 0.45 if i == 0 else 0.30
-            line_vertices.extend((float(i), 0.0, float(grid_min), shade, shade, shade))
-            line_vertices.extend((float(i), 0.0, float(grid_max), shade, shade, shade))
-            line_vertices.extend((float(grid_min), 0.0, float(i), shade, shade, shade))
-            line_vertices.extend((float(grid_max), 0.0, float(i), shade, shade, shade))
+            line_vertices.extend((float(i), float(grid_min), plane_z, shade, shade, shade))
+            line_vertices.extend((float(i), float(grid_max), plane_z, shade, shade, shade))
+            line_vertices.extend((float(grid_min), float(i), plane_z, shade, shade, shade))
+            line_vertices.extend((float(grid_max), float(i), plane_z, shade, shade, shade))
 
         self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
 
@@ -1007,15 +1010,16 @@ class GLViewportWidget(QOpenGLWidget):
         if ray is None:
             return None
         origin, direction = ray
-        if abs(direction.z()) < 1e-6:
+        hit = intersect_axis_plane(
+            (origin.x(), origin.y(), origin.z()),
+            (direction.x(), direction.y(), direction.z()),
+            axis=self._EDIT_PLANE_AXIS,
+            value=self._EDIT_PLANE_VALUE,
+        )
+        if hit is None:
             return None
-
-        t = -origin.z() / direction.z()
-        if t <= 0.0:
-            return None
-
-        hit = origin + (direction * t)
-        return int(round(hit.x())), int(round(hit.y())), 0
+        hx, hy, hz = hit
+        return int(round(hx)), int(round(hy)), int(round(hz))
 
     def _screen_to_world_ray(self, x: float, y: float) -> tuple[QVector3D, QVector3D] | None:
         width = max(1, self.width())

@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **76%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **77%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -19,6 +19,7 @@ Reasoning:
 - Correction 3: prior docs implied strong import parity; VOX import supports SIZE/XYZI/RGBA but not transform/hierarchy chunks common in richer VOX scenes.
 - Correction 4: prior docs mention near-finished viewport UX parity; current viewport has view presets but no orthographic projection mode.
 - Correction 5: prior docs emphasize current-path stability, but duplicate source trees (`src/app` and `src/voxel_tool`) still create maintenance risk.
+- Correction 6: Task 01 completed canonical edit-plane alignment by wiring grid rendering and plane-hit targeting to the same `z=0` contract.
 
 ## Implemented vs Not Implemented
 
@@ -129,11 +130,11 @@ Not Implemented:
 - Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`.
 - Fastest confirmation: toggle pick mode and run box/line/fill; behavior remains unchanged.
 
-3. Axis convention mismatch (grid plane vs edit plane)
-- Symptoms: grid renders on Y=0 while paint fallback plane is Z=0, causing orientation confusion.
-- Suspected root cause: separate hard-coded plane assumptions in render and input paths.
-- Exact files: `src/app/viewport/gl_widget.py`.
-- Fastest confirmation: inspect `_draw_world_grid()` and `_screen_to_plane_cell()` behavior while painting at default view.
+3. Non-brush tool plane selection is not user-configurable yet
+- Symptoms: line/box/fill operate on canonical plane only and cannot switch XY/YZ/XZ interactively.
+- Suspected root cause: no active edit-plane selector in context/UI.
+- Exact files: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`.
+- Fastest confirmation: attempt to change non-brush edit plane in UI (control does not exist).
 
 4. glTF export ignores scale preset and outputs positions/indices only
 - Symptoms: scale preset shown in UI but does not affect glTF geometry; no normals/UV/colors/materials.
@@ -178,8 +179,8 @@ Not Implemented:
 - Fastest confirmation: make edit and force-close immediately before 60s tick; recovery lacks latest change.
 
 ## Top 10 Technical Risks (Ranked) + Mitigation
-1. Render/input axis inconsistency creates long-tail correctness bugs
-- Mitigation: define canonical axis/plane contract, enforce through shared utility + regression tests.
+1. Full 3D targeting consistency remains incomplete for non-brush tools
+- Mitigation: complete shared non-brush 3D resolver and pick-mode parity tests (Tasks 02-03).
 
 2. Export-format trust gap (glTF/OBJ parity deficits)
 - Mitigation: add goldens + external roundtrip smoke matrix (Blender, Unity, Qubicle).
