@@ -1589,3 +1589,18 @@
   - Run: `pytest -q` (current: `176 passed`).
 - Risks/issues:
   - Hotkey overlay remains pending Task 37.
+
+### Roadmap 37 (Day-Cycle 40): Interface Polish - Tool Hotkey Overlay
+- What was done:
+  - Replaced static shortcut help message with a modeless in-app hotkey overlay dialog.
+  - Added dynamic hotkey list populated from the current registered shortcut bindings.
+  - Added shortcut binding label registry and duplicate shortcut sequence detector.
+  - Added startup warning log when duplicate shortcut sequences are detected.
+  - Added regression tests for duplicate detection and overlay text formatting.
+- How to test quickly:
+  - Launch app and open `Edit -> Shortcut Help`.
+  - Confirm a non-modal overlay appears and lists active hotkeys.
+  - Close overlay with `Close` button and verify normal editing continues uninterrupted.
+  - Run: `pytest -q` (current: `179 passed`).
+- Risks/issues:
+  - Precision input mode remains pending Task 38.

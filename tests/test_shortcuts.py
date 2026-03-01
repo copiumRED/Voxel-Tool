@@ -4,6 +4,8 @@ from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import (
     _app_theme_stylesheet,
+    _duplicate_shortcut_sequences,
+    _format_hotkey_overlay_text,
     _next_brush_size,
     _filter_command_palette_entries,
     _layout_preset_state_key,
@@ -190,6 +192,25 @@ def test_layout_preset_state_key_validation() -> None:
     assert _layout_preset_state_key(2) == "main_window/layout_preset_2"
     with pytest.raises(ValueError):
         _layout_preset_state_key(3)
+
+
+def test_duplicate_shortcut_sequence_detector_reports_conflicts() -> None:
+    bindings = [("B", "Brush"), ("Shift+F", "Frame"), ("b", "Brush Alt")]
+    conflicts = _duplicate_shortcut_sequences(bindings)
+    assert conflicts == ("B",)
+
+
+def test_duplicate_shortcut_sequence_detector_is_empty_when_unique() -> None:
+    bindings = [("B", "Brush"), ("Shift+F", "Frame"), ("Ctrl+Shift+P", "Command Palette")]
+    assert _duplicate_shortcut_sequences(bindings) == ()
+
+
+def test_hotkey_overlay_text_contains_binding_labels() -> None:
+    text = _format_hotkey_overlay_text([("B", "Tool: Brush"), ("Shift+F", "Frame Voxels")])
+    assert "B" in text
+    assert "Tool: Brush" in text
+    assert "Shift+F" in text
+    assert "Frame Voxels" in text
 
 
 def test_app_theme_stylesheet_contains_key_widget_rules() -> None:

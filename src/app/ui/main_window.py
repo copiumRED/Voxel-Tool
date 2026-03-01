@@ -17,9 +17,12 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QInputDialog,
+    QLabel,
     QMainWindow,
     QMessageBox,
+    QPushButton,
     QToolBar,
+    QVBoxLayout,
 )
 
 from app.app_context import AppContext
@@ -219,6 +222,40 @@ def _app_theme_stylesheet() -> str:
     )
 
 
+def _hotkey_overlay_entries() -> tuple[tuple[str, str], ...]:
+    return (
+        ("B", "Tool: Brush"),
+        ("X", "Tool: Box"),
+        ("L", "Tool: Line"),
+        ("F", "Tool: Fill"),
+        ("P", "Mode: Paint"),
+        ("E", "Mode: Erase"),
+        ("1..0", "Palette Slot"),
+        ("Shift+F", "Frame Voxels"),
+        ("Shift+R", "Reset Camera"),
+        ("]", "Cycle Brush Size"),
+        ("Ctrl+Shift+P", "Command Palette"),
+    )
+
+
+def _duplicate_shortcut_sequences(bindings: list[tuple[str, str]]) -> tuple[str, ...]:
+    counts: dict[str, int] = {}
+    canonical_to_display: dict[str, str] = {}
+    for sequence, _label in bindings:
+        text = str(sequence).strip()
+        if not text:
+            continue
+        key = text.lower()
+        counts[key] = counts.get(key, 0) + 1
+        canonical_to_display.setdefault(key, text)
+    return tuple(sorted(canonical_to_display[key] for key, count in counts.items() if count > 1))
+
+
+def _format_hotkey_overlay_text(bindings: list[tuple[str, str]]) -> str:
+    lines = [f"{sequence:<14} {label}" for sequence, label in bindings]
+    return "\n".join(lines)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -228,6 +265,9 @@ class MainWindow(QMainWindow):
         self.undo_action: QAction | None = None
         self.redo_action: QAction | None = None
         self._shortcuts: list[QShortcut] = []
+        self._hotkey_bindings: list[tuple[str, str]] = []
+        self._hotkey_overlay_dialog: QDialog | None = None
+        self._hotkey_overlay_label: QLabel | None = None
         self._export_options = _ExportSessionOptions()
         self._last_frame_ms = 0.0
         self._last_rebuild_ms = 0.0
@@ -547,31 +587,38 @@ class MainWindow(QMainWindow):
         debug_menu.addAction(create_test_voxels_action)
 
     def _setup_shortcuts(self) -> None:
-        self._register_shortcut("B", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BRUSH))
-        self._register_shortcut("X", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BOX))
-        self._register_shortcut("L", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_LINE))
-        self._register_shortcut("F", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_FILL))
-        self._register_shortcut("P", lambda: self._set_tool_mode(AppContext.TOOL_MODE_PAINT))
-        self._register_shortcut("E", lambda: self._set_tool_mode(AppContext.TOOL_MODE_ERASE))
-        self._register_shortcut("1", lambda: self._set_active_palette_slot(0))
-        self._register_shortcut("2", lambda: self._set_active_palette_slot(1))
-        self._register_shortcut("3", lambda: self._set_active_palette_slot(2))
-        self._register_shortcut("4", lambda: self._set_active_palette_slot(3))
-        self._register_shortcut("5", lambda: self._set_active_palette_slot(4))
-        self._register_shortcut("6", lambda: self._set_active_palette_slot(5))
-        self._register_shortcut("7", lambda: self._set_active_palette_slot(6))
-        self._register_shortcut("8", lambda: self._set_active_palette_slot(7))
-        self._register_shortcut("9", lambda: self._set_active_palette_slot(8))
-        self._register_shortcut("0", lambda: self._set_active_palette_slot(9))
-        self._register_shortcut("Shift+F", self._on_frame_voxels)
-        self._register_shortcut("Shift+R", self._on_reset_camera)
-        self._register_shortcut("]", self._cycle_brush_size)
-        self._register_shortcut("Ctrl+Shift+P", self._on_open_command_palette)
+        self._register_shortcut("B", "Tool: Brush", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BRUSH))
+        self._register_shortcut("X", "Tool: Box", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_BOX))
+        self._register_shortcut("L", "Tool: Line", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_LINE))
+        self._register_shortcut("F", "Tool: Fill", lambda: self._set_tool_shape(AppContext.TOOL_SHAPE_FILL))
+        self._register_shortcut("P", "Mode: Paint", lambda: self._set_tool_mode(AppContext.TOOL_MODE_PAINT))
+        self._register_shortcut("E", "Mode: Erase", lambda: self._set_tool_mode(AppContext.TOOL_MODE_ERASE))
+        self._register_shortcut("1", "Palette Slot 1", lambda: self._set_active_palette_slot(0))
+        self._register_shortcut("2", "Palette Slot 2", lambda: self._set_active_palette_slot(1))
+        self._register_shortcut("3", "Palette Slot 3", lambda: self._set_active_palette_slot(2))
+        self._register_shortcut("4", "Palette Slot 4", lambda: self._set_active_palette_slot(3))
+        self._register_shortcut("5", "Palette Slot 5", lambda: self._set_active_palette_slot(4))
+        self._register_shortcut("6", "Palette Slot 6", lambda: self._set_active_palette_slot(5))
+        self._register_shortcut("7", "Palette Slot 7", lambda: self._set_active_palette_slot(6))
+        self._register_shortcut("8", "Palette Slot 8", lambda: self._set_active_palette_slot(7))
+        self._register_shortcut("9", "Palette Slot 9", lambda: self._set_active_palette_slot(8))
+        self._register_shortcut("0", "Palette Slot 10", lambda: self._set_active_palette_slot(9))
+        self._register_shortcut("Shift+F", "Frame Voxels", self._on_frame_voxels)
+        self._register_shortcut("Shift+R", "Reset Camera", self._on_reset_camera)
+        self._register_shortcut("]", "Cycle Brush Size", self._cycle_brush_size)
+        self._register_shortcut("Ctrl+Shift+P", "Command Palette", self._on_open_command_palette)
+        conflicts = _duplicate_shortcut_sequences(self._hotkey_bindings)
+        if conflicts:
+            logging.getLogger("voxel_tool").warning(
+                "Shortcut conflict(s) detected: %s",
+                ", ".join(conflicts),
+            )
 
-    def _register_shortcut(self, sequence: str, callback) -> None:
+    def _register_shortcut(self, sequence: str, label: str, callback) -> None:
         shortcut = QShortcut(QKeySequence(sequence), self)
         shortcut.activated.connect(callback)
         self._shortcuts.append(shortcut)
+        self._hotkey_bindings.append((sequence, label))
 
     def _set_tool_shape(self, shape: str) -> None:
         self.tools_panel.set_tool_shape(shape)
@@ -954,15 +1001,29 @@ class MainWindow(QMainWindow):
         self._refresh_ui_state()
 
     def _on_show_shortcut_help(self) -> None:
-        QMessageBox.information(
-            self,
-            "Shortcut Help",
-            "Tools: B/X/L/F\n"
-            "Modes: P/E\n"
-            "Palette: 1..0\n"
-            "Camera: Shift+F frame, Shift+R reset\n"
-            "Views: Ctrl+1..Ctrl+6",
-        )
+        if self._hotkey_overlay_dialog is None:
+            dialog = QDialog(self, Qt.Tool)
+            dialog.setModal(False)
+            dialog.setWindowTitle("Hotkey Overlay")
+            layout = QVBoxLayout(dialog)
+            info = QLabel(dialog)
+            info.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            layout.addWidget(info)
+            close_button = QPushButton("Close", dialog)
+            close_button.clicked.connect(dialog.close)
+            layout.addWidget(close_button)
+            self._hotkey_overlay_dialog = dialog
+            self._hotkey_overlay_label = info
+
+        if self._hotkey_overlay_label is not None:
+            bindings = list(self._hotkey_bindings)
+            bindings.append(("Ctrl+1..Ctrl+6", "View Presets"))
+            self._hotkey_overlay_label.setText(_format_hotkey_overlay_text(bindings))
+
+        if self._hotkey_overlay_dialog is not None:
+            self._hotkey_overlay_dialog.show()
+            self._hotkey_overlay_dialog.raise_()
+            self._hotkey_overlay_dialog.activateWindow()
 
     def _command_palette_entries(self) -> list[tuple[str, str]]:
         return [

@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 37: Interface Polish - Tool Hotkey Overlay
-- Goal: Add in-app hotkey cheat-sheet overlay.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
-- Acceptance criteria (human-testable): Overlay lists current active hotkeys and closes quickly.
-- Tests required: Add hotkey registry tests for duplicate conflicts.
-- Risk/rollback note: Keep overlay non-modal where possible.
-
 ### Task 38: Interface Polish - Precision Input Mode
 - Goal: Add temporary precision modifier for camera and transform operations.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/inspector_panel.py`.
@@ -690,7 +683,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`174 passed`)
 
 ### Task 36: Interface Polish - Numeric Field Drag Scrub
-- Commit: `COMMIT_PENDING`
+- Commit: `0b9802a`
 - Added drag-scrub row label widget for numeric transform controls in inspector panel.
 - Added horizontal drag detection with per-move pixel delta emission.
 - Added transform row labels as active scrub controls for position, rotation, and scale fields.
@@ -706,3 +699,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`176 passed`)
+
+### Task 37: Interface Polish - Tool Hotkey Overlay
+- Commit: `COMMIT_PENDING`
+- Added modeless in-app hotkey overlay dialog from Edit -> Shortcut Help.
+- Added overlay content rendering from current registered shortcut bindings.
+- Added close button + non-modal behavior for quick open/close without workflow interruption.
+- Added text-selectable hotkey list for quick reference while editing.
+- Added shortcut binding registry tracking during shortcut registration.
+- Added duplicate shortcut sequence detector helper with case-insensitive comparison.
+- Added startup conflict warning log for duplicate shortcut registrations.
+- Updated shortcut registration calls to include human-readable labels.
+- Preserved all existing shortcut behavior and callback routing.
+- Added unit test for duplicate shortcut conflict detection.
+- Added unit test for unique shortcut registry no-conflict path.
+- Added unit test for hotkey overlay text formatting output.
+- Kept implementation dependency-free and UI-scoped.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`179 passed`)
