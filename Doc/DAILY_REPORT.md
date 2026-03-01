@@ -1548,3 +1548,17 @@
   - Run: `pytest -q` (current: `172 passed`).
 - Risks/issues:
   - Dock layout presets remain pending Task 34.
+
+### Roadmap 34 (Day-Cycle 40): Interface Polish - Dock Layout Presets
+- What was done:
+  - Added two dock layout preset slots with save/load actions in View menu.
+  - Added layout preset persistence keys and slot validation helper.
+  - Added safe load behavior: empty preset notice + fallback to default layout on restore failure.
+  - Added regression test for preset-key mapping/validation.
+- How to test quickly:
+  - Rearrange docks and save to preset 1.
+  - Change layout again, then load preset 1 and verify layout restoration.
+  - Repeat with preset 2 to validate dual-slot behavior.
+  - Run: `pytest -q` (current: `173 passed`).
+- Risks/issues:
+  - Theme/contrast pass remains pending Task 35.

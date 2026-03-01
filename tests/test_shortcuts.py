@@ -5,6 +5,7 @@ from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import (
     _next_brush_size,
     _filter_command_palette_entries,
+    _layout_preset_state_key,
     _project_io_error_detail,
     _quick_toolbar_action_labels,
     _vox_import_group_name,
@@ -181,3 +182,10 @@ def test_command_palette_filter_returns_sorted_matches() -> None:
     ]
     filtered = _filter_command_palette_entries(entries, "export")
     assert [label for _id, label in filtered] == ["Export glTF", "Export OBJ"]
+
+
+def test_layout_preset_state_key_validation() -> None:
+    assert _layout_preset_state_key(1) == "main_window/layout_preset_1"
+    assert _layout_preset_state_key(2) == "main_window/layout_preset_2"
+    with pytest.raises(ValueError):
+        _layout_preset_state_key(3)

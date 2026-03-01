@@ -192,6 +192,13 @@ def _filter_command_palette_entries(entries: list[tuple[str, str]], query: str) 
     return sorted([entry for entry in entries if q in entry[1].lower()], key=lambda item: item[1].lower())
 
 
+def _layout_preset_state_key(slot: int) -> str:
+    slot_value = int(slot)
+    if slot_value not in (1, 2):
+        raise ValueError("Layout preset slot must be 1 or 2.")
+    return f"main_window/layout_preset_{slot_value}"
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -475,6 +482,20 @@ class MainWindow(QMainWindow):
         debug_overlay_action.toggled.connect(self._on_toggle_debug_overlay)
         view_menu.addAction(debug_overlay_action)
 
+        view_menu.addSeparator()
+
+        save_layout_preset_1_action = QAction("Save Layout Preset 1", self)
+        save_layout_preset_1_action.triggered.connect(lambda: self._save_layout_preset(1))
+        view_menu.addAction(save_layout_preset_1_action)
+        load_layout_preset_1_action = QAction("Load Layout Preset 1", self)
+        load_layout_preset_1_action.triggered.connect(lambda: self._load_layout_preset(1))
+        view_menu.addAction(load_layout_preset_1_action)
+        save_layout_preset_2_action = QAction("Save Layout Preset 2", self)
+        save_layout_preset_2_action.triggered.connect(lambda: self._save_layout_preset(2))
+        view_menu.addAction(save_layout_preset_2_action)
+        load_layout_preset_2_action = QAction("Load Layout Preset 2", self)
+        load_layout_preset_2_action.triggered.connect(lambda: self._load_layout_preset(2))
+        view_menu.addAction(load_layout_preset_2_action)
         view_menu.addSeparator()
 
         reset_layout_action = QAction("Reset Layout", self)
@@ -1245,6 +1266,29 @@ class MainWindow(QMainWindow):
         self._apply_default_layout()
         settings.setValue("main_window/geometry", self.saveGeometry())
         settings.setValue("main_window/state", self.saveState())
+
+    def _save_layout_preset(self, slot: int) -> None:
+        settings = get_settings()
+        key = _layout_preset_state_key(slot)
+        settings.setValue(key, self.saveState())
+        self.statusBar().showMessage(f"Saved layout preset {slot}", 4000)
+
+    def _load_layout_preset(self, slot: int) -> None:
+        settings = get_settings()
+        key = _layout_preset_state_key(slot)
+        value = settings.value(key)
+        if value is None:
+            QMessageBox.information(self, "Load Layout Preset", f"Layout preset {slot} is empty.")
+            return
+        if not self.restoreState(value):
+            self._apply_default_layout()
+            QMessageBox.warning(
+                self,
+                "Load Layout Preset",
+                f"Layout preset {slot} could not be restored; default layout applied.",
+            )
+            return
+        self.statusBar().showMessage(f"Loaded layout preset {slot}", 4000)
 
     def _on_viewport_ready(self, gl_info: str) -> None:
         logging.getLogger("voxel_tool").info("Viewport ready | OpenGL: %s", gl_info)

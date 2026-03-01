@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 34: Interface Polish - Dock Layout Presets
-- Goal: Add save/restore UI dock layout presets.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/settings.py`.
-- Acceptance criteria (human-testable): User can save and restore at least two layouts.
-- Tests required: Add settings persistence tests for layout blobs.
-- Risk/rollback note: Fallback to default layout on corrupt settings.
-
 ### Task 35: Interface Polish - Theme and Contrast Pass
 - Goal: Improve readability and visual hierarchy across panels.
 - Likely files/modules touched: `src/app/ui/main_window.py`, panel widgets styles.
@@ -654,7 +647,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`171 passed`)
 
 ### Task 33: Interface Polish - Command Palette (Quick Search)
-- Commit: `COMMIT_PENDING`
+- Commit: `f2938a9`
 - Added new command palette dialog (`app/ui/dialogs/command_palette_dialog.py`).
 - Added command palette launch action in Edit menu.
 - Added command palette shortcut binding (`Ctrl+Shift+P`).
@@ -671,3 +664,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`172 passed`)
+
+### Task 34: Interface Polish - Dock Layout Presets
+- Commit: `COMMIT_PENDING`
+- Added layout preset setting-key helper with slot validation (`1` and `2`).
+- Added View menu actions for saving/loading layout preset 1.
+- Added View menu actions for saving/loading layout preset 2.
+- Added main-window save-layout-preset handler that stores serialized dock state.
+- Added main-window load-layout-preset handler with empty-preset guard messaging.
+- Added restore failure fallback to default layout when preset state is invalid/corrupt.
+- Added status-bar feedback for successful preset save/load operations.
+- Kept existing reset-layout workflow intact.
+- Preserved existing geometry/state persistence on close.
+- Added regression test for layout preset key helper + slot validation.
+- Kept implementation scoped to dock-state presets only (no settings backend changes required).
+- No dependency additions.
+- Existing menu/dock behavior remains backward compatible.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`173 passed`)
