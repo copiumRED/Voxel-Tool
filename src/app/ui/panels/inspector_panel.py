@@ -97,6 +97,9 @@ class InspectorPanel(QWidget):
         self.group_locked_checkbox.stateChanged.connect(self._on_group_locked_toggled)
         group_flags_layout.addWidget(self.group_locked_checkbox)
         layout.addLayout(group_flags_layout)
+        self.part_groups_label = QLabel(self)
+        self.part_groups_label.setWordWrap(True)
+        layout.addWidget(self.part_groups_label)
 
         transform_layout = QFormLayout()
         self.position_x = self._create_transform_spin()
@@ -184,6 +187,11 @@ class InspectorPanel(QWidget):
         self.group_visible_checkbox.blockSignals(False)
         self.group_locked_checkbox.blockSignals(False)
         self._set_transform_signals_blocked(False)
+        memberships = self._context.current_project.scene.group_names_for_part(active_part.part_id)
+        if memberships:
+            self.part_groups_label.setText(f"Active Part Groups: {', '.join(memberships)}")
+        else:
+            self.part_groups_label.setText("Active Part Groups: (none)")
 
     def _on_add_part(self) -> None:
         if self._context is None:

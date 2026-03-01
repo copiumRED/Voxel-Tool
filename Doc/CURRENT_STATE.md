@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **90%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **91%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Inspector still lacks clear active-part group membership summary
-- Symptoms: group assignment works, but quick-read membership context is limited for active part.
-- Suspected root cause: no dedicated active-part membership summary element in inspector panel.
-- Exact files: `src/app/ui/panels/inspector_panel.py`.
-- Fastest confirmation: select part in multiple groups and inspect panel for concise membership summary.
+1. Palette workflow still lacks GPL import/export interoperability
+- Symptoms: palette preset IO supports JSON only; GPL interchange is unavailable.
+- Suspected root cause: palette IO module has no GPL parser/writer path.
+- Exact files: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
+- Fastest confirmation: try loading/saving `.gpl`; flow is unsupported.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

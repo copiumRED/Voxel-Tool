@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 15: Group Membership Visibility in Inspector
-- Goal: Show active part group memberships directly in inspector for quicker workflow.
-- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`.
-- Acceptance criteria (human-testable): Selecting a part clearly reveals its group memberships.
-- Tests required: Add inspector model-view tests for membership display.
-- Risk/rollback note: Keep simple read-only label if interactive chips are too large for task scope.
-
 ### Task 16: Palette Import/Export GPL Support v1
 - Goal: Add GPL palette format import/export alongside JSON.
 - Likely files/modules touched: `src/core/io/palette_io.py`, `src/app/ui/panels/palette_panel.py`.
@@ -356,3 +349,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`106 passed`)
+
+### Task 15: Group Membership Visibility in Inspector
+- Commit: `HEAD_PENDING`
+- Added scene API helper (`group_names_for_part`) to query ordered group memberships for a part.
+- Added active-part group membership summary label to inspector panel.
+- Updated inspector refresh path to render concise membership summary text.
+- Added fallback membership text when active part is not in any group.
+- Preserved existing group assignment/unassignment controls and behavior.
+- Preserved group visibility/lock controls and scene mutation logic unchanged.
+- Added scene regression test validating membership summary ordering/content.
+- Kept implementation lightweight (read-only summary, no interactive chips yet).
+- Avoided UI layout refactor beyond adding one summary label row.
+- Implementation remained dependency-free and roadmap-scoped.
+- No project schema changes were introduced.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`107 passed`)

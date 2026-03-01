@@ -832,3 +832,15 @@
   - Run: `pytest -q` (current: `106 passed`)
 - Risks/issues:
   - Group membership visibility polish in Inspector remains pending Task 15.
+
+### Roadmap 15 (Day-Cycle 30): Group Membership Visibility in Inspector
+- What was done:
+  - Added scene helper to query group names for a part.
+  - Added active-part group membership summary in Inspector.
+  - Added regression test for group membership reporting.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Create groups and assign active part; verify Inspector shows `Active Part Groups: ...` summary.
+  - Run: `pytest -q` (current: `107 passed`)
+- Risks/issues:
+  - GPL palette format support remains pending Task 16.

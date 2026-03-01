@@ -134,3 +134,19 @@ def test_scene_group_assign_and_visibility_lock_propagation() -> None:
 
     scene.unassign_part_from_group(second.part_id, group.group_id)
     assert second.part_id not in scene.groups[group.group_id].part_ids
+
+
+def test_scene_group_names_for_part_reports_membership() -> None:
+    scene = Scene.with_default_part()
+    first = scene.get_active_part()
+    second = scene.add_part("Part 2")
+    g1 = scene.create_group("Characters")
+    g2 = scene.create_group("Props")
+    scene.assign_part_to_group(first.part_id, g1.group_id)
+    scene.assign_part_to_group(first.part_id, g2.group_id)
+    scene.assign_part_to_group(second.part_id, g2.group_id)
+
+    first_memberships = scene.group_names_for_part(first.part_id)
+    second_memberships = scene.group_names_for_part(second.part_id)
+    assert first_memberships == ["Characters", "Props"]
+    assert second_memberships == ["Props"]

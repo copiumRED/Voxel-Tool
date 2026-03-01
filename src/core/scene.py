@@ -175,6 +175,15 @@ class Scene:
             if part is not None:
                 part.locked = group.locked
 
+    def group_names_for_part(self, part_id: str) -> list[str]:
+        if part_id not in self.parts:
+            raise ValueError(f"Part '{part_id}' does not exist.")
+        names: list[str] = []
+        for group_id, group in self.iter_groups_ordered():
+            if part_id in group.part_ids:
+                names.append(group.name or group_id)
+        return names
+
     def iter_groups_ordered(self) -> list[tuple[str, PartGroup]]:
         if not self.group_order:
             self.group_order = list(self.groups.keys())
