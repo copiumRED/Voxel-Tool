@@ -872,3 +872,17 @@
   - Run: `pytest -q` (current: `110 passed`)
 - Risks/issues:
   - OBJ multi-material export option remains pending Task 18.
+
+### Roadmap 18 (Day-Cycle 30): OBJ Multi-Material Export Option
+- What was done:
+  - Added OBJ option to split materials by color.
+  - Added export dialog toggle for multi-material mode.
+  - Emitted per-color material entries and `usemtl` switches in OBJ/MTL output.
+  - Added regression test for multi-material output presence.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Export multi-color model as OBJ with `Split Materials By Color` enabled.
+  - Inspect `.obj/.mtl` for multiple `usemtl/newmtl` entries.
+  - Run: `pytest -q` (current: `111 passed`)
+- Risks/issues:
+  - Vertex color conflict policy for shared vertices remains pending Task 19.

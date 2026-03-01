@@ -17,6 +17,7 @@ class ObjExportOptions:
     write_mtl: bool = True
     write_uvs: bool = True
     write_vertex_colors: bool = True
+    multi_material_by_color: bool = False
 
 
 def export_voxels_to_obj(
@@ -36,9 +37,13 @@ def export_voxels_to_obj(
     vertex_colors = _build_vertex_color_map(export_mesh, palette)
 
     mtl_name = ""
+    used_color_indices = _used_face_color_indices(export_mesh, palette)
     if export_options.write_mtl and export_mesh.face_count > 0:
         mtl_name = f"{Path(path).stem}.mtl"
-        _write_mtl_file(Path(path).with_suffix(".mtl"), palette)
+        if export_options.multi_material_by_color:
+            _write_mtl_file(Path(path).with_suffix(".mtl"), palette, used_color_indices=used_color_indices)
+        else:
+            _write_mtl_file(Path(path).with_suffix(".mtl"), palette, used_color_indices={0})
 
     with open(path, "w", encoding="utf-8") as file_obj:
         file_obj.write("# VoxelTool OBJ export\n")
@@ -47,7 +52,8 @@ def export_voxels_to_obj(
             return
         if mtl_name:
             file_obj.write(f"mtllib {mtl_name}\n")
-            file_obj.write("usemtl voxel_default\n")
+            if not export_options.multi_material_by_color:
+                file_obj.write("usemtl voxel_default\n")
 
         for index, (vx, vy, vz) in enumerate(transformed_vertices):
             if export_options.write_vertex_colors and index in vertex_colors:
@@ -66,7 +72,16 @@ def export_voxels_to_obj(
                 file_obj.write("vt 0.0 1.0\n")
                 quad_uv_indices.append((base + 1, base + 2, base + 3, base + 4))
 
+        current_material: str | None = None
         for face_index, (a, b, c, d) in enumerate(export_mesh.quads):
+            if mtl_name and export_options.multi_material_by_color:
+                color_index = 0
+                if face_index < len(export_mesh.face_colors):
+                    color_index = int(export_mesh.face_colors[face_index]) % len(palette)
+                material_name = _material_name(color_index)
+                if material_name != current_material:
+                    file_obj.write(f"usemtl {material_name}\n")
+                    current_material = material_name
             uv = quad_uv_indices[face_index] if export_options.write_uvs else None
             if export_options.triangulate:
                 if uv is not None:
@@ -109,16 +124,41 @@ def _transform_vertices(
     return [((x - pivot[0]) * scale, (y - pivot[1]) * scale, (z - pivot[2]) * scale) for x, y, z in vertices]
 
 
-def _write_mtl_file(path: Path, palette: list[tuple[int, int, int]]) -> None:
-    if palette:
-        r, g, b = palette[0]
-    else:
-        r, g, b = 200, 200, 200
-    kd = (float(r) / 255.0, float(g) / 255.0, float(b) / 255.0)
+def _write_mtl_file(
+    path: Path,
+    palette: list[tuple[int, int, int]],
+    *,
+    used_color_indices: set[int],
+) -> None:
     with open(path, "w", encoding="utf-8") as file_obj:
         file_obj.write("# VoxelTool MTL export\n")
-        file_obj.write("newmtl voxel_default\n")
-        file_obj.write(f"Kd {kd[0]} {kd[1]} {kd[2]}\n")
+        if not used_color_indices:
+            used_color_indices = {0}
+        for color_index in sorted(used_color_indices):
+            if palette:
+                r, g, b = palette[color_index % len(palette)]
+            else:
+                r, g, b = 200, 200, 200
+            kd = (float(r) / 255.0, float(g) / 255.0, float(b) / 255.0)
+            file_obj.write(f"newmtl {_material_name(color_index)}\n")
+            file_obj.write(f"Kd {kd[0]} {kd[1]} {kd[2]}\n")
+
+
+def _used_face_color_indices(mesh: SurfaceMesh, palette: list[tuple[int, int, int]]) -> set[int]:
+    if not palette:
+        return {0}
+    used: set[int] = set()
+    for color_index in mesh.face_colors:
+        used.add(int(color_index) % len(palette))
+    if not used:
+        used.add(0)
+    return used
+
+
+def _material_name(color_index: int) -> str:
+    if int(color_index) == 0:
+        return "voxel_default"
+    return f"voxel_color_{int(color_index)}"
 
 
 def _build_vertex_color_map(

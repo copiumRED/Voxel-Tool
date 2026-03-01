@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 18: OBJ Multi-Material Export Option
-- Goal: Add optional per-color material splitting in OBJ/MTL output.
-- Likely files/modules touched: `src/core/export/obj_exporter.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Multi-color model exports with multiple materials and expected assignments.
-- Tests required: Add OBJ/MTL content tests for `newmtl` and `usemtl` mapping.
-- Risk/rollback note: Keep existing single-material path as default fallback.
-
 ### Task 19: OBJ Vertex Color Policy Clarification
 - Goal: Make vertex color behavior deterministic when faces with different colors share vertices.
 - Likely files/modules touched: `src/core/export/obj_exporter.py`.
@@ -371,7 +364,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`109 passed`)
 
 ### Task 17: Palette Slot Lock Protection
-- Commit: `TASK17_HASH_PENDING`
+- Commit: `5f23b46`
 - Added palette slot lock state to `AppContext` with lock/unlock APIs.
 - Added lock state persistence in editor-state capture/apply flow.
 - Added active-slot lock toggle control in palette panel.
@@ -386,3 +379,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`110 passed`)
+
+### Task 18: OBJ Multi-Material Export Option
+- Commit: `TASK18_HASH_PENDING`
+- Added OBJ export option to split materials by face color index.
+- Added OBJ export dialog control (`Split Materials By Color`) for OBJ path.
+- Wired UI export options into OBJ exporter multi-material strategy.
+- Extended MTL writer to emit per-color material entries when multi-material mode is enabled.
+- Added face-material switching (`usemtl`) during OBJ face emission by face color index.
+- Preserved single-material default behavior when option is disabled.
+- Kept existing UV/vertex-color output paths compatible with new material mode.
+- Added helper for used face-color index extraction to minimize emitted materials.
+- Added regression test asserting multi-material `newmtl`/`usemtl` output presence.
+- Maintained backward-compatible `voxel_default` material naming for color index 0.
+- Implementation remained dependency-free and exporter-scoped.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`111 passed`)

@@ -55,6 +55,7 @@ class _ExportSessionOptions:
     obj_use_greedy_mesh: bool = True
     obj_triangulate: bool = False
     obj_pivot_mode: str = "none"
+    obj_multi_material: bool = False
     scale_preset: str = "Unity (1m)"
 
 
@@ -73,6 +74,8 @@ class _ExportOptionsDialog(QDialog):
         self.obj_pivot_combo = QComboBox(self)
         self.obj_pivot_combo.addItems(["None", "Center", "Bottom"])
         self.obj_pivot_combo.setCurrentText(options.obj_pivot_mode.capitalize())
+        self.obj_multi_material_checkbox = QCheckBox("Split Materials By Color", self)
+        self.obj_multi_material_checkbox.setChecked(options.obj_multi_material)
         self.scale_preset_combo = QComboBox(self)
         self.scale_preset_combo.addItems(["Unity (1m)", "Unreal (1cm)", "Custom (placeholder)"])
         self.scale_preset_combo.setCurrentText(options.scale_preset)
@@ -82,6 +85,7 @@ class _ExportOptionsDialog(QDialog):
             layout.addRow(self.obj_greedy_checkbox)
             layout.addRow(self.obj_triangulate_checkbox)
             layout.addRow("Pivot Mode", self.obj_pivot_combo)
+            layout.addRow(self.obj_multi_material_checkbox)
         if capabilities["scale_preset"]:
             layout.addRow("Scale Preset", self.scale_preset_combo)
 
@@ -95,6 +99,7 @@ class _ExportOptionsDialog(QDialog):
             obj_use_greedy_mesh=self._options.obj_use_greedy_mesh,
             obj_triangulate=self._options.obj_triangulate,
             obj_pivot_mode=self._options.obj_pivot_mode,
+            obj_multi_material=self._options.obj_multi_material,
             scale_preset=self._options.scale_preset,
         )
         capabilities = _export_dialog_capabilities(self._format_name)
@@ -102,6 +107,7 @@ class _ExportOptionsDialog(QDialog):
             next_options.obj_use_greedy_mesh = self.obj_greedy_checkbox.isChecked()
             next_options.obj_triangulate = self.obj_triangulate_checkbox.isChecked()
             next_options.obj_pivot_mode = self.obj_pivot_combo.currentText().strip().lower()
+            next_options.obj_multi_material = self.obj_multi_material_checkbox.isChecked()
         if capabilities["scale_preset"]:
             next_options.scale_preset = self.scale_preset_combo.currentText()
         return next_options
@@ -493,6 +499,7 @@ class MainWindow(QMainWindow):
                 triangulate=export_options.obj_triangulate,
                 scale_factor=_scale_factor_from_preset(export_options.scale_preset),
                 pivot_mode=export_options.obj_pivot_mode,
+                multi_material_by_color=export_options.obj_multi_material,
             ),
             mesh=(
                 self.context.active_part.mesh_cache

@@ -165,6 +165,30 @@ def test_export_obj_writes_vertex_color_extension_values() -> None:
         path.with_suffix(".mtl").unlink(missing_ok=True)
 
 
+def test_export_obj_multi_material_by_color_emits_multiple_materials() -> None:
+    voxels = VoxelGrid()
+    voxels.set(0, 0, 0, 0)
+    voxels.set(2, 0, 0, 1)
+    path = get_app_temp_dir("VoxelTool") / f"obj-export-multi-material-{uuid.uuid4().hex}.obj"
+    mtl_path = path.with_suffix(".mtl")
+    try:
+        export_voxels_to_obj(
+            voxels,
+            list(DEFAULT_PALETTE),
+            str(path),
+            options=ObjExportOptions(use_greedy_mesh=False, multi_material_by_color=True),
+        )
+        obj_text = path.read_text(encoding="utf-8")
+        mtl_text = mtl_path.read_text(encoding="utf-8")
+        assert "usemtl voxel_default" in obj_text
+        assert "usemtl voxel_color_1" in obj_text
+        assert "newmtl voxel_default" in mtl_text
+        assert "newmtl voxel_color_1" in mtl_text
+    finally:
+        path.unlink(missing_ok=True)
+        mtl_path.unlink(missing_ok=True)
+
+
 def _read_vertices(path: Path) -> list[tuple[float, float, float]]:
     vertices: list[tuple[float, float, float]] = []
     with open(path, "r", encoding="utf-8") as file_obj:
