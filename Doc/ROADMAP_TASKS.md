@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 26: Recovery Snapshot Version Stamp
-- Goal: Add explicit recovery schema/version metadata for safer restore handling.
-- Likely files/modules touched: `src/core/io/recovery_io.py`, `src/core/io/project_io.py`.
-- Acceptance criteria (human-testable): Incompatible recovery snapshot yields clear prompt and safe skip option.
-- Tests required: Add recovery version mismatch tests.
-- Risk/rollback note: Keep backward restore path for current snapshot format.
-
 ### Task 27: Canonical Source Tree Guardrail
 - Goal: Prevent accidental edits under legacy `src/voxel_tool` tree.
 - Likely files/modules touched: `README.md`, `Doc/INDEX.md`, optional test/lint guard file.
@@ -451,7 +444,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`116 passed`)
 
 ### Task 25: Autosave Debounce on Edit
-- Commit: `TASK25_HASH_PENDING`
+- Commit: `bcc7f7c`
 - Added edit-triggered autosave debounce timer in MainWindow (`AUTOSAVE_DEBOUNCE_MS`).
 - Kept existing periodic autosave timer and routed both through shared snapshot-save method.
 - Wired viewport voxel edit signal to schedule debounce snapshot save.
@@ -466,3 +459,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`117 passed`)
+
+### Task 26: Recovery Snapshot Version Stamp
+- Commit: `COMMIT_PENDING`
+- Added explicit recovery version marker key in snapshot editor-state payload.
+- Added recovery snapshot save path stamping with current recovery version.
+- Added recovery load validation for version marker type and compatibility.
+- Added explicit error path for incompatible recovery snapshot versions.
+- Preserved backward behavior for current version snapshots.
+- Stripped internal recovery version marker from editor_state after successful load.
+- Kept recovery prompt/error handling flow in MainWindow unchanged (already safe-fails and clears snapshot on failure).
+- Added recovery version mismatch regression test.
+- Added required test dependencies (`json`, `pytest`) in recovery test module.
+- Maintained snapshot storage path and filename behavior unchanged.
+- Implementation remained dependency-free and IO-scoped.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`118 passed`)

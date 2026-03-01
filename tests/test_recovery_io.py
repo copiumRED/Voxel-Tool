@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+
+import pytest
+
 from core.io.recovery_io import (
     clear_recovery_snapshot,
     has_recovery_snapshot,
@@ -41,5 +45,18 @@ def test_recovery_snapshot_overwrites_with_latest_edit_state() -> None:
     loaded = load_recovery_snapshot()
     assert loaded.voxels.get(2, 0, 0) == 3
     assert loaded.editor_state == {"edit_plane": "yz"}
+    clear_recovery_snapshot()
+
+
+def test_recovery_snapshot_version_mismatch_raises_value_error() -> None:
+    clear_recovery_snapshot()
+    project = Project(name="Recovery Version")
+    path = save_recovery_snapshot(project)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["editor_state"]["_recovery_version"] = 999
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        load_recovery_snapshot()
     clear_recovery_snapshot()
 

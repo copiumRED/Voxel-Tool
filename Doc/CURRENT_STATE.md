@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Recovery snapshot compatibility/version guard is still absent
-- Symptoms: future snapshot format changes could fail load without explicit compatibility branch.
-- Suspected root cause: recovery payload currently reuses project schema with no dedicated recovery version stamp.
-- Exact files: `src/core/io/recovery_io.py`, `src/core/io/project_io.py`.
-- Fastest confirmation: inspect recovery snapshot payload; no dedicated recovery schema/version marker.
+1. Source-tree guardrails are still documentation-only
+- Symptoms: contributors can still accidentally edit legacy `src/voxel_tool` files.
+- Suspected root cause: no automated check or explicit contributor guard in CI/docs enforcement.
+- Exact files: `README.md`, `Doc/INDEX.md`.
+- Fastest confirmation: modify file under `src/voxel_tool` and observe no guardrail warning/test failure.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

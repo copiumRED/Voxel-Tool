@@ -968,3 +968,15 @@
   - Run: `pytest -q` (current: `117 passed`)
 - Risks/issues:
   - Recovery snapshot version stamp compatibility guard is still pending Task 26.
+
+### Roadmap 26 (Day-Cycle 30): Recovery Snapshot Version Stamp
+- What was done:
+  - Added `_recovery_version` marker to recovery snapshot editor state.
+  - Added compatibility validation on snapshot load.
+  - Added mismatch regression test for incompatible version handling.
+- How to test quickly:
+  - Save recovery snapshot, alter version marker to unsupported value, reload.
+  - Confirm load fails safely and app can clear/recover without crash.
+  - Run: `pytest -q` (current: `118 passed`)
+- Risks/issues:
+  - Canonical source-tree guardrail is still pending Task 27.
