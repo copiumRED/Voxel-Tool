@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 28: Packaging Script Hardening + Exit Diagnostics
-- Goal: Improve packaging script diagnostics and deterministic artifact checks.
-- Likely files/modules touched: `tools/package_windows.ps1`, `Doc/PACKAGING_CHECKLIST.md`.
-- Acceptance criteria (human-testable): Packaging script outputs clear pass/fail steps and artifact paths.
-- Tests required: Add script smoke checklist updates in docs and optional script test harness.
-- Risk/rollback note: Preserve existing build path if new checks block valid builds.
-
 ### Task 29: Portable Zip + Installer Prep Checklist
 - Goal: Add documented portable zip workflow and installer prerequisites (no installer build yet).
 - Likely files/modules touched: `Doc/PACKAGING_CHECKLIST.md`, `Doc/NEXT_WORKDAY.md`.
@@ -471,7 +464,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`118 passed`)
 
 ### Task 27: Canonical Source Tree Guardrail
-- Commit: `COMMIT_PENDING`
+- Commit: `3ace8b7`
 - Added immutable legacy-tree manifest (`tests/fixtures/legacy_tree_manifest.txt`) with file hashes.
 - Added `tests/test_source_tree_guard.py` to fail on accidental legacy-tree source edits.
 - Guardrail test only scans Python source files and ignores runtime `__pycache__` artifacts.
@@ -486,3 +479,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`119 passed`)
+
+### Task 28: Packaging Script Hardening + Exit Diagnostics
+- Commit: `COMMIT_PENDING`
+- Hardened `tools/package_windows.ps1` with strict mode and explicit step labels.
+- Added preflight spec-file existence validation and clear fail-fast messaging.
+- Added reusable `Assert-PathExists` helper for deterministic artifact checks.
+- Added build/dist cleanup diagnostics before packaging run.
+- Added packaged executable existence and non-zero size validation after build.
+- Added deterministic artifact outputs: executable path, size bytes, and SHA256 hash.
+- Updated packaging checklist with explicit pass criteria and required output lines.
+- Added packaging checklist step to record artifact hash/timestamp in daily report.
+- Added lightweight pytest coverage to enforce packaging diagnostics strings remain present.
+- Preserved existing packaging command path (`pyinstaller tools/build_pyinstaller.spec --noconfirm --clean`).
+- Kept task scope dependency-free and packaging/docs/test focused.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`121 passed`)

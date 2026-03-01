@@ -991,3 +991,16 @@
   - Confirm docs point contributors to `src/app`, `src/core`, and `src/util` as canonical paths.
 - Risks/issues:
   - Packaging script diagnostics and artifact checks remain pending Task 28.
+
+### Roadmap 28 (Day-Cycle 30): Packaging Script Hardening + Exit Diagnostics
+- What was done:
+  - Hardened `tools/package_windows.ps1` with strict step labels and fail-fast checks.
+  - Added deterministic artifact diagnostics (`ARTIFACT_EXE`, `ARTIFACT_SIZE_BYTES`, `ARTIFACT_SHA256`).
+  - Updated `Doc/PACKAGING_CHECKLIST.md` with exact success criteria and artifact recording step.
+  - Added pytest coverage to guard expected packaging diagnostic outputs.
+- How to test quickly:
+  - Run: `powershell -ExecutionPolicy Bypass -File .\tools\package_windows.ps1`.
+  - Confirm output includes `[PASS] Packaging complete.` and all `ARTIFACT_*` lines.
+  - Run: `pytest -q` (current: `121 passed`).
+- Risks/issues:
+  - Portable zip + installer prep workflow remains pending Task 29.
