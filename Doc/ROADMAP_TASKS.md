@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 29: Memory Budget Instrumentation
-- Goal: Add basic memory usage stats for scene/mesh buffers.
-- Likely files/modules touched: `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
-- Acceptance criteria (human-testable): Stats panel shows estimated voxel/mesh memory usage.
-- Tests required: Add deterministic memory estimate tests.
-- Risk/rollback note: Clearly label as estimate, not OS-level exact measure.
-
 ### Task 30: End-to-End Correctness Sweep
 - Goal: Consolidate and validate tool/IO/export correctness with expanded regression tests.
 - Likely files/modules touched: `tests/test_command_stack.py`, `tests/test_project_io.py`, `tests/test_vox_io.py`, `tests/test_gltf_exporter.py`.
@@ -595,7 +588,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`161 passed`)
 
 ### Task 28: Frame-Time Hotspot Pass
-- Commit: `COMMIT_PENDING`
+- Commit: `d083f64`
 - Added viewport render-data cache for point/line vertex buffers and voxel count.
 - Added cache signature keyed by visible parts, transforms, visibility, and voxel revision counters.
 - Added lightweight voxel revision tracking to `VoxelGrid` to drive deterministic cache invalidation.
@@ -612,3 +605,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`163 passed`)
+
+### Task 29: Memory Budget Instrumentation
+- Commit: `COMMIT_PENDING`
+- Added memory budget fields to part stats (voxel bytes, mesh bytes, total bytes).
+- Added memory budget fields to scene stats (voxel bytes, mesh bytes, total bytes).
+- Implemented deterministic voxel memory estimate based on active voxel count.
+- Implemented deterministic mesh memory estimate based on vertices/quads/face-color arrays.
+- Aggregated per-part memory budgets into scene-level totals during stats computation.
+- Added memory label formatter for human-readable byte units.
+- Updated scene stats label to display total estimated scene memory.
+- Updated object stats label to display per-part voxel and mesh memory estimates.
+- Preserved existing runtime stats formatting and update flow.
+- Kept memory reporting explicitly estimate-oriented (not OS-level allocation exactness).
+- Added regression tests for deterministic memory estimate stability.
+- Added regression tests for memory label unit formatting behavior.
+- Preserved existing scene stats regression assertions and behavior.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`165 passed`)

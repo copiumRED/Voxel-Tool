@@ -1477,3 +1477,16 @@
   - Run: `pytest -q` (current: `163 passed`).
 - Risks/issues:
   - Memory budget instrumentation remains pending Task 29.
+
+### Roadmap 29 (Day-Cycle 40): Memory Budget Instrumentation
+- What was done:
+  - Added scene/part memory estimate fields to stats analysis (voxel + mesh + total).
+  - Added human-readable memory formatting helper for panel display.
+  - Updated Stats panel scene/object labels to show estimated memory budgets.
+  - Added deterministic memory estimate regression checks and formatting tests.
+- How to test quickly:
+  - Open app and inspect Stats panel scene/object lines for `mem`, `vox mem`, and `mesh mem`.
+  - Edit voxels and rebuild mesh; verify memory estimates update consistently.
+  - Run: `pytest -q` (current: `165 passed`).
+- Risks/issues:
+  - End-to-end correctness sweep remains pending Task 30.

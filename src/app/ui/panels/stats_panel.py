@@ -21,6 +21,18 @@ def format_runtime_stats_label(
     )
 
 
+def format_memory_label(memory_bytes: int) -> str:
+    value = float(max(0, int(memory_bytes)))
+    units = ("B", "KB", "MB", "GB")
+    unit_index = 0
+    while value >= 1024.0 and unit_index < len(units) - 1:
+        value /= 1024.0
+        unit_index += 1
+    if unit_index == 0:
+        return f"{int(value)} {units[unit_index]}"
+    return f"{value:.2f} {units[unit_index]}"
+
+
 class StatsPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -41,7 +53,8 @@ class StatsPanel(QWidget):
         self.scene_label.setText(
             "Scene: "
             f"tris {scene_stats.triangles} | faces {scene_stats.faces} | "
-            f"edges {scene_stats.edges} | verts {scene_stats.vertices} | materials {scene_stats.materials_used}"
+            f"edges {scene_stats.edges} | verts {scene_stats.vertices} | materials {scene_stats.materials_used} | "
+            f"mem {format_memory_label(scene_stats.total_memory_bytes)}"
         )
         active_part = next((part for part in scene_stats.parts if part.part_id == active_part_id), None)
         if active_part is None:
@@ -57,7 +70,9 @@ class StatsPanel(QWidget):
                 f"materials {active_part.materials_used} | "
                 f"deg quads {active_part.degenerate_quads} | nm-edge hints {active_part.non_manifold_edge_hints} | "
                 f"inc tries {active_part.incremental_rebuild_attempts} | "
-                f"inc fallbacks {active_part.incremental_rebuild_fallbacks}"
+                f"inc fallbacks {active_part.incremental_rebuild_fallbacks} | "
+                f"vox mem {format_memory_label(active_part.voxel_memory_bytes)} | "
+                f"mesh mem {format_memory_label(active_part.mesh_memory_bytes)}"
             )
         self.voxel_count_label.setText(f"Active Part Voxels: {active_voxel_count}")
 
