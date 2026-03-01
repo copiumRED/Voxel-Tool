@@ -27,3 +27,19 @@ def test_recovery_snapshot_save_load_clear_cycle() -> None:
     clear_recovery_snapshot()
     assert has_recovery_snapshot() is False
 
+
+def test_recovery_snapshot_overwrites_with_latest_edit_state() -> None:
+    clear_recovery_snapshot()
+    project = Project(name="Recovery Debounce")
+    project.voxels.set(0, 0, 0, 1)
+    save_recovery_snapshot(project)
+
+    project.voxels.set(2, 0, 0, 3)
+    project.editor_state = {"edit_plane": "yz"}
+    save_recovery_snapshot(project)
+
+    loaded = load_recovery_snapshot()
+    assert loaded.voxels.get(2, 0, 0) == 3
+    assert loaded.editor_state == {"edit_plane": "yz"}
+    clear_recovery_snapshot()
+

@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Autosave still depends on interval tick and can miss very recent edits
-- Symptoms: forced close shortly after edit may lose latest change before timer fires.
-- Suspected root cause: autosave path is timer-driven with no edit-triggered debounce save.
-- Exact files: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
-- Fastest confirmation: edit and force-close before autosave interval; compare recovery snapshot.
+1. Recovery snapshot compatibility/version guard is still absent
+- Symptoms: future snapshot format changes could fail load without explicit compatibility branch.
+- Suspected root cause: recovery payload currently reuses project schema with no dedicated recovery version stamp.
+- Exact files: `src/core/io/recovery_io.py`, `src/core/io/project_io.py`.
+- Fastest confirmation: inspect recovery snapshot payload; no dedicated recovery schema/version marker.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

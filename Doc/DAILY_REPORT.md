@@ -956,3 +956,15 @@
   - Run: `pytest -q` (current: `116 passed`)
 - Risks/issues:
   - Autosave debounce on edit remains pending Task 25.
+
+### Roadmap 25 (Day-Cycle 30): Autosave Debounce on Edit
+- What was done:
+  - Added edit-triggered autosave debounce timer.
+  - Unified periodic/debounce save path through shared snapshot-save method.
+  - Added recovery test ensuring latest snapshot wins.
+- How to test quickly:
+  - Launch app, edit voxels, force close shortly after edit, relaunch.
+  - Confirm recovery prompt restores latest edits.
+  - Run: `pytest -q` (current: `117 passed`)
+- Risks/issues:
+  - Recovery snapshot version stamp compatibility guard is still pending Task 26.

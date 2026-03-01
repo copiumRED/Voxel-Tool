@@ -49,6 +49,8 @@ from app.ui.panels.stats_panel import StatsPanel
 from app.ui.panels.tools_panel import ToolsPanel
 from app.viewport.gl_widget import GLViewportWidget
 
+AUTOSAVE_DEBOUNCE_MS = 5000
+
 
 @dataclass(slots=True)
 class _ExportSessionOptions:
@@ -159,6 +161,10 @@ class MainWindow(QMainWindow):
         self._autosave_timer = QTimer(self)
         self._autosave_timer.setInterval(60000)
         self._autosave_timer.timeout.connect(self._on_autosave_tick)
+        self._autosave_debounce_timer = QTimer(self)
+        self._autosave_debounce_timer.setSingleShot(True)
+        self._autosave_debounce_timer.setInterval(AUTOSAVE_DEBOUNCE_MS)
+        self._autosave_debounce_timer.timeout.connect(self._save_recovery_snapshot_now)
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
@@ -837,6 +843,7 @@ class MainWindow(QMainWindow):
         self.viewport.update()
 
     def _on_viewport_voxel_edit_applied(self, message: str) -> None:
+        self._autosave_debounce_timer.start()
         self._show_voxel_status(message)
         self._refresh_ui_state()
 
@@ -1052,6 +1059,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self._autosave_timer.stop()
+        self._autosave_debounce_timer.stop()
         clear_recovery_snapshot()
         settings = get_settings()
         settings.setValue("main_window/geometry", self.saveGeometry())
@@ -1059,6 +1067,9 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
     def _on_autosave_tick(self) -> None:
+        self._save_recovery_snapshot_now()
+
+    def _save_recovery_snapshot_now(self) -> None:
         try:
             self.context.current_project.editor_state = self._capture_editor_state()
             save_recovery_snapshot(self.context.current_project)

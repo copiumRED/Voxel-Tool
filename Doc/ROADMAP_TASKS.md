@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 25: Autosave Debounce on Edit
-- Goal: Trigger short-delay snapshot saves after voxel edits in addition to periodic timer.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
-- Acceptance criteria (human-testable): Forced close shortly after edit still restores latest change.
-- Tests required: Add autosave debounce timing tests.
-- Risk/rollback note: Debounce must avoid excessive disk writes.
-
 ### Task 26: Recovery Snapshot Version Stamp
 - Goal: Add explicit recovery schema/version metadata for safer restore handling.
 - Likely files/modules touched: `src/core/io/recovery_io.py`, `src/core/io/project_io.py`.
@@ -441,7 +434,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`115 passed`)
 
 ### Task 24: Runtime Stats Label Clarity Pass
-- Commit: `TASK24_HASH_PENDING`
+- Commit: `bda043c`
 - Updated stats label wording to clearly separate scene-level vs active-part voxel context.
 - Renamed active voxel label to `Active Part Voxels` for explicit scope.
 - Extended runtime row to include both `scene voxels` and `active-part voxels`.
@@ -456,3 +449,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`116 passed`)
+
+### Task 25: Autosave Debounce on Edit
+- Commit: `TASK25_HASH_PENDING`
+- Added edit-triggered autosave debounce timer in MainWindow (`AUTOSAVE_DEBOUNCE_MS`).
+- Kept existing periodic autosave timer and routed both through shared snapshot-save method.
+- Wired viewport voxel edit signal to schedule debounce snapshot save.
+- Ensured debounce timer is stopped on close to avoid late callbacks.
+- Added dedicated `_save_recovery_snapshot_now()` helper to centralize snapshot-save logic.
+- Preserved existing recovery prompt and snapshot lifecycle behavior.
+- Added recovery test verifying latest snapshot overwrites earlier state.
+- Kept autosave implementation dependency-free and UI-logic scoped.
+- Did not change recovery file format in this task.
+- Maintained existing exception logging behavior for snapshot save failures.
+- Scope aligns with roadmap requirement for reducing near-edit data loss risk.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`117 passed`)
