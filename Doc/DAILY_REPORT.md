@@ -1383,3 +1383,17 @@
   - Run: `pytest -q` (current: `155 passed`).
 - Risks/issues:
   - VOX multi-part naming/group mapping remains pending Task 22.
+
+### Roadmap 22 (Day-Cycle 40): VOX Multi-part Naming and Grouping
+- What was done:
+  - Added deterministic VOX import naming helpers for single and multi-part imports.
+  - Updated multi-model VOX import path to auto-create an import group and assign imported parts into it.
+  - Standardized multi-part naming format to stable numbered labels (`Part 01`, `Part 02`, ...).
+  - Added regression tests for naming/group label helper behavior.
+- How to test quickly:
+  - Import a VOX with multiple models.
+  - Verify imported parts are consistently named and appear grouped under `<file> Import`.
+  - Import a single-model VOX and verify name remains base filename without suffix numbering.
+  - Run: `pytest -q` (current: `156 passed`).
+- Risks/issues:
+  - QB import feasibility slice remains pending Task 23.

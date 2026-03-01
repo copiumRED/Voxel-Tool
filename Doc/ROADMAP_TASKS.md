@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 22: VOX Multi-part Naming and Grouping
-- Goal: Improve naming/group mapping for imported multi-model VOX files.
-- Likely files/modules touched: `src/core/io/vox_io.py`, `src/core/scene.py`.
-- Acceptance criteria (human-testable): Imported models have stable names and optional grouping.
-- Tests required: Add VOX import naming/grouping tests.
-- Risk/rollback note: Keep deterministic fallback naming when metadata absent.
-
 ### Task 23: Qubicle QB Import Feasibility Slice
 - Goal: Implement bounded `.qb` importer for core voxel data only.
 - Likely files/modules touched: `src/core/io/qb_io.py` (new), `src/app/ui/main_window.py`, `tests/test_qb_io.py` (new).
@@ -511,7 +504,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`154 passed`)
 
 ### Task 21: VOX Transform Chunk Mapping v1
-- Commit: `COMMIT_PENDING`
+- Commit: `9da9a48`
 - Added bounded `nTRN` parsing support in VOX IO for translation frame extraction (`_t`).
 - Added VOX dict reader helper to parse key/value dictionaries used by scene-graph chunks.
 - Added nTRN translation parser that reads frame dictionaries and extracts integer XYZ offsets.
@@ -528,3 +521,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`155 passed`)
+
+### Task 22: VOX Multi-part Naming and Grouping
+- Commit: `COMMIT_PENDING`
+- Added deterministic VOX import naming helper for part labels (`Base Part 01`, `Base Part 02`, ...).
+- Added deterministic VOX import grouping helper (`<Base> Import`) for multi-model imports.
+- Updated VOX import flow to create a group automatically when importing multiple VOX models.
+- Updated VOX import flow to assign each imported part to the created import group.
+- Preserved single-model import naming behavior (base filename only).
+- Kept fallback naming for empty/missing base names (`Imported VOX`).
+- Ensured part numbering width remains stable and readable for larger import counts.
+- Preserved active imported part selection behavior after import.
+- Preserved existing palette apply behavior after VOX import.
+- Kept warnings flow unchanged for unsupported VOX chunks.
+- Added regression tests for VOX import naming helper behavior.
+- Added regression tests for VOX import grouping helper behavior.
+- Kept implementation scoped to import naming/grouping without scene schema changes.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`156 passed`)

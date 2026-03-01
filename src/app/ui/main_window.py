@@ -154,6 +154,19 @@ def _project_io_error_detail(action: str, path: str, exc: Exception) -> str:
     return f"{label} failed.\nPath: {target}\n\nDetails: {exc}"
 
 
+def _vox_import_group_name(base_name: str) -> str:
+    base = str(base_name).strip() or "Imported VOX"
+    return f"{base} Import"
+
+
+def _vox_import_part_name(base_name: str, index: int, total: int) -> str:
+    base = str(base_name).strip() or "Imported VOX"
+    if int(total) <= 1:
+        return base
+    width = max(2, len(str(int(total))))
+    return f"{base} Part {int(index) + 1:0{width}d}"
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -591,12 +604,18 @@ class MainWindow(QMainWindow):
 
         scene = self.context.current_project.scene
         part_name = os.path.splitext(os.path.basename(path))[0] or "Imported VOX"
+        target_group_id: str | None = None
+        if len(models) > 1:
+            group = scene.create_group(_vox_import_group_name(part_name))
+            target_group_id = group.group_id
         imported_count = 0
         active_part_id: str | None = None
         for index, voxels in enumerate(models):
-            name = part_name if len(models) == 1 else f"{part_name} #{index + 1}"
+            name = _vox_import_part_name(part_name, index, len(models))
             imported_part = scene.add_part(name)
             imported_part.voxels = voxels
+            if target_group_id is not None:
+                scene.assign_part_to_group(imported_part.part_id, target_group_id)
             if active_part_id is None:
                 active_part_id = imported_part.part_id
             imported_count += 1

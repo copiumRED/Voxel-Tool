@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
-from app.ui.main_window import _next_brush_size, _project_io_error_detail
+from app.ui.main_window import (
+    _next_brush_size,
+    _project_io_error_detail,
+    _vox_import_group_name,
+    _vox_import_part_name,
+)
 from app.ui.panels.palette_panel import PalettePanel
 from core.project import Project
 from PySide6.QtCore import Qt
@@ -123,3 +128,10 @@ def test_palette_preset_filter_matches_case_insensitive_substrings() -> None:
     assert [p.name for p in filtered] == ["cool-shades.gpl"]
     filtered_all = PalettePanel._filter_preset_paths(paths, "")
     assert [p.name for p in filtered_all] == ["cool-shades.gpl", "terrain.json", "WarmBase.json"]
+
+
+def test_vox_import_naming_helpers_for_single_and_multi_part_imports() -> None:
+    assert _vox_import_group_name("Robot") == "Robot Import"
+    assert _vox_import_part_name("Robot", 0, 1) == "Robot"
+    assert _vox_import_part_name("Robot", 0, 12) == "Robot Part 01"
+    assert _vox_import_part_name("Robot", 11, 12) == "Robot Part 12"
