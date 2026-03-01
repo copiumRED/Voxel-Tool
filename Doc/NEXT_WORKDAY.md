@@ -45,3 +45,21 @@ Today focuses on Phase 1 correctness hardening before feature expansion: elimina
 
 ## Packaging Prep Objective
 Before end-of-day handoff, ensure portable zip packaging steps are operator-ready and installer prerequisites are explicitly documented for the next cycle.
+
+## Operator End-of-Day Validation Checklist
+1. Confirm `main` is clean and up to date locally.
+2. Launch app: `python src/app/main.py`.
+3. In app, run viewport smoke:
+- `Debug -> Create Test Voxels (Cross)`
+- Orbit/zoom/pan
+- `View -> Frame Voxels`
+4. Run core workflow smoke:
+- Brush paint/erase
+- Box and line preview/apply
+- Fill small region
+5. Run IO/export smoke:
+- Save/Open once
+- Export OBJ/glTF/VOX once each
+6. Run `pytest -q` and verify all tests pass.
+7. Run packaging checklist including portable zip/hash verification.
+8. Only after all checks pass: approve promotion of `main` to `stable`.

@@ -1027,3 +1027,41 @@
 - Portable zip path:
 - Portable zip SHA256:
 - Portable zip launch smoke result:
+
+### Roadmap 30 (Day-Cycle 30): Day-End Full QA + Handoff Pack
+- What was done:
+  - Re-ran full gate on task branch: app launch smoke + full `pytest -q`.
+  - Ran programmatic IO smoke (project save/open roundtrip).
+  - Ran programmatic export smoke (OBJ/glTF/VOX) and verified non-empty outputs.
+  - Finalized docs for operator handoff (`ROADMAP_TASKS`, `CURRENT_STATE`, `NEXT_WORKDAY`).
+- How to test quickly:
+  - `python src/app/main.py` (launch smoke).
+  - `pytest -q` (expected: `121 passed`).
+  - In app: create test voxels, save/open once, export OBJ once.
+- Risks/issues:
+  - GitHub connectivity remains intermittent; local `main` may be ahead until push succeeds.
+
+## End of Day Summary (Day-Cycle 30)
+- Tasks completed: `01-30` (all roadmap tasks completed and merged to `main` locally).
+- Final gate status:
+  - `python src/app/main.py`: PASS
+  - `pytest -q`: `121 passed`
+  - Programmatic IO/export smoke: PASS
+- Operator checklist (human validation required before any stable promotion):
+  1. Launch app and verify viewport loads.
+  2. `Debug -> Create Test Voxels (Cross)` then orbit/zoom/pan.
+  3. Brush paint/erase, box, line, fill once each.
+  4. Save project, close, reopen project.
+  5. Export OBJ, glTF, and VOX once each.
+  6. Run packaging script and validate `ARTIFACT_*` output lines.
+  7. Build and launch portable zip from `Doc/PACKAGING_CHECKLIST.md`.
+- Known issues/risks:
+  - Intermittent remote connectivity can block immediate `git push`.
+  - Legacy source tree still exists (guarded by manifest test).
+- Packaging/build notes:
+  - Packaging diagnostics now print artifact path/size/hash.
+  - Portable zip and installer-prep steps documented; installer build itself not implemented in this cycle.
+- Publishing commands when network is available:
+  - `git checkout main`
+  - `git fetch origin`
+  - `git push origin main`

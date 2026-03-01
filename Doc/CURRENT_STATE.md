@@ -4,13 +4,13 @@ Date: 2026-03-01
 Branch baseline: `main`
 
 ## Phase Completion Estimates
-- Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **99%**
+- Phase 0 (Foundations): **99%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **100% (for current roadmap scope)**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
-- Phase 0 is nearly complete: app shell, viewport, scene/part model, project IO, export entry points, tests, and packaging scripts are present and runnable.
-- Phase 1 has broad feature coverage but still misses several parity-critical behaviors (true 3D edit targeting for non-brush tools, palette/material parity, robust export correctness, and workflow polish).
+- Phase 0 is effectively complete for current packaging/runtime baseline with diagnostics, recovery, and guardrail checks in place.
+- Phase 1 roadmap scope for this cycle is complete (Tasks 01-30 delivered on main); residual parity polish remains for future cycles.
 - Phase 2 is still mostly unimplemented by design: no half-edge edit mode, no vertex/edge/face selection workflows.
 
 ## Correction vs Prior Docs
