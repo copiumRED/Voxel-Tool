@@ -4,6 +4,7 @@ from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import _next_brush_size
 from core.project import Project
+from PySide6.QtCore import Qt
 
 
 def test_next_brush_size_cycles_three_step_range() -> None:
@@ -41,3 +42,10 @@ def test_mmb_orbit_profile_switches_left_navigate_orbit_behavior() -> None:
     ctx.set_navigation_profile(AppContext.NAV_PROFILE_MMB_ORBIT)
     assert GLViewportWidget._is_mmb_orbit_enabled(ctx) is True
     assert GLViewportWidget._left_navigate_orbits(ctx) is False
+
+
+def test_blender_mix_profile_enables_shift_middle_pan_modifier() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    ctx.set_navigation_profile(AppContext.NAV_PROFILE_BLENDER_MIX)
+    assert GLViewportWidget._is_mmb_orbit_enabled(ctx) is True
+    assert GLViewportWidget._is_middle_drag_pan(ctx, Qt.ShiftModifier) is True

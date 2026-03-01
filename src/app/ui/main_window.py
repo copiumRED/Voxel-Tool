@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QAction, QCloseEvent, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -341,13 +341,23 @@ class MainWindow(QMainWindow):
         )
         orthographic_action.toggled.connect(self._on_toggle_orthographic_projection)
         view_menu.addAction(orthographic_action)
-        mmb_orbit_action = QAction("MMB Orbit Navigation", self)
-        mmb_orbit_action.setCheckable(True)
-        mmb_orbit_action.setChecked(
-            self.context.navigation_profile == AppContext.NAV_PROFILE_MMB_ORBIT
+        navigation_menu = view_menu.addMenu("Navigation Profile")
+        navigation_group = QActionGroup(self)
+        navigation_group.setExclusive(True)
+        profile_specs = (
+            ("Classic", AppContext.NAV_PROFILE_CLASSIC),
+            ("MMB Orbit", AppContext.NAV_PROFILE_MMB_ORBIT),
+            ("Blender-Mix", AppContext.NAV_PROFILE_BLENDER_MIX),
         )
-        mmb_orbit_action.toggled.connect(self._on_toggle_mmb_orbit_navigation)
-        view_menu.addAction(mmb_orbit_action)
+        for label, profile in profile_specs:
+            profile_action = QAction(label, self)
+            profile_action.setCheckable(True)
+            profile_action.setChecked(self.context.navigation_profile == profile)
+            profile_action.triggered.connect(
+                lambda _checked=False, profile_value=profile: self._set_navigation_profile(profile_value)
+            )
+            navigation_group.addAction(profile_action)
+            navigation_menu.addAction(profile_action)
 
         view_menu.addSeparator()
 
@@ -849,8 +859,7 @@ class MainWindow(QMainWindow):
         self._show_voxel_status(f"Projection: {projection}")
         self.viewport.update()
 
-    def _on_toggle_mmb_orbit_navigation(self, enabled: bool) -> None:
-        profile = AppContext.NAV_PROFILE_MMB_ORBIT if enabled else AppContext.NAV_PROFILE_CLASSIC
+    def _set_navigation_profile(self, profile: str) -> None:
         self.context.set_navigation_profile(profile)
         self._show_voxel_status(f"Navigation profile: {profile}")
         self.viewport.update()
@@ -1044,6 +1053,7 @@ class MainWindow(QMainWindow):
         if navigation_profile in (
             AppContext.NAV_PROFILE_CLASSIC,
             AppContext.NAV_PROFILE_MMB_ORBIT,
+            AppContext.NAV_PROFILE_BLENDER_MIX,
         ):
             self.context.navigation_profile = navigation_profile
         self.context.command_stack.set_max_undo_steps(

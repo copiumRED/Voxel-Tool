@@ -363,6 +363,8 @@ def test_app_context_navigation_profile_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_navigation_profile("mmb_orbit")
     assert ctx.navigation_profile == AppContext.NAV_PROFILE_MMB_ORBIT
+    ctx.set_navigation_profile("blender_mix")
+    assert ctx.navigation_profile == AppContext.NAV_PROFILE_BLENDER_MIX
 
 
 def test_app_context_fill_connectivity_validation() -> None:

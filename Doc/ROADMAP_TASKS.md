@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 03: Blender-Mix Navigation Preset
-- Goal: Add alternate navigation preset inspired by Blender conventions.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
-- Acceptance criteria (human-testable): User can switch between default and Blender-mix navigation presets at runtime.
-- Tests required: Add context/state roundtrip tests for nav preset.
-- Risk/rollback note: Avoid hard replacement of current controls.
-
 ### Task 04: Navigation Sensitivity Controls
 - Goal: Add orbit/pan/zoom sensitivity controls in settings.
 - Likely files/modules touched: `src/app/app_context.py`, `src/app/ui/panels/tools_panel.py`, `src/app/viewport/gl_widget.py`.
@@ -293,7 +286,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`123 passed`)
 
 ### Task 02: MMB Orbit Navigation Profile
-- Commit: `COMMIT_PENDING`
+- Commit: `12840b9`
 - Added navigation profile state in app context with explicit validated modes (`classic`, `mmb_orbit`).
 - Added app-context setter validation for navigation profile updates.
 - Added View menu toggle action (`MMB Orbit Navigation`) to switch profiles at runtime.
@@ -309,3 +302,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`125 passed`)
+
+### Task 03: Blender-Mix Navigation Preset
+- Commit: `COMMIT_PENDING`
+- Added `blender_mix` as a validated third navigation profile in app context.
+- Expanded valid navigation profile set to include classic, mmb_orbit, and blender_mix.
+- Replaced single MMB toggle with a dedicated `Navigation Profile` menu.
+- Added exclusive profile actions for `Classic`, `MMB Orbit`, and `Blender-Mix`.
+- Added direct profile setter handler for runtime profile switching.
+- Extended editor-state restore validation to accept `blender_mix` profile values.
+- Extended MMB orbit routing so Blender-Mix uses middle-drag orbit.
+- Added Blender-Mix modifier behavior: `Shift + Middle Drag` pans camera.
+- Preserved right-drag pan behavior across all profiles for compatibility.
+- Preserved classic-only left navigate orbit to avoid dual orbit bindings in MMB-based profiles.
+- Added app-context regression test coverage for blender-mix profile validation.
+- Added viewport helper regression test for Blender-Mix shift-middle pan detection.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`126 passed`)

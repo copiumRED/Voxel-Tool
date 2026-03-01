@@ -1103,3 +1103,18 @@
   - Run: `pytest -q` (current: `125 passed`).
 - Risks/issues:
   - Blender-mix navigation variant and sensitivity controls remain pending Task 03/04.
+
+### Roadmap 03 (Day-Cycle 40): Blender-Mix Navigation Preset
+- What was done:
+  - Added `blender_mix` as a first-class navigation profile in app context.
+  - Replaced one-off MMB toggle with a `Navigation Profile` menu (`Classic`, `MMB Orbit`, `Blender-Mix`).
+  - Added profile-switch handler and status updates in main window.
+  - Updated viewport behavior so Blender-Mix uses middle-drag orbit and `Shift+Middle` pan.
+  - Added tests for blender-mix profile validation and shift-middle pan routing helper.
+- How to test quickly:
+  - Launch app and choose `View -> Navigation Profile -> Blender-Mix`.
+  - Confirm MMB drag orbits and `Shift+MMB` pans.
+  - Switch back to `Classic` and confirm left navigate orbit behavior remains available.
+  - Run: `pytest -q` (current: `126 passed`).
+- Risks/issues:
+  - Navigation sensitivity controls are still pending Task 04.

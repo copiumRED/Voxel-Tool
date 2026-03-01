@@ -640,7 +640,13 @@ class GLViewportWidget(QOpenGLWidget):
                 elif self._left_press_pos is not None:
                     self._update_drag_preview(self._left_press_pos, pos, event.modifiers())
         elif event.buttons() & Qt.MiddleButton:
-            if self._is_mmb_orbit_enabled(self._app_context):
+            if self._is_middle_drag_pan(self._app_context, event.modifiers()):
+                _, _, right, up = self._camera_vectors()
+                pan_scale = self.distance * 0.0025
+                offset = (right * (-dx * pan_scale)) + (up * (dy * pan_scale))
+                self.target += offset
+                self.update()
+            elif self._is_mmb_orbit_enabled(self._app_context):
                 self.yaw_deg += dx * 0.4
                 self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
                 if (
@@ -732,11 +738,23 @@ class GLViewportWidget(QOpenGLWidget):
     def _is_mmb_orbit_enabled(app_context: "AppContext | None") -> bool:
         if app_context is None:
             return False
-        return app_context.navigation_profile == app_context.NAV_PROFILE_MMB_ORBIT
+        return app_context.navigation_profile in {
+            app_context.NAV_PROFILE_MMB_ORBIT,
+            app_context.NAV_PROFILE_BLENDER_MIX,
+        }
 
     @classmethod
     def _left_navigate_orbits(cls, app_context: "AppContext | None") -> bool:
         return not cls._is_mmb_orbit_enabled(app_context)
+
+    @staticmethod
+    def _is_middle_drag_pan(app_context: "AppContext | None", modifiers: Qt.KeyboardModifiers) -> bool:
+        if app_context is None:
+            return False
+        return (
+            app_context.navigation_profile == app_context.NAV_PROFILE_BLENDER_MIX
+            and bool(modifiers & Qt.ShiftModifier)
+        )
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)
