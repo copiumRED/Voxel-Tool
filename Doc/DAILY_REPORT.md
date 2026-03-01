@@ -194,6 +194,18 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 15 (Next Workday): Mesh Normals Validation + Fixups
+- What was done:
+  - Added `quad_normal()` helper on `SurfaceMesh` for normalized face-normal computation.
+  - Added tests to validate outward-facing normals for both naive and greedy mesh extraction on canonical voxel shape.
+  - Verified no inverted-face regressions in current meshing pipeline.
+- How to test quickly:
+  - Run: `pytest -q` and confirm mesh normal tests pass.
+  - Optional manual: export a single-voxel OBJ and inspect shading in external viewer.
+  - Current suite: `77 passed`.
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).

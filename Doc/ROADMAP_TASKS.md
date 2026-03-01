@@ -91,21 +91,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added MTL material file emission (`voxel_default`) with OBJ `mtllib`/`usemtl` references.
 - Wired export dialog options so OBJ scale preset and pivot mode flow into exporter behavior with test coverage.
 
-## Remaining Tasks
-
 ### Task 15: Mesh Normals Validation + Fixups
-- Goal:
-  - Ensure generated meshes have correct winding and consistent normals.
-- Files/modules likely touched:
-  - `src/core/meshing/surface_extractor.py`
-  - `src/core/meshing/greedy_mesher.py`
-  - `src/core/meshing/mesh.py`
-- Acceptance criteria (human-testable):
-  - No inverted normals on canonical test shapes.
-  - External viewer shading appears correct without manual recalc.
-- Tests required:
-  - Normals/winding unit tests on fixtures.
-  - Export/import shading smoke test.
+- Commit: `COMMIT_PENDING`
+- Added `SurfaceMesh.quad_normal()` helper for normalized per-quad normal evaluation.
+- Added regression tests validating outward-facing normals for both naive and greedy meshes on canonical voxel fixtures.
+- Confirmed mesh winding/normal orientation remains consistent under current extraction paths.
+
+## Remaining Tasks
 
 ### Task 16: Basic UV Projection + Vertex Color Export Path
 - Goal:
