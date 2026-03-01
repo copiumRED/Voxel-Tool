@@ -1118,3 +1118,18 @@
   - Run: `pytest -q` (current: `126 passed`).
 - Risks/issues:
   - Navigation sensitivity controls are still pending Task 04.
+
+### Roadmap 04 (Day-Cycle 40): Navigation Sensitivity Controls
+- What was done:
+  - Added orbit/pan/zoom sensitivity fields and validation in app context.
+  - Added view-menu controls to set camera sensitivities at runtime.
+  - Persisted sensitivity values in editor-state save/open flow.
+  - Applied sensitivity multipliers in viewport orbit/pan/zoom camera calculations.
+  - Added test coverage for sensitivity validation, helper math, and IO roundtrip persistence fields.
+- How to test quickly:
+  - Launch app and set `View -> Set Orbit/Pan/Zoom Sensitivity` values.
+  - Verify camera responsiveness changes for orbit, pan, and wheel zoom.
+  - Save project, reopen project, and confirm sensitivities are restored.
+  - Run: `pytest -q` (current: `128 passed`).
+- Risks/issues:
+  - Drag transaction abort hardening remains pending Task 05.

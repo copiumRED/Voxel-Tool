@@ -623,8 +623,9 @@ class GLViewportWidget(QOpenGLWidget):
                     self._left_interaction_mode == self._LEFT_INTERACTION_NAVIGATE
                     and self._left_navigate_orbits(self._app_context)
                 ):
-                    self.yaw_deg += dx * 0.4
-                    self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                    orbit_scale = self._orbit_sensitivity(self._app_context)
+                    self.yaw_deg += dx * orbit_scale
+                    self.pitch_deg = self._clamp(self.pitch_deg + dy * orbit_scale, -89.0, 89.0)
                     if (
                         self._app_context is not None
                         and self._app_context.camera_snap_enabled
@@ -647,8 +648,9 @@ class GLViewportWidget(QOpenGLWidget):
                 self.target += offset
                 self.update()
             elif self._is_mmb_orbit_enabled(self._app_context):
-                self.yaw_deg += dx * 0.4
-                self.pitch_deg = self._clamp(self.pitch_deg + dy * 0.4, -89.0, 89.0)
+                orbit_scale = self._orbit_sensitivity(self._app_context)
+                self.yaw_deg += dx * orbit_scale
+                self.pitch_deg = self._clamp(self.pitch_deg + dy * orbit_scale, -89.0, 89.0)
                 if (
                     self._app_context is not None
                     and self._app_context.camera_snap_enabled
@@ -660,7 +662,7 @@ class GLViewportWidget(QOpenGLWidget):
                 self.update()
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
-            pan_scale = self.distance * 0.0025
+            pan_scale = self.distance * 0.0025 * self._pan_sensitivity(self._app_context)
             offset = (right * (-dx * pan_scale)) + (up * (dy * pan_scale))
             self.target += offset
             self.update()
@@ -704,7 +706,8 @@ class GLViewportWidget(QOpenGLWidget):
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120.0
         if steps != 0:
-            self.distance = self._clamp(self.distance * (0.9 ** steps), 2.0, 200.0)
+            zoom_scale = self._zoom_sensitivity(self._app_context)
+            self.distance = self._clamp(self.distance * (0.9 ** (steps * zoom_scale)), 2.0, 200.0)
             self.update()
         super().wheelEvent(event)
 
@@ -755,6 +758,24 @@ class GLViewportWidget(QOpenGLWidget):
             app_context.navigation_profile == app_context.NAV_PROFILE_BLENDER_MIX
             and bool(modifiers & Qt.ShiftModifier)
         )
+
+    @staticmethod
+    def _orbit_sensitivity(app_context: "AppContext | None") -> float:
+        if app_context is None:
+            return 0.4
+        return 0.4 * max(0.1, min(3.0, float(app_context.camera_orbit_sensitivity)))
+
+    @staticmethod
+    def _pan_sensitivity(app_context: "AppContext | None") -> float:
+        if app_context is None:
+            return 1.0
+        return max(0.1, min(3.0, float(app_context.camera_pan_sensitivity)))
+
+    @staticmethod
+    def _zoom_sensitivity(app_context: "AppContext | None") -> float:
+        if app_context is None:
+            return 1.0
+        return max(0.1, min(3.0, float(app_context.camera_zoom_sensitivity)))
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)

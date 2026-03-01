@@ -334,6 +334,15 @@ class MainWindow(QMainWindow):
         camera_snap_angle_action = QAction("Set Camera Snap Degrees", self)
         camera_snap_angle_action.triggered.connect(self._on_set_camera_snap_degrees)
         view_menu.addAction(camera_snap_angle_action)
+        orbit_sensitivity_action = QAction("Set Orbit Sensitivity", self)
+        orbit_sensitivity_action.triggered.connect(lambda: self._on_set_camera_sensitivity("orbit"))
+        view_menu.addAction(orbit_sensitivity_action)
+        pan_sensitivity_action = QAction("Set Pan Sensitivity", self)
+        pan_sensitivity_action.triggered.connect(lambda: self._on_set_camera_sensitivity("pan"))
+        view_menu.addAction(pan_sensitivity_action)
+        zoom_sensitivity_action = QAction("Set Zoom Sensitivity", self)
+        zoom_sensitivity_action.triggered.connect(lambda: self._on_set_camera_sensitivity("zoom"))
+        view_menu.addAction(zoom_sensitivity_action)
         orthographic_action = QAction("Orthographic Projection", self)
         orthographic_action.setCheckable(True)
         orthographic_action.setChecked(
@@ -849,6 +858,29 @@ class MainWindow(QMainWindow):
         self.context.camera_snap_degrees = int(value)
         self._show_voxel_status(f"Camera snap degrees: {value}")
 
+    def _on_set_camera_sensitivity(self, axis: str) -> None:
+        axis_key = axis.strip().lower()
+        current = 1.0
+        if axis_key == "orbit":
+            current = self.context.camera_orbit_sensitivity
+        elif axis_key == "pan":
+            current = self.context.camera_pan_sensitivity
+        elif axis_key == "zoom":
+            current = self.context.camera_zoom_sensitivity
+        value, accepted = QInputDialog.getDouble(
+            self,
+            "Camera Sensitivity",
+            f"{axis_key.title()} sensitivity:",
+            float(current),
+            0.1,
+            3.0,
+            2,
+        )
+        if not accepted:
+            return
+        self.context.set_camera_sensitivity(axis_key, value)
+        self._show_voxel_status(f"{axis_key.title()} sensitivity: {value:.2f}")
+
     def _on_toggle_orthographic_projection(self, enabled: bool) -> None:
         projection = (
             AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
@@ -972,6 +1004,9 @@ class MainWindow(QMainWindow):
             "camera_snap_degrees": self.context.camera_snap_degrees,
             "camera_projection": self.context.camera_projection,
             "navigation_profile": self.context.navigation_profile,
+            "camera_orbit_sensitivity": self.context.camera_orbit_sensitivity,
+            "camera_pan_sensitivity": self.context.camera_pan_sensitivity,
+            "camera_zoom_sensitivity": self.context.camera_zoom_sensitivity,
             "undo_depth": self.context.command_stack.max_undo_steps,
             "mirror_x_enabled": self.context.mirror_x_enabled,
             "mirror_y_enabled": self.context.mirror_y_enabled,
@@ -1056,6 +1091,18 @@ class MainWindow(QMainWindow):
             AppContext.NAV_PROFILE_BLENDER_MIX,
         ):
             self.context.navigation_profile = navigation_profile
+        self.context.camera_orbit_sensitivity = max(
+            0.1,
+            min(3.0, float(state.get("camera_orbit_sensitivity", self.context.camera_orbit_sensitivity))),
+        )
+        self.context.camera_pan_sensitivity = max(
+            0.1,
+            min(3.0, float(state.get("camera_pan_sensitivity", self.context.camera_pan_sensitivity))),
+        )
+        self.context.camera_zoom_sensitivity = max(
+            0.1,
+            min(3.0, float(state.get("camera_zoom_sensitivity", self.context.camera_zoom_sensitivity))),
+        )
         self.context.command_stack.set_max_undo_steps(
             int(state.get("undo_depth", self.context.command_stack.max_undo_steps))
         )

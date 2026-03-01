@@ -47,6 +47,9 @@ class AppContext:
     camera_snap_degrees: int = 15
     camera_projection: str = CAMERA_PROJECTION_PERSPECTIVE
     navigation_profile: str = NAV_PROFILE_CLASSIC
+    camera_orbit_sensitivity: float = 1.0
+    camera_pan_sensitivity: float = 1.0
+    camera_zoom_sensitivity: float = 1.0
     mirror_x_enabled: bool = False
     mirror_y_enabled: bool = False
     mirror_z_enabled: bool = False
@@ -119,6 +122,22 @@ class AppContext:
         if profile_value not in self._VALID_NAVIGATION_PROFILES:
             raise ValueError(f"Unsupported navigation profile: {profile_value}")
         self.navigation_profile = profile_value
+
+    def set_camera_sensitivity(self, axis: str, value: float) -> None:
+        axis_key = str(axis).strip().lower()
+        sensitivity = float(value)
+        if sensitivity < 0.1 or sensitivity > 3.0:
+            raise ValueError(f"Unsupported camera sensitivity: {sensitivity}")
+        if axis_key == "orbit":
+            self.camera_orbit_sensitivity = sensitivity
+            return
+        if axis_key == "pan":
+            self.camera_pan_sensitivity = sensitivity
+            return
+        if axis_key == "zoom":
+            self.camera_zoom_sensitivity = sensitivity
+            return
+        raise ValueError(f"Unsupported camera sensitivity axis: {axis_key}")
 
     def set_fill_connectivity(self, mode: str) -> None:
         mode_value = str(mode).strip().lower()

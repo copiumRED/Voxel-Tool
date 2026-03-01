@@ -26,6 +26,9 @@ def test_project_save_load_roundtrip() -> None:
         "edit_plane": "yz",
         "camera_projection": "orthographic",
         "navigation_profile": "mmb_orbit",
+        "camera_orbit_sensitivity": 1.25,
+        "camera_pan_sensitivity": 0.85,
+        "camera_zoom_sensitivity": 1.10,
         "fill_connectivity": "volume",
         "locked_palette_slots": [0, 3],
     }

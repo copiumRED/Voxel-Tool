@@ -5,6 +5,7 @@ from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import _next_brush_size
 from core.project import Project
 from PySide6.QtCore import Qt
+import pytest
 
 
 def test_next_brush_size_cycles_three_step_range() -> None:
@@ -49,3 +50,13 @@ def test_blender_mix_profile_enables_shift_middle_pan_modifier() -> None:
     ctx.set_navigation_profile(AppContext.NAV_PROFILE_BLENDER_MIX)
     assert GLViewportWidget._is_mmb_orbit_enabled(ctx) is True
     assert GLViewportWidget._is_middle_drag_pan(ctx, Qt.ShiftModifier) is True
+
+
+def test_camera_sensitivity_helpers_follow_context_values() -> None:
+    ctx = AppContext(current_project=Project(name="Shortcut Input"))
+    ctx.set_camera_sensitivity("orbit", 1.5)
+    ctx.set_camera_sensitivity("pan", 2.0)
+    ctx.set_camera_sensitivity("zoom", 0.5)
+    assert GLViewportWidget._orbit_sensitivity(ctx) == pytest.approx(0.6)
+    assert GLViewportWidget._pan_sensitivity(ctx) == 2.0
+    assert GLViewportWidget._zoom_sensitivity(ctx) == 0.5

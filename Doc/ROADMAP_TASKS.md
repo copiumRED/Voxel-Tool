@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 04: Navigation Sensitivity Controls
-- Goal: Add orbit/pan/zoom sensitivity controls in settings.
-- Likely files/modules touched: `src/app/app_context.py`, `src/app/ui/panels/tools_panel.py`, `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): Sensitivity sliders visibly change camera responsiveness and persist on save/open.
-- Tests required: Add clamping and persistence tests.
-- Risk/rollback note: Clamp ranges to prevent unusable camera behavior.
-
 ### Task 05: Drag Transaction Abort Hardening
 - Goal: Ensure interrupted drags always close or abort transactions cleanly.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/command_stack.py`.
@@ -304,7 +297,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`125 passed`)
 
 ### Task 03: Blender-Mix Navigation Preset
-- Commit: `COMMIT_PENDING`
+- Commit: `dbd0bc4`
 - Added `blender_mix` as a validated third navigation profile in app context.
 - Expanded valid navigation profile set to include classic, mmb_orbit, and blender_mix.
 - Replaced single MMB toggle with a dedicated `Navigation Profile` menu.
@@ -320,3 +313,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`126 passed`)
+
+### Task 04: Navigation Sensitivity Controls
+- Commit: `COMMIT_PENDING`
+- Added camera sensitivity fields to app context for orbit, pan, and zoom controls.
+- Added validated context setter for camera sensitivity axes with bounded range checks.
+- Added view-menu actions to set orbit, pan, and zoom sensitivity at runtime.
+- Added shared main-window handler to edit sensitivity values through bounded numeric input.
+- Added editor-state capture keys for orbit/pan/zoom sensitivity persistence.
+- Added editor-state apply logic with clamped restoration for saved sensitivity values.
+- Applied orbit sensitivity multiplier to left and middle orbit drag camera rotation.
+- Applied pan sensitivity multiplier to camera pan offset math.
+- Applied zoom sensitivity multiplier to mouse-wheel zoom response.
+- Added app-context regression test coverage for sensitivity validation across all axes.
+- Extended project IO roundtrip editor-state fixture with sensitivity fields.
+- Added viewport helper regression tests validating sensitivity helper outputs.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`128 passed`)
