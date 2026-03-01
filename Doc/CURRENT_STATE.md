@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **89%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **90%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Brush size quick-cycle hotkey is not available yet
-- Symptoms: users must change brush size from UI control only.
-- Suspected root cause: no brush-size cycle shortcut binding in main window.
-- Exact files: `src/app/ui/main_window.py`, `src/app/ui/panels/tools_panel.py`.
-- Fastest confirmation: press expected brush-size cycle key; no size change occurs.
+1. Inspector still lacks clear active-part group membership summary
+- Symptoms: group assignment works, but quick-read membership context is limited for active part.
+- Suspected root cause: no dedicated active-part membership summary element in inspector panel.
+- Exact files: `src/app/ui/panels/inspector_panel.py`.
+- Fastest confirmation: select part in multiple groups and inspect panel for concise membership summary.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

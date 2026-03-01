@@ -820,3 +820,15 @@
   - Run: `pytest -q` (current: `104 passed`)
 - Risks/issues:
   - Brush size cycle hotkey remains pending Task 14.
+
+### Roadmap 14 (Day-Cycle 30): Brush Size Cycle Hotkey
+- What was done:
+  - Added brush-size cycle helper and bound shortcut `]` to cycle size.
+  - Wired shortcut to context update + immediate UI refresh/status feedback.
+  - Added tests for cycle progression and invalid-input fallback.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In brush mode, press `]` repeatedly and verify size cycles `1 -> 2 -> 3 -> 1`.
+  - Run: `pytest -q` (current: `106 passed`)
+- Risks/issues:
+  - Group membership visibility polish in Inspector remains pending Task 15.

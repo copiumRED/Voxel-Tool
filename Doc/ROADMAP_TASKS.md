@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 14: Brush Size Cycle Hotkey
-- Goal: Add keyboard shortcut to cycle brush size quickly.
-- Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/ui/panels/tools_panel.py`.
-- Acceptance criteria (human-testable): Hotkey cycles 1->2->3->1 and updates UI immediately.
-- Tests required: Add shortcut handling tests.
-- Risk/rollback note: Avoid conflicts with existing shortcuts.
-
 ### Task 15: Group Membership Visibility in Inspector
 - Goal: Show active part group memberships directly in inspector for quicker workflow.
 - Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`.
@@ -346,3 +339,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`104 passed`)
+
+### Task 14: Brush Size Cycle Hotkey
+- Commit: `2def624`
+- Added deterministic brush-size cycle helper for 1->2->3->1 progression.
+- Added brush-size cycle shortcut binding (`]`) in main window shortcut map.
+- Wired shortcut action to update context brush size and refresh UI immediately.
+- Added status feedback message when cycling brush size from keyboard.
+- Preserved existing brush profile controls in Tools panel (hotkey complements UI control).
+- Kept brush shape and tool-mode behavior unchanged.
+- Added tests validating brush-size cycle progression and invalid-input fallback behavior.
+- Avoided key collisions with existing tool/mode/palette shortcuts.
+- Kept implementation scoped to shortcut behavior only (no command logic changes).
+- Maintained dependency-free implementation.
+- Scope matches roadmap acceptance for quick brush-size cycling.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`106 passed`)

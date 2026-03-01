@@ -131,6 +131,13 @@ def _edit_plane_for_view_preset(preset: str) -> str:
     return AppContext.EDIT_PLANE_XY
 
 
+def _next_brush_size(current: int, *, min_size: int = 1, max_size: int = 3) -> int:
+    current_value = int(current)
+    if current_value < min_size or current_value > max_size:
+        return min_size
+    return min_size + ((current_value - min_size + 1) % (max_size - min_size + 1))
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
@@ -379,6 +386,7 @@ class MainWindow(QMainWindow):
         self._register_shortcut("0", lambda: self._set_active_palette_slot(9))
         self._register_shortcut("Shift+F", self._on_frame_voxels)
         self._register_shortcut("Shift+R", self._on_reset_camera)
+        self._register_shortcut("]", self._cycle_brush_size)
 
     def _register_shortcut(self, sequence: str, callback) -> None:
         shortcut = QShortcut(QKeySequence(sequence), self)
@@ -397,6 +405,12 @@ class MainWindow(QMainWindow):
         slot = max(0, min(index, len(self.context.palette) - 1))
         self.context.active_color_index = slot
         self._show_voxel_status(f"Active Color: {slot}")
+        self._refresh_ui_state()
+
+    def _cycle_brush_size(self) -> None:
+        next_size = _next_brush_size(self.context.brush_size)
+        self.context.set_brush_size(next_size)
+        self._show_voxel_status(f"Brush size: {next_size}")
         self._refresh_ui_state()
 
     def _on_new_project(self) -> None:
