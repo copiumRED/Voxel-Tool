@@ -73,21 +73,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added `File -> Import VOX` flow that creates a new part from imported voxels and activates it.
 - Added importer roundtrip test coverage using exported VOX fixtures.
 
-## Remaining Tasks
-
 ### Task 12: VOX Import v2 (Multi-Model Mapping + Palette Fidelity)
-- Goal:
-  - Handle multi-model VOX content and better palette-index fidelity.
-- Files/modules likely touched:
-  - `src/core/io/` import helpers
-  - `src/core/scene.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria (human-testable):
-  - Multi-model VOX imports as multiple parts.
-  - Colors remain stable after import and re-export.
-- Tests required:
-  - Multi-model import unit tests.
-  - Palette mapping regression tests.
+- Commit: `COMMIT_PENDING`
+- Added multi-model VOX parser path that reads repeated model chunks into separate voxel grids.
+- Updated `File -> Import VOX` workflow to create one part per imported model with deterministic naming.
+- Added multi-model parser regression test validating per-model voxel data and RGBA palette fidelity.
+
+## Remaining Tasks
 
 ### Task 13: Qubicle `.qb` Feasibility Note + Guardrail
 - Goal:

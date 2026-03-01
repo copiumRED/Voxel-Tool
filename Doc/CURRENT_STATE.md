@@ -49,6 +49,7 @@ Reasoning:
 - Correction 33: View presets (top/front/left/right/back/bottom) are now available in the View menu with shortcuts.
 - Correction 34: Grid controls (visibility/spacing) and camera snap settings are now exposed and persisted via editor state.
 - Correction 35: VOX import v1 is now available (`File -> Import VOX`) with single-model chunk parsing and palette ingestion.
+- Correction 36: VOX import v2 now supports multi-model files, creating multiple parts with palette fidelity.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |
@@ -62,7 +63,7 @@ Reasoning:
 | Scene/part workflow | Practical object management | Add/rename/select/duplicate/delete/visibility/lock + transform + reorder + grouping implemented | Remaining gap: deeper hierarchy UX polish | P1 |
 | Palette workflow | Fast color iteration | Save/load presets + in-app edit/add/remove/swap + `1-0` hotkeys implemented | Remaining gap: preset metadata/import-format polish | P1 |
 | Picking behavior | Intuitive paint/erase targeting | 3D surface pick + explicit surface/plane-lock mode implemented | Needs accuracy tuning and richer face-normal hinting | P0 |
-| Import/export breadth | Robust interop | Export flows + VOX import v1 are implemented with Qubicle VOX validation | Remaining gap: multi-model VOX mapping and deeper format parity | P0 |
+| Import/export breadth | Robust interop | Export flows + VOX import v2 (single + multi-model) implemented with Qubicle VOX validation | Remaining gap: deeper format parity beyond VOX/OBJ/glTF current scope | P0 |
 | Keyboard shortcuts | Tooling speed via hotkeys | Core tool + camera shortcut map implemented | Remaining gap: part/workflow shortcuts and discoverability polish | P1 |
 | Undo/redo confidence | Stable and predictable | Grouped transactions + mirror drag undo tests implemented | Remaining gap: high-volume stress/perf-focused undo tests | P1 |
 | Performance at scale | Handles practical production scenes | Perf baseline harness implemented for brush/fill/solidify | Remaining gap: broader scale matrix + targeted optimizations | P0 |
@@ -71,6 +72,9 @@ Reasoning:
 | UX discoverability | Low friction UI | In-app hints + first-use guidance now visible | Remaining gap: visual polish and richer contextual tooltips | P1 |
 
 ## Top 10 Risks / Blockers (Ranked) + Mitigations
+0. Remote GitHub connectivity failure blocks required push/pull workflow
+- Mitigation: verify environment connectivity (`git ls-remote origin`), then restore network path before continuing roadmap tasks 12+.
+
 1. Runtime viewport regressions on specific GPU/driver profiles
 - Mitigation: startup diagnostics and in-viewport error surfacing are implemented; next is fallback mode toggle + GPU matrix QA checklist.
 

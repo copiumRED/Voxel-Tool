@@ -33,7 +33,7 @@ from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
-from core.io.vox_io import load_vox
+from core.io.vox_io import load_vox_models
 from core.meshing.solidify import rebuild_part_mesh
 from core.project import Project, utc_now_iso
 from app.ui.panels.inspector_panel import InspectorPanel
@@ -436,22 +436,30 @@ class MainWindow(QMainWindow):
         if not path:
             return
         try:
-            voxels, palette = load_vox(path)
+            models, palette = load_vox_models(path)
         except Exception as exc:
             QMessageBox.warning(self, "Import VOX", f"Failed to import VOX file.\n\n{exc}")
             return
 
         scene = self.context.current_project.scene
         part_name = os.path.splitext(os.path.basename(path))[0] or "Imported VOX"
-        imported_part = scene.add_part(part_name)
-        imported_part.voxels = voxels
-        scene.set_active_part(imported_part.part_id)
+        imported_count = 0
+        active_part_id: str | None = None
+        for index, voxels in enumerate(models):
+            name = part_name if len(models) == 1 else f"{part_name} #{index + 1}"
+            imported_part = scene.add_part(name)
+            imported_part.voxels = voxels
+            if active_part_id is None:
+                active_part_id = imported_part.part_id
+            imported_count += 1
+        if active_part_id is not None:
+            scene.set_active_part(active_part_id)
         self.context.palette = palette
         self.context.active_color_index = max(
             0,
             min(self.context.active_color_index, len(self.context.palette) - 1),
         )
-        self._show_voxel_status(f"Imported VOX: {path}")
+        self._show_voxel_status(f"Imported VOX: {path} ({imported_count} part(s))")
         self._refresh_ui_state()
 
     def _on_export_gltf(self) -> None:

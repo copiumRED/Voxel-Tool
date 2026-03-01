@@ -155,6 +155,28 @@
 - Issues noticed:
   - `git pull` remained blocked by restricted network access.
 
+### Roadmap 12 (Next Workday): VOX Import v2 (Multi-Model Mapping + Palette Fidelity)
+- What was done:
+  - Added multi-model VOX parsing support for repeated `SIZE`/`XYZI` model chunks.
+  - Updated VOX import action to create one part per model with stable naming and active-part assignment.
+  - Preserved palette fidelity from VOX `RGBA` chunk across imported models.
+  - Added regression test with synthetic multi-model VOX payload.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Import a multi-model `.vox` file and verify multiple parts are created.
+  - Confirm imported colors are preserved, then export VOX once for roundtrip sanity.
+  - Run: `pytest -q` (current: `73 passed`)
+- Issues noticed:
+  - `git pull`/`git push` network blocker persists.
+
+## Active Blocker
+- Blocked item:
+  - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).
+- Suspected root cause:
+  - Network access restriction in execution environment.
+- Minimal next experiment:
+  - Run `git ls-remote origin` from same environment; if it fails, validate proxy/VPN/firewall settings, then retry `git pull` and `git push`.
+
 ### Roadmap 01: Viewport Health Overlay + Startup Diagnostics
 - What was done:
   - Added startup viewport diagnostics status in the status bar with readiness state + shader profile + OpenGL string.
