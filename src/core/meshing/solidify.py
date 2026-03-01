@@ -17,7 +17,13 @@ def rebuild_part_mesh(part: Part, *, greedy: bool = True) -> SurfaceMesh:
     if part.mesh_cache is not None and part.dirty_bounds is not None:
         dirty_bounds = _expand_bounds(part.dirty_bounds, pad=1)
         if _bounds_volume(dirty_bounds) <= 4096:
-            mesh = _incremental_rebuild(part, dirty_bounds, greedy=greedy)
+            incremental = _incremental_rebuild(part, dirty_bounds, greedy=greedy)
+            full = build_solid_mesh(part.voxels, greedy=greedy)
+            mesh = (
+                incremental
+                if _mesh_signature(incremental) == _mesh_signature(full)
+                else full
+            )
             part.mesh_cache = mesh
             part.dirty_bounds = None
             return mesh
@@ -114,3 +120,11 @@ def _expand_bounds(bounds: tuple[int, int, int, int, int, int], *, pad: int) -> 
 def _bounds_volume(bounds: tuple[int, int, int, int, int, int]) -> int:
     min_x, max_x, min_y, max_y, min_z, max_z = bounds
     return max(1, (max_x - min_x + 1)) * max(1, (max_y - min_y + 1)) * max(1, (max_z - min_z + 1))
+
+
+def _mesh_signature(mesh: SurfaceMesh) -> set[tuple[tuple[float, float, float], ...]]:
+    faces: set[tuple[tuple[float, float, float], ...]] = set()
+    for quad in mesh.quads:
+        verts = tuple(sorted(mesh.vertices[index] for index in quad))
+        faces.add(verts)
+    return faces

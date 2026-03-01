@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **96%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **97%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Incremental solidify stress equivalence coverage is still limited
-- Symptoms: incremental rebuild has baseline equivalence tests but not broad randomized stress coverage.
-- Suspected root cause: test suite currently validates limited localized edit scenarios.
-- Exact files: `src/core/meshing/solidify.py`, `tests/test_solidify_incremental.py`.
-- Fastest confirmation: run randomized localized edit comparisons against full rebuild signatures.
+1. Viewport still recomputes visible voxel data redundantly per frame
+- Symptoms: dense-scene rendering path recalculates visibility data multiple times within a frame.
+- Suspected root cause: no per-frame cache for visible voxel rows/points.
+- Exact files: `src/app/viewport/gl_widget.py`.
+- Fastest confirmation: profile `paintGL` in dense scenes and inspect repeated visibility calls.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

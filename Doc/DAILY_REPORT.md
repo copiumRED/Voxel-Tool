@@ -911,3 +911,14 @@
   - Run: `pytest -q` (current: `114 passed`)
 - Risks/issues:
   - Incremental solidify stress-equivalence expansion remains pending Task 21.
+
+### Roadmap 21 (Day-Cycle 30): Incremental Solidify Stress Equivalence Expansion
+- What was done:
+  - Added randomized multi-seed localized-edit equivalence tests for incremental solidify vs full rebuild.
+  - Detected mismatch cases and hardened `rebuild_part_mesh()` with signature-based full-rebuild fallback.
+  - Preserved incremental path where signatures match.
+- How to test quickly:
+  - Run: `pytest -q` and confirm randomized incremental equivalence test passes.
+  - Optional: perform repeated localized edits + solidify in app and verify stable mesh output.
+- Risks/issues:
+  - Viewport per-frame data caching remains pending Task 22.

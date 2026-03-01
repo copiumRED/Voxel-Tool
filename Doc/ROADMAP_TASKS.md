@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 21: Incremental Solidify Stress Equivalence Expansion
-- Goal: Increase confidence in incremental rebuild by randomized equivalence testing.
-- Likely files/modules touched: `tests/test_solidify_incremental.py`, `src/core/meshing/solidify.py`.
-- Acceptance criteria (human-testable): Randomized localized edit sequences produce same mesh signature as full rebuild.
-- Tests required: Add multi-seed equivalence tests.
-- Risk/rollback note: If inconsistencies found, auto-fallback to full rebuild for affected bounds cases.
-
 ### Task 22: Viewport Per-Frame Data Caching
 - Goal: Reduce redundant visible-voxel recomputation in each paint cycle.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`.
@@ -416,3 +409,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`114 passed`)
+
+### Task 21: Incremental Solidify Stress Equivalence Expansion
+- Commit: `TASK21_HASH_PENDING`
+- Added multi-seed randomized localized-edit equivalence test for incremental vs full rebuild.
+- Stress test exposed real divergence cases in incremental patch merge path.
+- Added safety check in incremental rebuild path comparing mesh signatures against full rebuild.
+- Added automatic fallback to full rebuild when incremental signature diverges.
+- Preserved incremental path for matching cases while prioritizing correctness.
+- Kept dirty-bound threshold behavior unchanged.
+- Added shared mesh-signature helper in solidify module for correctness checks.
+- Maintained active part cache update flow and dirty-bound clearing behavior.
+- Strengthened reliability for export/stats consumers relying on mesh cache correctness.
+- Preserved dependency-free implementation.
+- Task includes corrective stabilization prompted by new stress coverage.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`115 passed`)
