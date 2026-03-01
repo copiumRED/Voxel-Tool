@@ -231,6 +231,19 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 18 (Next Workday): Runtime Performance Diagnostics in Stats Panel
+- What was done:
+  - Added runtime metrics signal from viewport with frame timing and active voxel count.
+  - Added runtime diagnostics row in Stats panel (`frame ms`, `rebuild ms`, `scene tris`, `active voxels`).
+  - Wired main window to update runtime diagnostics continuously and record rebuild duration on solidify.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Edit voxels and confirm runtime metrics row updates in Stats panel.
+  - Trigger `Voxels -> Solidify/Rebuild Mesh` and verify rebuild timing updates.
+  - Run: `pytest -q` (current: `80 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).

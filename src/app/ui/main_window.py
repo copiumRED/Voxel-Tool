@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import random
+import time
 from dataclasses import dataclass
 
 from PySide6.QtCore import Qt
@@ -111,6 +112,9 @@ class MainWindow(QMainWindow):
         self.redo_action: QAction | None = None
         self._shortcuts: list[QShortcut] = []
         self._export_options = _ExportSessionOptions()
+        self._last_frame_ms = 0.0
+        self._last_rebuild_ms = 0.0
+        self._last_scene_triangles = 0
 
         self.viewport = GLViewportWidget(self)
         self.viewport.set_context(self.context)
@@ -118,6 +122,7 @@ class MainWindow(QMainWindow):
         self.viewport.viewport_ready.connect(self._on_viewport_ready)
         self.viewport.viewport_diagnostics.connect(self._on_viewport_diagnostics)
         self.viewport.viewport_error.connect(self._on_viewport_error)
+        self.viewport.runtime_metrics.connect(self._on_runtime_metrics)
         self.setCentralWidget(self.viewport)
         self.tools_panel = ToolsPanel(self)
         self.tools_panel.set_context(self.context)
@@ -570,7 +575,9 @@ class MainWindow(QMainWindow):
 
     def _on_solidify_rebuild_mesh(self) -> None:
         part = self.context.active_part
+        start = time.perf_counter()
         mesh = rebuild_part_mesh(part, greedy=True)
+        self._last_rebuild_ms = (time.perf_counter() - start) * 1000.0
         self._show_voxel_status(
             f"Solidified part: {part.name} | Faces: {mesh.face_count} | Vertices: {len(mesh.vertices)}"
         )
@@ -608,6 +615,13 @@ class MainWindow(QMainWindow):
             scene_stats,
             active_part_id=self.context.active_part_id,
             active_voxel_count=self.context.current_project.voxels.count(),
+        )
+        self._last_scene_triangles = scene_stats.triangles
+        self.stats_panel.set_runtime_stats(
+            frame_ms=self._last_frame_ms,
+            rebuild_ms=self._last_rebuild_ms,
+            scene_triangles=self._last_scene_triangles,
+            active_voxels=self.context.current_project.voxels.count(),
         )
         self.palette_panel.refresh()
         self.inspector_panel.refresh()
@@ -764,6 +778,16 @@ class MainWindow(QMainWindow):
 
     def _on_viewport_diagnostics(self, message: str) -> None:
         self.statusBar().showMessage(message, 10000)
+
+    def _on_runtime_metrics(self, frame_ms: float, active_voxels: int) -> None:
+        del active_voxels
+        self._last_frame_ms = frame_ms
+        self.stats_panel.set_runtime_stats(
+            frame_ms=self._last_frame_ms,
+            rebuild_ms=self._last_rebuild_ms,
+            scene_triangles=self._last_scene_triangles,
+            active_voxels=self.context.current_project.voxels.count(),
+        )
 
     def _on_viewport_error(self, message: str) -> None:
         QMessageBox.critical(

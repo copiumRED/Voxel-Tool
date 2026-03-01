@@ -55,6 +55,7 @@ Reasoning:
 - Correction 39: Mesh normal validation coverage is now in place for naive and greedy extraction paths with outward-normal checks.
 - Correction 40: OBJ export now includes basic UV output and vertex-color extension path for downstream pipeline compatibility.
 - Correction 41: Incremental solidify v1 is implemented using dirty-region tracking with full-rebuild equivalence coverage on localized edits.
+- Correction 42: Runtime stats diagnostics now show frame timing, rebuild timing, scene tris, and active voxel count in Stats panel.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from array import array
 from ctypes import c_void_p
 from math import cos, radians, sin
@@ -27,6 +28,7 @@ class GLViewportWidget(QOpenGLWidget):
     viewport_ready = Signal(str)
     viewport_diagnostics = Signal(str)
     viewport_error = Signal(str)
+    runtime_metrics = Signal(float, int)
 
     _GL_COLOR_BUFFER_BIT = 0x00004000
     _GL_DEPTH_BUFFER_BIT = 0x00000100
@@ -181,6 +183,7 @@ class GLViewportWidget(QOpenGLWidget):
             self._logger.exception("OpenGL initialization failed")
 
     def paintGL(self) -> None:
+        frame_start = time.perf_counter()
         funcs = self.context().functions()
         funcs.glClear(self._GL_COLOR_BUFFER_BIT | self._GL_DEPTH_BUFFER_BIT)
         if self._app_context is None:
@@ -224,6 +227,8 @@ class GLViewportWidget(QOpenGLWidget):
 
         if self.debug_overlay_enabled:
             self._draw_overlay_text(voxel_count, error_text=None)
+        frame_ms = (time.perf_counter() - frame_start) * 1000.0
+        self.runtime_metrics.emit(frame_ms, voxel_count)
 
     def _draw_colored_vertices(self, funcs, vertex_data: array, mode: int, mvp: QMatrix4x4) -> int:
         if self._program is None or self._buffer is None or len(vertex_data) == 0:

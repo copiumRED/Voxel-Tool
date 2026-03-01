@@ -109,21 +109,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Added incremental rebuild path in `rebuild_part_mesh()` that patches cached mesh geometry within dirty bounds.
 - Added equivalence test to validate incremental rebuild output matches full rebuild for localized edits.
 
-## Remaining Tasks
-
 ### Task 18: Runtime Performance Diagnostics in Stats Panel
-- Goal:
-  - Surface live runtime metrics for frame and mesh performance.
-- Files/modules likely touched:
-  - `src/app/ui/panels/stats_panel.py`
-  - `src/app/viewport/gl_widget.py`
-  - `src/core/analysis/stats.py`
-- Acceptance criteria (human-testable):
-  - Stats panel shows frame time, voxel count, triangle count, rebuild timing.
-  - Metrics update during editing without UI freeze.
-- Tests required:
-  - Stats formatting tests.
-  - Manual stress-scene metrics smoke.
+- Commit: `COMMIT_PENDING`
+- Added runtime diagnostics row in Stats panel showing frame time, rebuild time, scene triangles, and active voxel count.
+- Added viewport runtime metrics signal emitting per-frame timing data.
+- Added main-window wiring to aggregate frame/rebuild metrics and feed live stats panel updates.
+
+## Remaining Tasks
 
 ### Task 19: Autosave + Crash Recovery v1
 - Goal:

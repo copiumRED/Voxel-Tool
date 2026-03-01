@@ -12,9 +12,11 @@ class StatsPanel(QWidget):
         self.scene_label = QLabel("Scene: tris 0 | faces 0 | edges 0 | verts 0 | materials 0")
         self.object_label = QLabel("Object: -")
         self.voxel_count_label = QLabel("Active Voxel Count: 0")
+        self.runtime_label = QLabel("Runtime: frame 0.00 ms | rebuild 0.00 ms | scene tris 0 | active voxels 0")
         layout.addWidget(self.scene_label)
         layout.addWidget(self.object_label)
         layout.addWidget(self.voxel_count_label)
+        layout.addWidget(self.runtime_label)
         layout.addStretch(1)
 
     def set_scene_stats(self, scene_stats: SceneStats, active_part_id: str, active_voxel_count: int) -> None:
@@ -37,3 +39,17 @@ class StatsPanel(QWidget):
                 f"materials {active_part.materials_used}"
             )
         self.voxel_count_label.setText(f"Active Voxel Count: {active_voxel_count}")
+
+    def set_runtime_stats(
+        self,
+        *,
+        frame_ms: float,
+        rebuild_ms: float,
+        scene_triangles: int,
+        active_voxels: int,
+    ) -> None:
+        self.runtime_label.setText(
+            "Runtime: "
+            f"frame {frame_ms:.2f} ms | rebuild {rebuild_ms:.2f} ms | "
+            f"scene tris {scene_triangles} | active voxels {active_voxels}"
+        )
