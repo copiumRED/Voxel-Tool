@@ -1574,3 +1574,18 @@
   - Run: `pytest -q` (current: `174 passed`).
 - Risks/issues:
   - Numeric field drag-scrub interaction remains pending Task 36.
+
+### Roadmap 36 (Day-Cycle 40): Interface Polish - Numeric Field Drag Scrub
+- What was done:
+  - Added draggable transform row labels in Inspector (`Pos/Rot/Scale`) to scrub numeric values horizontally.
+  - Implemented pixel-delta to value-delta mapping using each spinbox single-step for consistent feel.
+  - Added clamp-safe scrub value application to respect per-field min/max bounds.
+  - Preserved direct text input workflow for all transform spinboxes.
+  - Added unit tests for delta mapping and min/max clamp behavior.
+- How to test quickly:
+  - Launch app and select a part in Inspector.
+  - Drag a transform row label (for example `Pos X`) left/right and verify value changes smoothly.
+  - Confirm values stop at configured limits and text entry still works.
+  - Run: `pytest -q` (current: `176 passed`).
+- Risks/issues:
+  - Hotkey overlay remains pending Task 37.

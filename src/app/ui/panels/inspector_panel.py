@@ -21,6 +21,43 @@ from PySide6.QtWidgets import (
 from app.app_context import AppContext
 
 
+class _DragScrubLabel(QLabel):
+    scrub_delta = Signal(int)
+
+    def __init__(self, text: str, parent: QWidget | None = None) -> None:
+        super().__init__(text, parent)
+        self.setCursor(Qt.SizeHorCursor)
+        self.setToolTip("Drag horizontally to scrub value")
+        self._dragging = False
+        self._last_x = 0
+
+    def mousePressEvent(self, event) -> None:  # type: ignore[override]
+        if event.button() == Qt.LeftButton:
+            self._dragging = True
+            self._last_x = event.globalPosition().toPoint().x()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:  # type: ignore[override]
+        if self._dragging:
+            current_x = event.globalPosition().toPoint().x()
+            delta = current_x - self._last_x
+            if delta != 0:
+                self._last_x = current_x
+                self.scrub_delta.emit(delta)
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:  # type: ignore[override]
+        if event.button() == Qt.LeftButton and self._dragging:
+            self._dragging = False
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+
 class InspectorPanel(QWidget):
     part_selection_changed = Signal(str)
     part_status_message = Signal(str)
@@ -149,15 +186,15 @@ class InspectorPanel(QWidget):
         self.scale_x.valueChanged.connect(lambda _: self._on_transform_changed())
         self.scale_y.valueChanged.connect(lambda _: self._on_transform_changed())
         self.scale_z.valueChanged.connect(lambda _: self._on_transform_changed())
-        transform_layout.addRow("Pos X", self.position_x)
-        transform_layout.addRow("Pos Y", self.position_y)
-        transform_layout.addRow("Pos Z", self.position_z)
-        transform_layout.addRow("Rot X", self.rotation_x)
-        transform_layout.addRow("Rot Y", self.rotation_y)
-        transform_layout.addRow("Rot Z", self.rotation_z)
-        transform_layout.addRow("Scale X", self.scale_x)
-        transform_layout.addRow("Scale Y", self.scale_y)
-        transform_layout.addRow("Scale Z", self.scale_z)
+        transform_layout.addRow(self._create_transform_row_label("Pos X", self.position_x), self.position_x)
+        transform_layout.addRow(self._create_transform_row_label("Pos Y", self.position_y), self.position_y)
+        transform_layout.addRow(self._create_transform_row_label("Pos Z", self.position_z), self.position_z)
+        transform_layout.addRow(self._create_transform_row_label("Rot X", self.rotation_x), self.rotation_x)
+        transform_layout.addRow(self._create_transform_row_label("Rot Y", self.rotation_y), self.rotation_y)
+        transform_layout.addRow(self._create_transform_row_label("Rot Z", self.rotation_z), self.rotation_z)
+        transform_layout.addRow(self._create_transform_row_label("Scale X", self.scale_x), self.scale_x)
+        transform_layout.addRow(self._create_transform_row_label("Scale Y", self.scale_y), self.scale_y)
+        transform_layout.addRow(self._create_transform_row_label("Scale Z", self.scale_z), self.scale_z)
         layout.addLayout(transform_layout)
         layout.addStretch(1)
 
@@ -562,6 +599,24 @@ class InspectorPanel(QWidget):
         spin.setSingleStep(0.1)
         spin.setValue(default)
         return spin
+
+    def _create_transform_row_label(self, text: str, spin: QDoubleSpinBox) -> QLabel:
+        label = _DragScrubLabel(text, self)
+        label.scrub_delta.connect(lambda pixel_delta: self._on_transform_scrub(spin, pixel_delta))
+        return label
+
+    def _on_transform_scrub(self, spin: QDoubleSpinBox, pixel_delta: int) -> None:
+        delta = self._transform_scrub_delta_for_pixels(pixel_delta, spin.singleStep())
+        next_value = self._apply_scrubbed_value(spin.value(), delta, spin.minimum(), spin.maximum())
+        spin.setValue(next_value)
+
+    @staticmethod
+    def _transform_scrub_delta_for_pixels(pixel_delta: int, single_step: float) -> float:
+        return float(pixel_delta) * float(single_step)
+
+    @staticmethod
+    def _apply_scrubbed_value(value: float, delta: float, min_value: float, max_value: float) -> float:
+        return max(min_value, min(max_value, value + delta))
 
     def _set_transform_signals_blocked(self, blocked: bool) -> None:
         for control in (

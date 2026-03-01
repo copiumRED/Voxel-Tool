@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from math import isclose
+
 from app.app_context import AppContext
 from core.commands.demo_commands import PaintVoxelCommand
 from core.project import Project
@@ -157,6 +159,17 @@ def test_inspector_filter_matcher_is_case_insensitive_substring() -> None:
     assert InspectorPanel._matches_filter_text("Part Alpha", "alpha") is True
     assert InspectorPanel._matches_filter_text("Part Alpha", "PART") is True
     assert InspectorPanel._matches_filter_text("Part Alpha", "beta") is False
+
+
+def test_inspector_transform_scrub_delta_mapping_uses_single_step() -> None:
+    assert isclose(InspectorPanel._transform_scrub_delta_for_pixels(5, 0.1), 0.5)
+    assert isclose(InspectorPanel._transform_scrub_delta_for_pixels(-3, 0.25), -0.75)
+
+
+def test_inspector_transform_scrub_applies_clamping() -> None:
+    assert isclose(InspectorPanel._apply_scrubbed_value(1.0, 0.5, -10.0, 10.0), 1.5)
+    assert isclose(InspectorPanel._apply_scrubbed_value(9.9, 1.0, -10.0, 10.0), 10.0)
+    assert isclose(InspectorPanel._apply_scrubbed_value(-9.9, -1.0, -10.0, 10.0), -10.0)
 
 
 def test_scene_set_parts_visible_updates_multiple_parts() -> None:

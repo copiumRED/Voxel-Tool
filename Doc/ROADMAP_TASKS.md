@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 36: Interface Polish - Numeric Field Drag Scrub
-- Goal: Add drag-scrub interaction for numeric transform fields.
-- Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`.
-- Acceptance criteria (human-testable): Dragging numeric labels adjusts transform smoothly.
-- Tests required: Add value clamping and delta mapping tests.
-- Risk/rollback note: Preserve direct text entry mode.
-
 ### Task 37: Interface Polish - Tool Hotkey Overlay
 - Goal: Add in-app hotkey cheat-sheet overlay.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `Doc/NEXT_WORKDAY.md`.
@@ -678,7 +671,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`173 passed`)
 
 ### Task 35: Interface Polish - Theme and Contrast Pass
-- Commit: `COMMIT_PENDING`
+- Commit: `1bdeb04`
 - Added centralized application stylesheet helper for consistent theme/contrast definitions.
 - Applied stylesheet at main-window startup for immediate UI visual consistency.
 - Tuned menu/menu-bar contrast for clearer hover/selection readability.
@@ -695,3 +688,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`174 passed`)
+
+### Task 36: Interface Polish - Numeric Field Drag Scrub
+- Commit: `COMMIT_PENDING`
+- Added drag-scrub row label widget for numeric transform controls in inspector panel.
+- Added horizontal drag detection with per-move pixel delta emission.
+- Added transform row labels as active scrub controls for position, rotation, and scale fields.
+- Added spinbox scrub handler that maps pixel delta to value delta via spin single-step.
+- Added clamp-safe value application helper so scrubbed values stay within spinbox bounds.
+- Preserved direct numeric text entry on all transform spinboxes.
+- Preserved existing transform-changed signal pathway and status messaging.
+- Added drag-scrub tooltip/cursor affordance for discoverable label interaction.
+- Kept implementation scoped to inspector transform controls only.
+- Added unit test for scrub delta mapping behavior against single-step values.
+- Added unit test for scrubbed-value clamping behavior at min/max limits.
+- Kept dependency surface unchanged with no new packages.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`176 passed`)
