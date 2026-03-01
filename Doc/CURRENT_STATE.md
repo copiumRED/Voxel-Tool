@@ -51,6 +51,7 @@ Reasoning:
 - Correction 35: VOX import v1 is now available (`File -> Import VOX`) with single-model chunk parsing and palette ingestion.
 - Correction 36: VOX import v2 now supports multi-model files, creating multiple parts with palette fidelity.
 - Correction 37: `.qb` feasibility note and scope guardrail are now documented; implementation is deferred pending fixture/compatibility gates.
+- Correction 38: OBJ export now applies scale/pivot options and emits MTL material references for improved DCC/engine import behavior.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

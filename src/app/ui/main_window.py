@@ -47,6 +47,7 @@ from app.viewport.gl_widget import GLViewportWidget
 class _ExportSessionOptions:
     obj_use_greedy_mesh: bool = True
     obj_triangulate: bool = False
+    obj_pivot_mode: str = "none"
     scale_preset: str = "Unity (1m)"
 
 
@@ -62,6 +63,9 @@ class _ExportOptionsDialog(QDialog):
         self.obj_greedy_checkbox.setChecked(options.obj_use_greedy_mesh)
         self.obj_triangulate_checkbox = QCheckBox("Triangulate Faces", self)
         self.obj_triangulate_checkbox.setChecked(options.obj_triangulate)
+        self.obj_pivot_combo = QComboBox(self)
+        self.obj_pivot_combo.addItems(["None", "Center", "Bottom"])
+        self.obj_pivot_combo.setCurrentText(options.obj_pivot_mode.capitalize())
         self.scale_preset_combo = QComboBox(self)
         self.scale_preset_combo.addItems(["Unity (1m)", "Unreal (1cm)", "Custom (placeholder)"])
         self.scale_preset_combo.setCurrentText(options.scale_preset)
@@ -69,6 +73,7 @@ class _ExportOptionsDialog(QDialog):
         if format_name == "OBJ":
             layout.addRow(self.obj_greedy_checkbox)
             layout.addRow(self.obj_triangulate_checkbox)
+            layout.addRow("Pivot Mode", self.obj_pivot_combo)
         layout.addRow("Scale Preset", self.scale_preset_combo)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, parent=self)
@@ -80,12 +85,21 @@ class _ExportOptionsDialog(QDialog):
         next_options = _ExportSessionOptions(
             obj_use_greedy_mesh=self._options.obj_use_greedy_mesh,
             obj_triangulate=self._options.obj_triangulate,
+            obj_pivot_mode=self._options.obj_pivot_mode,
             scale_preset=self.scale_preset_combo.currentText(),
         )
         if self._format_name == "OBJ":
             next_options.obj_use_greedy_mesh = self.obj_greedy_checkbox.isChecked()
             next_options.obj_triangulate = self.obj_triangulate_checkbox.isChecked()
+            next_options.obj_pivot_mode = self.obj_pivot_combo.currentText().strip().lower()
         return next_options
+
+
+def _scale_factor_from_preset(preset: str) -> float:
+    normalized = preset.strip().lower()
+    if "unreal" in normalized:
+        return 100.0
+    return 1.0
 
 
 class MainWindow(QMainWindow):
@@ -407,6 +421,8 @@ class MainWindow(QMainWindow):
             options=ObjExportOptions(
                 use_greedy_mesh=export_options.obj_use_greedy_mesh,
                 triangulate=export_options.obj_triangulate,
+                scale_factor=_scale_factor_from_preset(export_options.scale_preset),
+                pivot_mode=export_options.obj_pivot_mode,
             ),
             mesh=self.context.active_part.mesh_cache,
         )
@@ -421,7 +437,8 @@ class MainWindow(QMainWindow):
             (
                 f"Exported OBJ: {path} | Voxels: {voxel_count} | "
                 f"Greedy: {export_options.obj_use_greedy_mesh} | "
-                f"Triangulate: {export_options.obj_triangulate} | Scale: {export_options.scale_preset}"
+                f"Triangulate: {export_options.obj_triangulate} | "
+                f"Pivot: {export_options.obj_pivot_mode} | Scale: {export_options.scale_preset}"
             ),
             5000,
         )

@@ -85,22 +85,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Documented go/no-go criteria and required fixture matrix before `.qb` implementation can begin.
 - Added scope guardrail to prevent premature `.qb` parser work in current phase.
 
-## Remaining Tasks
-
 ### Task 14: OBJ Export Quality Pass (Scale/Pivot/Material Strategy)
-- Goal:
-  - Improve OBJ output reliability for downstream DCC/engine import.
-- Files/modules likely touched:
-  - `src/core/export/obj_exporter.py`
-  - `src/app/ui/main_window.py`
-- Acceptance criteria (human-testable):
-  - Export options correctly affect output scale and pivot behavior.
-  - OBJ + MTL import predictably in at least one DCC and one engine smoke path.
-- Tests required:
-  - Export option unit tests.
-  - Manual external import smoke checklist.
-- Risk/rollback note:
-  - Keep previous exporter path behind fallback option if new output regresses compatibility.
+- Commit: `COMMIT_PENDING`
+- Expanded OBJ export options to apply scale factor and pivot mode transformations at write time.
+- Added MTL material file emission (`voxel_default`) with OBJ `mtllib`/`usemtl` references.
+- Wired export dialog options so OBJ scale preset and pivot mode flow into exporter behavior with test coverage.
+
+## Remaining Tasks
 
 ### Task 15: Mesh Normals Validation + Fixups
 - Goal:

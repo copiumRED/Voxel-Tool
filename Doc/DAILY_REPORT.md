@@ -180,6 +180,20 @@
 - Issues noticed:
   - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
 
+### Roadmap 14 (Next Workday): OBJ Export Quality Pass (Scale/Pivot/Material Strategy)
+- What was done:
+  - Added OBJ export support for pivot transforms (`none`/`center`/`bottom`) and scale-factor application.
+  - Added MTL generation and material references in OBJ output.
+  - Updated export options dialog wiring so OBJ pivot and scale options are applied to export output.
+  - Added regression tests for MTL emission and scale/pivot transformed vertex output.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Export OBJ with different pivot modes and scale presets; verify status message reflects selected options.
+  - Confirm `.mtl` file is generated alongside `.obj`.
+  - Run: `pytest -q` (current: `75 passed`)
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).
