@@ -1451,3 +1451,16 @@
   - Run: `pytest -q` (current: `161 passed`).
 - Risks/issues:
   - Dense-scene stress harness remains pending Task 27.
+
+### Roadmap 27 (Day-Cycle 40): Dense Scene Stress Harness (64/96/128)
+- What was done:
+  - Extended perf harness with explicit dense-scene workload tiers: `64`, `96`, `128`.
+  - Added dense-scene tier measurement helper and per-tier assertion gates.
+  - Updated perf baseline JSON with separate budgets and multipliers for each dense tier.
+  - Kept thresholds conservative/non-blocking to avoid flaky environments.
+- How to test quickly:
+  - Run `pytest -q`.
+  - Confirm perf baseline test validates `dense_64_seconds`, `dense_96_seconds`, and `dense_128_seconds`.
+  - Optionally inspect `tests/perf_baseline.json` for tiered baseline values.
+- Risks/issues:
+  - Viewport frame-time hotspot optimization remains pending Task 28.

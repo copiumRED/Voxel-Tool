@@ -20,6 +20,9 @@ def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     fill_time = _measure_fill()
     solidify_time = _measure_solidify()
     viewport_time = _measure_viewport_surrogate()
+    dense_64_time = _measure_dense_scene_tier(64)
+    dense_96_time = _measure_dense_scene_tier(96)
+    dense_128_time = _measure_dense_scene_tier(128)
 
     assert brush_time < float(baseline["brush_paint_seconds"]) * float(
         metric_multipliers.get("brush_paint_seconds", default_multiplier)
@@ -32,6 +35,15 @@ def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     )
     assert viewport_time < float(baseline["viewport_surrogate_seconds"]) * float(
         metric_multipliers.get("viewport_surrogate_seconds", default_multiplier)
+    )
+    assert dense_64_time < float(baseline["dense_64_seconds"]) * float(
+        metric_multipliers.get("dense_64_seconds", default_multiplier)
+    )
+    assert dense_96_time < float(baseline["dense_96_seconds"]) * float(
+        metric_multipliers.get("dense_96_seconds", default_multiplier)
+    )
+    assert dense_128_time < float(baseline["dense_128_seconds"]) * float(
+        metric_multipliers.get("dense_128_seconds", default_multiplier)
     )
 
 
@@ -82,4 +94,17 @@ def _measure_viewport_surrogate() -> float:
             total += len(part.voxels.to_list())
     # Prevent loop elimination assumptions in future refactors.
     assert total > 0
+    return time.perf_counter() - start
+
+
+def _measure_dense_scene_tier(size: int) -> float:
+    ctx = AppContext(current_project=Project(name=f"Perf Dense {size}"))
+    voxels = ctx.current_project.voxels
+    # Tiered sparse fill keeps runtime stable while still scaling the working bounds.
+    for x in range(0, int(size), 4):
+        for y in range(0, int(size), 4):
+            for z in range(0, int(size), 8):
+                voxels.set(x, y, z, ((x + y + z) % 6) + 1)
+    start = time.perf_counter()
+    build_solid_mesh(voxels, greedy=True)
     return time.perf_counter() - start

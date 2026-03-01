@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 27: Dense Scene Stress Harness (64/96/128)
-- Goal: Add repeatable dense-scene perf harness for key operations.
-- Likely files/modules touched: `tests/test_perf_baseline.py`, `tests/perf_baseline.json`.
-- Acceptance criteria (human-testable): Perf suite reports separate budgets for 64^3, 96^3, 128^3 workloads.
-- Tests required: Add tiered perf tests and baseline update.
-- Risk/rollback note: Start with conservative thresholds to avoid flaky CI.
-
 ### Task 28: Frame-Time Hotspot Pass
 - Goal: Reduce viewport frame-time hotspots during dense scene navigation.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`.
@@ -571,7 +564,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`161 passed`)
 
 ### Task 26: Incremental Rebuild Telemetry
-- Commit: `COMMIT_PENDING`
+- Commit: `0f4cd4e`
 - Added incremental rebuild telemetry fields to part model (`incremental_rebuild_attempts`, `incremental_rebuild_fallbacks`).
 - Added attempt counter increments when incremental rebuild path is executed.
 - Added fallback counter increments when incremental candidate falls back to full rebuild.
@@ -585,6 +578,25 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Added regression assertions ensuring attempts are recorded across randomized local edit sequences.
 - Kept implementation scoped to telemetry and display only.
 - No new dependencies or schema changes introduced.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`161 passed`)
+
+### Task 27: Dense Scene Stress Harness (64/96/128)
+- Commit: `COMMIT_PENDING`
+- Extended performance baseline harness with explicit dense-scene tier workloads (`64`, `96`, `128` bounds).
+- Added dense-scene measurement helper that scales working volume while keeping sparse fill deterministic.
+- Added dedicated perf assertions for `dense_64_seconds`, `dense_96_seconds`, and `dense_128_seconds`.
+- Kept thresholds non-blocking via existing multiplier strategy to reduce CI flake risk.
+- Updated `tests/perf_baseline.json` with per-tier dense-scene baseline values.
+- Added per-tier metric multipliers for dense-scene keys.
+- Preserved existing brush/fill/solidify/viewport surrogate baseline checks.
+- Preserved existing JSON baseline schema compatibility through additive keys only.
+- Kept test runtime bounded by sparse voxel sampling strategy in dense tiers.
+- Ensured dense tiers still represent larger workload domains for relative scaling checks.
+- Maintained deterministic operation order for repeatable measurement behavior.
+- Kept implementation test-only (no runtime/editor behavior changes).
+- No dependencies introduced.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`161 passed`)
