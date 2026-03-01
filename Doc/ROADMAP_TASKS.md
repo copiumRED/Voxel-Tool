@@ -79,20 +79,13 @@ Rule: One task = one branch = one merge commit to `main` after all gates pass.
 - Updated `File -> Import VOX` workflow to create one part per imported model with deterministic naming.
 - Added multi-model parser regression test validating per-model voxel data and RGBA palette fidelity.
 
-## Remaining Tasks
-
 ### Task 13: Qubicle `.qb` Feasibility Note + Guardrail
-- Goal:
-  - Add explicit technical decision note for `.qb` support scope/risk.
-- Files/modules likely touched:
-  - `Doc/QUBICLE_GAP_ANALYSIS.md`
-  - `Doc/CURRENT_STATE.md`
-  - `Doc/DAILY_REPORT.md`
-- Acceptance criteria (human-testable):
-  - Decision note exists with go/no-go criteria and rationale.
-  - Team can point to documented scope boundary for current phase.
-- Tests required:
-  - Documentation review only (no code test changes).
+- Commit: `COMMIT_PENDING`
+- Added explicit `.qb` feasibility decision note in `Doc/QUBICLE_GAP_ANALYSIS.md`.
+- Documented go/no-go criteria and required fixture matrix before `.qb` implementation can begin.
+- Added scope guardrail to prevent premature `.qb` parser work in current phase.
+
+## Remaining Tasks
 
 ### Task 14: OBJ Export Quality Pass (Scale/Pivot/Material Strategy)
 - Goal:

@@ -50,6 +50,7 @@ Reasoning:
 - Correction 34: Grid controls (visibility/spacing) and camera snap settings are now exposed and persisted via editor state.
 - Correction 35: VOX import v1 is now available (`File -> Import VOX`) with single-model chunk parsing and palette ingestion.
 - Correction 36: VOX import v2 now supports multi-model files, creating multiple parts with palette fidelity.
+- Correction 37: `.qb` feasibility note and scope guardrail are now documented; implementation is deferred pending fixture/compatibility gates.
 
 ## Qubicle Parity Scorecard
 | Feature | Qubicle Baseline | Our Current State | Gap | Priority |

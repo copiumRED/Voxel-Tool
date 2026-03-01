@@ -169,6 +169,17 @@
 - Issues noticed:
   - `git pull`/`git push` network blocker persists.
 
+### Roadmap 13 (Next Workday): Qubicle `.qb` Feasibility Note + Guardrail
+- What was done:
+  - Added explicit `.qb` feasibility decision in `Doc/QUBICLE_GAP_ANALYSIS.md`.
+  - Documented NO-GO decision for current phase and established GO criteria for future implementation.
+  - Added scope guardrail to block premature `.qb` parser work before fixture and compatibility gates are met.
+- How to test quickly:
+  - Open `Doc/QUBICLE_GAP_ANALYSIS.md`.
+  - Confirm presence of `.qb` decision note with rationale, GO criteria, and guardrail.
+- Issues noticed:
+  - Network sync blocker remains active (`git pull`/`git push` cannot reach GitHub).
+
 ## Active Blocker
 - Blocked item:
   - Remote sync gate (`git pull`/`git push`) is failing due inability to reach GitHub (`Could not connect to server`).
