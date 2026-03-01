@@ -25,6 +25,10 @@ Prepared By: Codex
 - Export glTF once
 - Export VOX once
 8. `pytest -q`
+9. Packaging prep smoke:
+- Run `tools/package_windows.ps1`
+- Confirm `ARTIFACT_*` lines print
+- Build portable zip and record SHA256
 
 ## First 3 Tasks to Execute (and Why)
 1. Task 01: Unify Edit Plane Axis Contract
@@ -38,3 +42,6 @@ Prepared By: Codex
 
 ## Today Objective
 Today focuses on Phase 1 correctness hardening before feature expansion: eliminate targeting inconsistencies, close high-impact export/IO correctness gaps, and then move through Qubicle-parity productivity upgrades with measurable test coverage. Success means the editor behaves predictably across tools, exports truthfully, and is ready for another full operator validation cycle.
+
+## Packaging Prep Objective
+Before end-of-day handoff, ensure portable zip packaging steps are operator-ready and installer prerequisites are explicitly documented for the next cycle.

@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 29: Portable Zip + Installer Prep Checklist
-- Goal: Add documented portable zip workflow and installer prerequisites (no installer build yet).
-- Likely files/modules touched: `Doc/PACKAGING_CHECKLIST.md`, `Doc/NEXT_WORKDAY.md`.
-- Acceptance criteria (human-testable): Operator can produce and verify portable zip via checklist.
-- Tests required: Add packaging checklist verification steps to daily report template.
-- Risk/rollback note: Keep scope to docs/process if build tooling is not ready.
-
 ### Task 30: Day-End Full QA + Handoff Pack
 - Goal: Execute complete gate, update run docs, and produce operator-ready handoff checklist.
 - Likely files/modules touched: `Doc/DAILY_REPORT.md`, `Doc/CURRENT_STATE.md`, `Doc/NEXT_WORKDAY.md`.
@@ -481,7 +474,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`119 passed`)
 
 ### Task 28: Packaging Script Hardening + Exit Diagnostics
-- Commit: `COMMIT_PENDING`
+- Commit: `5d8f237`
 - Hardened `tools/package_windows.ps1` with strict mode and explicit step labels.
 - Added preflight spec-file existence validation and clear fail-fast messaging.
 - Added reusable `Assert-PathExists` helper for deterministic artifact checks.
@@ -493,6 +486,23 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Added lightweight pytest coverage to enforce packaging diagnostics strings remain present.
 - Preserved existing packaging command path (`pyinstaller tools/build_pyinstaller.spec --noconfirm --clean`).
 - Kept task scope dependency-free and packaging/docs/test focused.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`121 passed`)
+
+### Task 29: Portable Zip + Installer Prep Checklist
+- Commit: `COMMIT_PENDING`
+- Added portable zip creation workflow to packaging checklist (`Compress-Archive` path and validation).
+- Added explicit portable zip artifact verification steps (existence, size, timestamp).
+- Added portable zip SHA256 capture step for deterministic artifact tracking.
+- Added manual unzip launch smoke flow for portable artifact validation.
+- Added installer prerequisite checklist (tooling, metadata, signing decision, smoke expectations).
+- Updated next-workday smoke checklist with packaging prep verification items.
+- Added packaging verification template section in daily report for end-of-day reuse.
+- Kept scope docs/process-only with no installer build or codepath changes.
+- Preserved current packaging script workflow and PyInstaller path.
+- Moved Task 29 from Remaining Tasks to Completed Today.
+- Kept implementation aligned to roadmap risk note (no tooling dependency expansion).
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`121 passed`)

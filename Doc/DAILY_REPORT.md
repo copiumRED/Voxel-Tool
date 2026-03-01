@@ -1004,3 +1004,26 @@
   - Run: `pytest -q` (current: `121 passed`).
 - Risks/issues:
   - Portable zip + installer prep workflow remains pending Task 29.
+
+### Roadmap 29 (Day-Cycle 30): Portable Zip + Installer Prep Checklist
+- What was done:
+  - Added operator-ready portable zip workflow to `Doc/PACKAGING_CHECKLIST.md`.
+  - Added installer prerequisite checklist (prep only, no installer build).
+  - Updated `Doc/NEXT_WORKDAY.md` smoke list with packaging prep verification.
+  - Added packaging verification template block for end-of-day reporting.
+- How to test quickly:
+  - Run packaging script and verify `ARTIFACT_*` lines.
+  - Create `artifacts/VoxelTool-portable.zip` via checklist.
+  - Hash zip with SHA256 and confirm manual unzip launch works.
+  - Run: `pytest -q` (current: pending Task 29 gate run).
+- Risks/issues:
+  - Final full QA + operator handoff pack remains pending Task 30.
+
+## Packaging Verification Template (Copy into End-of-Day Summary)
+- Packaging script run timestamp:
+- `ARTIFACT_EXE` path:
+- `ARTIFACT_SIZE_BYTES`:
+- `ARTIFACT_SHA256`:
+- Portable zip path:
+- Portable zip SHA256:
+- Portable zip launch smoke result:

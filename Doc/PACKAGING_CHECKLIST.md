@@ -23,3 +23,29 @@
 - `tools/build_pyinstaller.spec` now resolves project root robustly when invoked via `pyinstaller tools/build_pyinstaller.spec`.
 - `tools/package_windows.ps1` now emits explicit pass/fail step labels and deterministic artifact diagnostics.
 - Packaging script no longer requires `pip install -e .` for packaging flow.
+
+## Portable Zip Workflow (Operator Ready)
+1. Complete the packaging steps above so `dist\VoxelTool\VoxelTool.exe` exists.
+2. Set output folder:
+   - `New-Item -ItemType Directory -Force .\artifacts | Out-Null`
+3. Build portable zip:
+   - `Compress-Archive -Path .\dist\VoxelTool\* -DestinationPath .\artifacts\VoxelTool-portable.zip -Force`
+4. Validate zip exists and size is non-zero:
+   - `Get-Item .\artifacts\VoxelTool-portable.zip | Format-List FullName,Length,LastWriteTime`
+5. Record zip hash:
+   - `Get-FileHash .\artifacts\VoxelTool-portable.zip -Algorithm SHA256`
+6. Manual unzip smoke:
+   - Extract zip into a clean folder.
+   - Run `VoxelTool.exe` from extracted folder.
+   - Verify app launches and viewport loads.
+
+## Installer Prerequisites (Prep Only)
+- Inno Setup (or equivalent installer tool) selected and version pinned.
+- Installer script path reserved (`tools\installer\VoxelTool.iss`) with owner assigned.
+- Product metadata finalized: app name, version string, publisher, support URL.
+- Artifact signing decision documented (unsigned for internal testing vs code-signed release).
+- Install/uninstall smoke checklist drafted:
+  - Fresh install
+  - Launch app
+  - Uninstall cleanly
+  - Reinstall over existing build
