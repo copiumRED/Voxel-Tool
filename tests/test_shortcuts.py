@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import (
+    _app_theme_stylesheet,
     _next_brush_size,
     _filter_command_palette_entries,
     _layout_preset_state_key,
@@ -189,3 +190,11 @@ def test_layout_preset_state_key_validation() -> None:
     assert _layout_preset_state_key(2) == "main_window/layout_preset_2"
     with pytest.raises(ValueError):
         _layout_preset_state_key(3)
+
+
+def test_app_theme_stylesheet_contains_key_widget_rules() -> None:
+    css = _app_theme_stylesheet()
+    assert "QMainWindow" in css
+    assert "QToolBar" in css
+    assert "QPushButton" in css
+    assert "QStatusBar" in css

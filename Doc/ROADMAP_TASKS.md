@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 35: Interface Polish - Theme and Contrast Pass
-- Goal: Improve readability and visual hierarchy across panels.
-- Likely files/modules touched: `src/app/ui/main_window.py`, panel widgets styles.
-- Acceptance criteria (human-testable): Labels, controls, and active states are clearly distinguishable.
-- Tests required: Add snapshot/smoke checks for style loading.
-- Risk/rollback note: Keep high-contrast default option.
-
 ### Task 36: Interface Polish - Numeric Field Drag Scrub
 - Goal: Add drag-scrub interaction for numeric transform fields.
 - Likely files/modules touched: `src/app/ui/panels/inspector_panel.py`.
@@ -666,7 +659,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`172 passed`)
 
 ### Task 34: Interface Polish - Dock Layout Presets
-- Commit: `COMMIT_PENDING`
+- Commit: `84752b8`
 - Added layout preset setting-key helper with slot validation (`1` and `2`).
 - Added View menu actions for saving/loading layout preset 1.
 - Added View menu actions for saving/loading layout preset 2.
@@ -683,3 +676,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`173 passed`)
+
+### Task 35: Interface Polish - Theme and Contrast Pass
+- Commit: `COMMIT_PENDING`
+- Added centralized application stylesheet helper for consistent theme/contrast definitions.
+- Applied stylesheet at main-window startup for immediate UI visual consistency.
+- Tuned menu/menu-bar contrast for clearer hover/selection readability.
+- Tuned toolbar button visuals for stronger action affordance.
+- Tuned dock title styling for clearer panel hierarchy.
+- Tuned form/list input controls for improved edge contrast and legibility.
+- Tuned button hover/pressed states for stronger interaction feedback.
+- Tuned status bar styling for consistent panel boundary visibility.
+- Kept theme implementation lightweight via Qt stylesheet only.
+- Preserved existing functional behavior; purely presentation-layer changes.
+- Added regression test validating stylesheet includes key widget-class rules.
+- Kept high-contrast-friendly color choices in neutral blue/gray palette.
+- No new dependencies introduced.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`174 passed`)

@@ -1562,3 +1562,15 @@
   - Run: `pytest -q` (current: `173 passed`).
 - Risks/issues:
   - Theme/contrast pass remains pending Task 35.
+
+### Roadmap 35 (Day-Cycle 40): Interface Polish - Theme and Contrast Pass
+- What was done:
+  - Added centralized app stylesheet and applied it at main-window startup.
+  - Improved contrast/readability for menus, toolbars, dock titles, inputs, buttons, and status bar.
+  - Added regression test to ensure core stylesheet widget rules are present.
+- How to test quickly:
+  - Launch app and scan menus/toolbars/panels for improved text/background contrast.
+  - Hover/press toolbar and panel buttons to verify interaction state visibility.
+  - Run: `pytest -q` (current: `174 passed`).
+- Risks/issues:
+  - Numeric field drag-scrub interaction remains pending Task 36.

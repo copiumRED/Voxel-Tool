@@ -199,10 +199,31 @@ def _layout_preset_state_key(slot: int) -> str:
     return f"main_window/layout_preset_{slot_value}"
 
 
+def _app_theme_stylesheet() -> str:
+    return (
+        "QMainWindow { background: #1f242b; }\n"
+        "QMenuBar { background: #262d36; color: #f0f4f8; }\n"
+        "QMenuBar::item:selected { background: #3a4655; color: #ffffff; }\n"
+        "QMenu { background: #262d36; color: #f0f4f8; border: 1px solid #3a4655; }\n"
+        "QMenu::item:selected { background: #3a4655; color: #ffffff; }\n"
+        "QToolBar { background: #262d36; spacing: 4px; border-bottom: 1px solid #3a4655; }\n"
+        "QToolButton { color: #eaf2ff; background: #303947; border: 1px solid #475569; padding: 4px 8px; }\n"
+        "QToolButton:hover { background: #3b495d; }\n"
+        "QDockWidget::title { background: #2a313b; color: #f0f4f8; padding: 4px; }\n"
+        "QLabel { color: #e6edf5; }\n"
+        "QLineEdit, QSpinBox, QComboBox, QListWidget { background: #202832; color: #f0f4f8; border: 1px solid #485567; }\n"
+        "QPushButton { background: #334155; color: #f8fafc; border: 1px solid #516173; padding: 4px 8px; }\n"
+        "QPushButton:hover { background: #3f5168; }\n"
+        "QPushButton:pressed { background: #273548; }\n"
+        "QStatusBar { background: #222a33; color: #f0f4f8; border-top: 1px solid #3a4655; }\n"
+    )
+
+
 class MainWindow(QMainWindow):
     def __init__(self, context: AppContext) -> None:
         super().__init__()
         self.context = context
+        self.setStyleSheet(_app_theme_stylesheet())
         self.resize(1280, 720)
         self.undo_action: QAction | None = None
         self.redo_action: QAction | None = None
