@@ -75,6 +75,11 @@ def test_camera_sensitivity_helpers_follow_context_values() -> None:
     assert GLViewportWidget._zoom_sensitivity(ctx) == 0.5
 
 
+def test_precision_scale_factor_reduces_camera_motion_when_alt_is_held() -> None:
+    assert GLViewportWidget._precision_scale_factor(Qt.NoModifier) == pytest.approx(1.0)
+    assert GLViewportWidget._precision_scale_factor(Qt.AltModifier) == pytest.approx(0.2)
+
+
 def test_project_io_error_detail_includes_action_path_and_message() -> None:
     detail = _project_io_error_detail("Save Project", "C:/tmp/demo.json", RuntimeError("disk full"))
     assert "Save Project failed." in detail

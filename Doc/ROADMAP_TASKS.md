@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 38: Interface Polish - Precision Input Mode
-- Goal: Add temporary precision modifier for camera and transform operations.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/ui/panels/inspector_panel.py`.
-- Acceptance criteria (human-testable): Holding precision modifier reduces movement sensitivity.
-- Tests required: Add precision scale factor tests.
-- Risk/rollback note: Do not alter default speed when modifier is not held.
-
 ### Task 39: Interface Polish - Startup Workspace Recovery UX
 - Goal: Improve startup dialogs for recovery + last project continuity.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/core/io/recovery_io.py`.
@@ -701,7 +694,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`176 passed`)
 
 ### Task 37: Interface Polish - Tool Hotkey Overlay
-- Commit: `COMMIT_PENDING`
+- Commit: `6434e82`
 - Added modeless in-app hotkey overlay dialog from Edit -> Shortcut Help.
 - Added overlay content rendering from current registered shortcut bindings.
 - Added close button + non-modal behavior for quick open/close without workflow interruption.
@@ -718,3 +711,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`179 passed`)
+
+### Task 38: Interface Polish - Precision Input Mode
+- Commit: `COMMIT_PENDING`
+- Added temporary precision modifier for camera orbit/pan/zoom using `Alt` key hold.
+- Applied precision scale factor to left-drag navigate orbit sensitivity.
+- Applied precision scale factor to middle-button orbit sensitivity.
+- Applied precision scale factor to middle-button pan distance in Blender-Mix shift-pan mode.
+- Applied precision scale factor to right-button pan movement sensitivity.
+- Applied precision scale factor to mouse-wheel zoom sensitivity.
+- Added viewport helper for deterministic precision scale factor calculation.
+- Added precision-aware transform label drag-scrub behavior in inspector controls.
+- Added inspector helper for transform scrub precision factor.
+- Preserved default camera and transform movement speed when precision modifier is not held.
+- Added regression test for camera precision scale factor behavior (`Alt` vs no modifier).
+- Added regression test for inspector scrub precision factor behavior.
+- Kept implementation dependency-free and scoped to input sensitivity only.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`181 passed`)

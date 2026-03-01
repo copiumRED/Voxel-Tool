@@ -22,7 +22,7 @@ from app.app_context import AppContext
 
 
 class _DragScrubLabel(QLabel):
-    scrub_delta = Signal(int)
+    scrub_delta = Signal(int, bool)
 
     def __init__(self, text: str, parent: QWidget | None = None) -> None:
         super().__init__(text, parent)
@@ -45,7 +45,8 @@ class _DragScrubLabel(QLabel):
             delta = current_x - self._last_x
             if delta != 0:
                 self._last_x = current_x
-                self.scrub_delta.emit(delta)
+                precision = bool(event.modifiers() & Qt.AltModifier)
+                self.scrub_delta.emit(delta, precision)
             event.accept()
             return
         super().mouseMoveEvent(event)
@@ -602,11 +603,14 @@ class InspectorPanel(QWidget):
 
     def _create_transform_row_label(self, text: str, spin: QDoubleSpinBox) -> QLabel:
         label = _DragScrubLabel(text, self)
-        label.scrub_delta.connect(lambda pixel_delta: self._on_transform_scrub(spin, pixel_delta))
+        label.scrub_delta.connect(
+            lambda pixel_delta, precision: self._on_transform_scrub(spin, pixel_delta, precision)
+        )
         return label
 
-    def _on_transform_scrub(self, spin: QDoubleSpinBox, pixel_delta: int) -> None:
+    def _on_transform_scrub(self, spin: QDoubleSpinBox, pixel_delta: int, precision_enabled: bool) -> None:
         delta = self._transform_scrub_delta_for_pixels(pixel_delta, spin.singleStep())
+        delta *= self._transform_scrub_precision_factor(precision_enabled)
         next_value = self._apply_scrubbed_value(spin.value(), delta, spin.minimum(), spin.maximum())
         spin.setValue(next_value)
 
@@ -617,6 +621,10 @@ class InspectorPanel(QWidget):
     @staticmethod
     def _apply_scrubbed_value(value: float, delta: float, min_value: float, max_value: float) -> float:
         return max(min_value, min(max_value, value + delta))
+
+    @staticmethod
+    def _transform_scrub_precision_factor(precision_enabled: bool) -> float:
+        return 0.2 if precision_enabled else 1.0
 
     def _set_transform_signals_blocked(self, blocked: bool) -> None:
         for control in (

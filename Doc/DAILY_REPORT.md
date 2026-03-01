@@ -1604,3 +1604,18 @@
   - Run: `pytest -q` (current: `179 passed`).
 - Risks/issues:
   - Precision input mode remains pending Task 38.
+
+### Roadmap 38 (Day-Cycle 40): Interface Polish - Precision Input Mode
+- What was done:
+  - Added temporary precision modifier (`Alt`) for viewport camera orbit, pan, and zoom.
+  - Applied precision scale factor to left/middle orbit, right/middle pan, and wheel zoom paths.
+  - Added precision-aware transform drag-scrub in inspector labels.
+  - Added explicit helper functions for camera and transform precision scaling.
+  - Added regression tests for camera precision scale factor and inspector scrub precision factor.
+- How to test quickly:
+  - Launch app, orbit/pan/zoom normally, then repeat while holding `Alt`.
+  - Confirm camera movement/zoom sensitivity is noticeably reduced only while `Alt` is held.
+  - Drag inspector transform labels with and without `Alt` and confirm reduced delta when held.
+  - Run: `pytest -q` (current: `181 passed`).
+- Risks/issues:
+  - Startup workspace recovery UX remains pending Task 39.

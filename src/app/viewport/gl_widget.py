@@ -627,7 +627,9 @@ class GLViewportWidget(QOpenGLWidget):
                     self._left_interaction_mode == self._LEFT_INTERACTION_NAVIGATE
                     and self._left_navigate_orbits(self._app_context)
                 ):
-                    orbit_scale = self._orbit_sensitivity(self._app_context)
+                    orbit_scale = self._orbit_sensitivity(self._app_context) * self._precision_scale_factor(
+                        event.modifiers()
+                    )
                     self.yaw_deg += dx * orbit_scale
                     self.pitch_deg = self._clamp(self.pitch_deg + dy * orbit_scale, -89.0, 89.0)
                     if (
@@ -650,12 +652,14 @@ class GLViewportWidget(QOpenGLWidget):
         elif event.buttons() & Qt.MiddleButton:
             if self._is_middle_drag_pan(self._app_context, event.modifiers()):
                 _, _, right, up = self._camera_vectors()
-                pan_scale = self.distance * 0.0025
+                pan_scale = self.distance * 0.0025 * self._precision_scale_factor(event.modifiers())
                 offset = (right * (-dx * pan_scale)) + (up * (dy * pan_scale))
                 self.target += offset
                 self.update()
             elif self._is_mmb_orbit_enabled(self._app_context):
-                orbit_scale = self._orbit_sensitivity(self._app_context)
+                orbit_scale = self._orbit_sensitivity(self._app_context) * self._precision_scale_factor(
+                    event.modifiers()
+                )
                 self.yaw_deg += dx * orbit_scale
                 self.pitch_deg = self._clamp(self.pitch_deg + dy * orbit_scale, -89.0, 89.0)
                 if (
@@ -669,7 +673,12 @@ class GLViewportWidget(QOpenGLWidget):
                 self.update()
         elif event.buttons() & Qt.RightButton:
             _, _, right, up = self._camera_vectors()
-            pan_scale = self.distance * 0.0025 * self._pan_sensitivity(self._app_context)
+            pan_scale = (
+                self.distance
+                * 0.0025
+                * self._pan_sensitivity(self._app_context)
+                * self._precision_scale_factor(event.modifiers())
+            )
             offset = (right * (-dx * pan_scale)) + (up * (dy * pan_scale))
             self.target += offset
             self.update()
@@ -733,7 +742,9 @@ class GLViewportWidget(QOpenGLWidget):
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120.0
         if steps != 0:
-            zoom_scale = self._zoom_sensitivity(self._app_context)
+            zoom_scale = self._zoom_sensitivity(self._app_context) * self._precision_scale_factor(
+                event.modifiers()
+            )
             self.distance = self._clamp(self.distance * (0.9 ** (steps * zoom_scale)), 2.0, 200.0)
             self.update()
         super().wheelEvent(event)
@@ -812,6 +823,10 @@ class GLViewportWidget(QOpenGLWidget):
         if app_context is None:
             return 1.0
         return max(0.1, min(3.0, float(app_context.camera_zoom_sensitivity)))
+
+    @staticmethod
+    def _precision_scale_factor(modifiers: Qt.KeyboardModifiers) -> float:
+        return 0.2 if bool(modifiers & Qt.AltModifier) else 1.0
 
     @staticmethod
     def _is_selection_mode_enabled(app_context: "AppContext | None") -> bool:

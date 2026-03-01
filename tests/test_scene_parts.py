@@ -172,6 +172,11 @@ def test_inspector_transform_scrub_applies_clamping() -> None:
     assert isclose(InspectorPanel._apply_scrubbed_value(-9.9, -1.0, -10.0, 10.0), -10.0)
 
 
+def test_inspector_transform_scrub_precision_factor() -> None:
+    assert isclose(InspectorPanel._transform_scrub_precision_factor(False), 1.0)
+    assert isclose(InspectorPanel._transform_scrub_precision_factor(True), 0.2)
+
+
 def test_scene_set_parts_visible_updates_multiple_parts() -> None:
     scene = Scene.with_default_part()
     first = scene.get_active_part()
