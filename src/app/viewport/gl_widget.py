@@ -16,7 +16,7 @@ from PySide6.QtOpenGL import (
     QOpenGLVertexArrayObject,
 )
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from core.commands.demo_commands import build_brush_cells, build_shape_plane_cells
+from core.commands.demo_commands import build_brush_cells, build_shape_plane_cells, compute_fill_preview_cells
 from core.voxels.raycast import (
     intersect_axis_plane,
     resolve_brush_target_cell,
@@ -1062,10 +1062,21 @@ class GLViewportWidget(QOpenGLWidget):
             return
         shape = self._app_context.voxel_tool_shape
         if shape == self._app_context.TOOL_SHAPE_FILL:
-            fill_cell = self._screen_to_plane_cell(pos)
-            next_cells: set[tuple[int, int, int]] = {fill_cell} if fill_cell is not None else set()
-            if fill_cell is not None:
-                next_cells = self._app_context.expand_mirrored_cells(next_cells)
+            resolved = self._resolve_shape_target(pos, modifiers)
+            next_cells: set[tuple[int, int, int]] = set()
+            if resolved is not None:
+                fill_cell, _ = resolved
+                fx, fy, fz = fill_cell
+                next_cells = compute_fill_preview_cells(
+                    self._app_context.current_project.voxels,
+                    fx,
+                    fy,
+                    fz,
+                    mode=self._app_context.fill_connectivity,
+                    max_cells=self._app_context.fill_max_cells,
+                )
+                if next_cells:
+                    next_cells = self._app_context.expand_mirrored_cells(next_cells)
             temporary_erase = bool(modifiers & Qt.ShiftModifier)
             mode = self._app_context.voxel_tool_mode
             should_erase = temporary_erase or mode == self._app_context.TOOL_MODE_ERASE

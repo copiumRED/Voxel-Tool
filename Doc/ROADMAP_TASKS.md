@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 14: Fill Preview Confidence Layer
-- Goal: Add preview indicators for fill reach before commit.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/demo_commands.py`.
-- Acceptance criteria (human-testable): Fill tool previews affected region boundary prior to click confirm.
-- Tests required: Add fill preview cell-count tests for plane and volume modes.
-- Risk/rollback note: Keep preview bounded and lightweight.
-
 ### Task 15: Mirror Visual Plane Overlays
 - Goal: Render active mirror planes and offsets in viewport.
 - Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/app/app_context.py`.
@@ -415,7 +408,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`143 passed`)
 
 ### Task 13: Selected Voxel Duplicate Tool
-- Commit: `COMMIT_PENDING`
+- Commit: `c64a469`
 - Added command `DuplicateSelectedVoxelsCommand` for offset duplication of selected voxel sets.
 - Implemented source filtering so only existing selected cells are used as duplication input.
 - Added deterministic destination-occupancy collision blocking to avoid destructive overwrite.
@@ -432,3 +425,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`146 passed`)
+
+### Task 14: Fill Preview Confidence Layer
+- Commit: `COMMIT_PENDING`
+- Added `compute_fill_preview_cells` helper in command module for previewing connected fill regions.
+- Implemented plane-mode preview region computation using bounded flood-fill over current edit plane.
+- Implemented volume-mode preview region computation using bounded 3D flood-fill.
+- Reused existing safety thresholds (`fill_max_cells`) so preview remains bounded under large regions.
+- Kept preview non-destructive by reading current voxel state only and applying no edits.
+- Updated viewport fill-hover path to resolve target cell using existing pick/plane rules.
+- Replaced single-cell fill hover marker with connected-region preview outlines.
+- Preserved mirror behavior by expanding preview cells through existing mirror expansion logic.
+- Preserved temporary erase preview color behavior while adding region-wide preview coverage.
+- Added regression test validating plane fill preview connected cell count/content.
+- Added regression test validating volume fill preview connected cell count/content.
+- Kept implementation lightweight and scoped to fill preview only (no command behavior changes).
+- Maintained compatibility with existing fill execution and threshold-block command behavior.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`148 passed`)

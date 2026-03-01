@@ -7,6 +7,7 @@ from core.commands.demo_commands import (
     BoxVoxelCommand,
     ClearVoxelsCommand,
     CreateTestVoxelsCommand,
+    compute_fill_preview_cells,
     DuplicateSelectedVoxelsCommand,
     FillVoxelCommand,
     LineVoxelCommand,
@@ -209,6 +210,29 @@ def test_fill_threshold_blocks_large_region() -> None:
     assert voxels.get(0, 0, 0) == 1
     assert voxels.get(1, 0, 0) == 1
     assert voxels.get(2, 0, 0) == 1
+
+
+def test_fill_preview_cells_plane_mode_counts_connected_region() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 1)
+    voxels.set(1, 0, 0, 1)
+    voxels.set(0, 1, 0, 1)
+    voxels.set(0, 0, 1, 1)
+
+    preview = compute_fill_preview_cells(voxels, 0, 0, 0, mode="plane", max_cells=100)
+    assert preview == {(0, 0, 0), (1, 0, 0), (0, 1, 0)}
+
+
+def test_fill_preview_cells_volume_mode_counts_connected_region() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 1)
+    voxels.set(0, 0, 1, 1)
+    voxels.set(1, 0, 1, 1)
+
+    preview = compute_fill_preview_cells(voxels, 0, 0, 0, mode="volume", max_cells=100)
+    assert preview == {(0, 0, 0), (0, 0, 1), (1, 0, 1)}
 
 
 def test_command_stack_transaction_groups_commands_into_one_undo_step() -> None:

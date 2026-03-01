@@ -517,6 +517,44 @@ def build_shape_plane_cells(
     raise ValueError(f"Unsupported shape for plane cell generation: {shape}")
 
 
+def compute_fill_preview_cells(
+    voxels: VoxelGrid,
+    x: int,
+    y: int,
+    z: int,
+    *,
+    mode: str,
+    max_cells: int,
+) -> set[tuple[int, int, int]]:
+    target_color = voxels.get(x, y, z)
+    if target_color is None:
+        return set()
+    normalized_mode = mode.strip().lower()
+    if normalized_mode == "volume":
+        bounds3d = _volume_fill_bounds(voxels, x, y, z)
+        connected3d = _flood_volume_region(
+            voxels,
+            x,
+            y,
+            z,
+            target_color,
+            bounds3d,
+            max_cells=max_cells,
+        )
+        return set() if connected3d is None else connected3d
+    bounds = _plane_fill_bounds(voxels, z, x, y)
+    connected = _flood_plane_region(
+        voxels,
+        x,
+        y,
+        z,
+        target_color,
+        bounds,
+        max_cells=max_cells,
+    )
+    return set() if connected is None else {(cx, cy, z) for cx, cy in connected}
+
+
 def _rasterize_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
     points: list[tuple[int, int]] = []
     x0, y0, x1, y1 = start_x, start_y, end_x, end_y

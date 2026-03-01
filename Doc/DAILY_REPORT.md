@@ -1267,3 +1267,19 @@
   - Run: `pytest -q` (current: `146 passed`).
 - Risks/issues:
   - Fill-region confidence preview remains pending Task 14.
+
+### Roadmap 14 (Day-Cycle 40): Fill Preview Confidence Layer
+- What was done:
+  - Added `compute_fill_preview_cells` helper to compute connected fill-preview regions for plane and volume modes.
+  - Updated viewport fill hover preview to show full affected-region outlines instead of a single target cell.
+  - Kept preview bounded by existing `fill_max_cells` safety threshold.
+  - Preserved mirror expansion behavior for preview regions.
+  - Added regression tests for plane and volume preview connected-cell counts.
+- How to test quickly:
+  - Launch app and create a small connected voxel cluster.
+  - Switch to Fill tool and hover over region; confirm full region boundary is previewed before click.
+  - Toggle fill connectivity `Plane` vs `3D` and confirm preview region changes accordingly.
+  - Optionally lower fill threshold and confirm oversized preview regions are bounded.
+  - Run: `pytest -q` (current: `148 passed`).
+- Risks/issues:
+  - Mirror visual plane overlays remain pending Task 15.
