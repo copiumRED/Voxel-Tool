@@ -20,6 +20,8 @@ class AppContext:
     EDIT_PLANE_XY = "xy"
     EDIT_PLANE_YZ = "yz"
     EDIT_PLANE_XZ = "xz"
+    FILL_CONNECTIVITY_PLANE = "plane"
+    FILL_CONNECTIVITY_VOLUME = "volume"
     CAMERA_PROJECTION_PERSPECTIVE = "perspective"
     CAMERA_PROJECTION_ORTHOGRAPHIC = "orthographic"
     _VALID_TOOL_MODES = {TOOL_MODE_PAINT, TOOL_MODE_ERASE}
@@ -48,9 +50,11 @@ class AppContext:
     mirror_y_offset: int = 0
     mirror_z_offset: int = 0
     fill_max_cells: int = 5000
+    fill_connectivity: str = FILL_CONNECTIVITY_PLANE
     _VALID_BRUSH_SHAPES = {"cube", "sphere"}
     _VALID_PICK_MODES = {PICK_MODE_SURFACE, PICK_MODE_PLANE_LOCK}
     _VALID_EDIT_PLANES = {EDIT_PLANE_XY, EDIT_PLANE_YZ, EDIT_PLANE_XZ}
+    _VALID_FILL_CONNECTIVITY = {FILL_CONNECTIVITY_PLANE, FILL_CONNECTIVITY_VOLUME}
     _VALID_CAMERA_PROJECTIONS = {CAMERA_PROJECTION_PERSPECTIVE, CAMERA_PROJECTION_ORTHOGRAPHIC}
 
     @property
@@ -103,6 +107,12 @@ class AppContext:
         if projection_value not in self._VALID_CAMERA_PROJECTIONS:
             raise ValueError(f"Unsupported camera projection: {projection_value}")
         self.camera_projection = projection_value
+
+    def set_fill_connectivity(self, mode: str) -> None:
+        mode_value = str(mode).strip().lower()
+        if mode_value not in self._VALID_FILL_CONNECTIVITY:
+            raise ValueError(f"Unsupported fill connectivity: {mode_value}")
+        self.fill_connectivity = mode_value
 
     def set_mirror_axis(self, axis: str, enabled: bool) -> None:
         if axis == "x":

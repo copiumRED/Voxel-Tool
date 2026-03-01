@@ -171,6 +171,24 @@ def test_fill_erase_clears_connected_region_only() -> None:
     assert voxels.get(2, 2, 0) == 4
 
 
+def test_fill_connectivity_plane_vs_volume_behavior() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 3)
+    voxels.set(0, 0, 1, 3)
+
+    ctx.set_fill_connectivity("plane")
+    ctx.command_stack.do(FillVoxelCommand(0, 0, 0, mode="erase"), ctx)
+    assert voxels.get(0, 0, 0) is None
+    assert voxels.get(0, 0, 1) == 3
+    ctx.command_stack.undo(ctx)
+
+    ctx.set_fill_connectivity("volume")
+    ctx.command_stack.do(FillVoxelCommand(0, 0, 0, mode="erase"), ctx)
+    assert voxels.get(0, 0, 0) is None
+    assert voxels.get(0, 0, 1) is None
+
+
 def test_fill_threshold_blocks_large_region() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.fill_max_cells = 2
@@ -339,6 +357,12 @@ def test_app_context_camera_projection_validation() -> None:
     ctx = AppContext(current_project=Project(name="Untitled"))
     ctx.set_camera_projection("orthographic")
     assert ctx.camera_projection == AppContext.CAMERA_PROJECTION_ORTHOGRAPHIC
+
+
+def test_app_context_fill_connectivity_validation() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    ctx.set_fill_connectivity("volume")
+    assert ctx.fill_connectivity == AppContext.FILL_CONNECTIVITY_VOLUME
 
 
 def test_command_stack_respects_max_undo_depth_cap() -> None:

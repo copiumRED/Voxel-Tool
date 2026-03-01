@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 13: Fill 3D Connectivity Mode (Optional Toggle)
-- Goal: Add fill mode toggle between plane-connected and full 3D-connected regions.
-- Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`, `src/app/app_context.py`.
-- Acceptance criteria (human-testable): User can choose fill scope and see expected region behavior.
-- Tests required: Add fill mode tests for plane vs 3D connectivity.
-- Risk/rollback note: Default remains current bounded plane fill if 3D mode risks performance.
-
 ### Task 14: Brush Size Cycle Hotkey
 - Goal: Add keyboard shortcut to cycle brush size quickly.
 - Likely files/modules touched: `src/app/ui/main_window.py`, `src/app/ui/panels/tools_panel.py`.
@@ -336,3 +329,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`102 passed`)
+
+### Task 13: Fill 3D Connectivity Mode (Optional Toggle)
+- Commit: `aafece9`
+- Added fill connectivity mode state in `AppContext` (`plane` / `volume`) with validation API.
+- Added Tools panel connectivity selector (`Plane` / `3D`) scoped to fill workflow.
+- Wired fill connectivity UI signal through MainWindow with status feedback refresh.
+- Added editor-state persistence for fill connectivity mode.
+- Extended editor-state restore logic to apply persisted fill connectivity safely.
+- Updated fill command execution to branch between plane flood and volume flood logic.
+- Added bounded 3D flood-fill implementation with threshold protection.
+- Preserved existing plane fill behavior as default mode.
+- Added tests validating plane-vs-volume fill behavior differences.
+- Added app-context validation coverage for fill connectivity setter.
+- Extended project IO editor_state roundtrip test with fill connectivity state.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`104 passed`)

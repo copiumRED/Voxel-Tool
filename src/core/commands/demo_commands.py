@@ -253,23 +253,42 @@ class FillVoxelCommand(Command):
             self._deltas = []
             return
 
-        bounds = _plane_fill_bounds(voxels, self.z, self.x, self.y)
+        fill_mode = str(getattr(ctx, "fill_connectivity", "plane")).strip().lower()
         max_cells = int(getattr(ctx, "fill_max_cells", 5000))
-        connected = _flood_plane_region(
-            voxels,
-            self.x,
-            self.y,
-            self.z,
-            target_color,
-            bounds,
-            max_cells=max_cells,
-        )
-        if connected is None:
-            self.aborted_by_threshold = True
-            self.aborted_threshold_limit = max_cells
-            self._deltas = []
-            return
-        base_cells = {(x, y, self.z) for x, y in connected}
+        if fill_mode == "volume":
+            bounds3d = _volume_fill_bounds(voxels, self.x, self.y, self.z)
+            connected3d = _flood_volume_region(
+                voxels,
+                self.x,
+                self.y,
+                self.z,
+                target_color,
+                bounds3d,
+                max_cells=max_cells,
+            )
+            if connected3d is None:
+                self.aborted_by_threshold = True
+                self.aborted_threshold_limit = max_cells
+                self._deltas = []
+                return
+            base_cells = connected3d
+        else:
+            bounds = _plane_fill_bounds(voxels, self.z, self.x, self.y)
+            connected = _flood_plane_region(
+                voxels,
+                self.x,
+                self.y,
+                self.z,
+                target_color,
+                bounds,
+                max_cells=max_cells,
+            )
+            if connected is None:
+                self.aborted_by_threshold = True
+                self.aborted_threshold_limit = max_cells
+                self._deltas = []
+                return
+            base_cells = {(x, y, self.z) for x, y in connected}
         cells = _expand_mirror_cells(ctx, base_cells)
         _invalidate_active_mesh_cache(ctx, cells)
         self._deltas = _apply_voxel_mode(voxels, cells, mode=self.mode, color_index=self.color_index)
@@ -476,4 +495,55 @@ def _flood_plane_region(
         queue.append((x - 1, y))
         queue.append((x, y + 1))
         queue.append((x, y - 1))
+    return connected
+
+
+def _volume_fill_bounds(
+    voxels: VoxelGrid,
+    seed_x: int,
+    seed_y: int,
+    seed_z: int,
+) -> tuple[int, int, int, int, int, int]:
+    rows = voxels.to_list()
+    if not rows:
+        return seed_x, seed_x, seed_y, seed_y, seed_z, seed_z
+    xs = [row[0] for row in rows] + [seed_x]
+    ys = [row[1] for row in rows] + [seed_y]
+    zs = [row[2] for row in rows] + [seed_z]
+    return min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)
+
+
+def _flood_volume_region(
+    voxels: VoxelGrid,
+    seed_x: int,
+    seed_y: int,
+    seed_z: int,
+    target_color: int | None,
+    bounds: tuple[int, int, int, int, int, int],
+    *,
+    max_cells: int | None = None,
+) -> set[tuple[int, int, int]] | None:
+    min_x, max_x, min_y, max_y, min_z, max_z = bounds
+    queue: list[tuple[int, int, int]] = [(seed_x, seed_y, seed_z)]
+    visited: set[tuple[int, int, int]] = set()
+    connected: set[tuple[int, int, int]] = set()
+
+    while queue:
+        x, y, z = queue.pop()
+        if (x, y, z) in visited:
+            continue
+        visited.add((x, y, z))
+        if x < min_x or x > max_x or y < min_y or y > max_y or z < min_z or z > max_z:
+            continue
+        if voxels.get(x, y, z) != target_color:
+            continue
+        connected.add((x, y, z))
+        if max_cells is not None and len(connected) > max_cells:
+            return None
+        queue.append((x + 1, y, z))
+        queue.append((x - 1, y, z))
+        queue.append((x, y + 1, z))
+        queue.append((x, y - 1, z))
+        queue.append((x, y, z + 1))
+        queue.append((x, y, z - 1))
     return connected

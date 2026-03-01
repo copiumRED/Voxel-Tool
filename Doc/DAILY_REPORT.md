@@ -806,3 +806,17 @@
   - Run: `pytest -q` (current: `102 passed`)
 - Risks/issues:
   - 3D fill connectivity mode is still pending Task 13.
+
+### Roadmap 13 (Day-Cycle 30): Fill 3D Connectivity Mode
+- What was done:
+  - Added fill connectivity state (`Plane`/`3D`) in app context and Tools panel.
+  - Added persistence for fill connectivity in editor state.
+  - Implemented bounded 3D flood region path in fill command.
+  - Added tests for plane-vs-volume behavior and state validation.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - In Fill tool, switch connectivity `Plane` then `3D` and apply on stacked voxels.
+  - Verify `Plane` affects same z-slice only, `3D` affects connected volume.
+  - Run: `pytest -q` (current: `104 passed`)
+- Risks/issues:
+  - Brush size cycle hotkey remains pending Task 14.

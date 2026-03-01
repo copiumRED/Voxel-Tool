@@ -25,6 +25,7 @@ def test_project_save_load_roundtrip() -> None:
         "mirror_x_enabled": True,
         "edit_plane": "yz",
         "camera_projection": "orthographic",
+        "fill_connectivity": "volume",
     }
     first_part_id = project.active_part_id
     second_part = project.scene.add_part("Part 2")
