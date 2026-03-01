@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **97%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **98%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. Viewport still recomputes visible voxel data redundantly per frame
-- Symptoms: dense-scene rendering path recalculates visibility data multiple times within a frame.
-- Suspected root cause: no per-frame cache for visible voxel rows/points.
-- Exact files: `src/app/viewport/gl_widget.py`.
-- Fastest confirmation: profile `paintGL` in dense scenes and inspect repeated visibility calls.
+1. Performance baseline thresholds remain intentionally loose
+- Symptoms: CI perf harness allows large slowdowns before failing.
+- Suspected root cause: high global regression multiplier for stability.
+- Exact files: `tests/perf_baseline.json`, `tests/test_perf_baseline.py`.
+- Fastest confirmation: inspect threshold multiplier and allowed baseline factors.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

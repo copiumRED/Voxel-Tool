@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 22: Viewport Per-Frame Data Caching
-- Goal: Reduce redundant visible-voxel recomputation in each paint cycle.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): Dense scene interaction is visibly smoother; no rendering regressions.
-- Tests required: Extend perf baseline with viewport draw-time surrogate benchmark.
-- Risk/rollback note: Invalidate cache aggressively on edits to avoid stale draws.
-
 ### Task 23: Performance Gate Tightening (CI-friendly)
 - Goal: Reduce permissive perf multiplier and add tiered thresholds.
 - Likely files/modules touched: `tests/perf_baseline.json`, `tests/test_perf_baseline.py`.
@@ -411,7 +404,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`114 passed`)
 
 ### Task 21: Incremental Solidify Stress Equivalence Expansion
-- Commit: `TASK21_HASH_PENDING`
+- Commit: `4a155e1`
 - Added multi-seed randomized localized-edit equivalence test for incremental vs full rebuild.
 - Stress test exposed real divergence cases in incremental patch merge path.
 - Added safety check in incremental rebuild path comparing mesh signatures against full rebuild.
@@ -423,6 +416,23 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Strengthened reliability for export/stats consumers relying on mesh cache correctness.
 - Preserved dependency-free implementation.
 - Task includes corrective stabilization prompted by new stress coverage.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`115 passed`)
+
+### Task 22: Viewport Per-Frame Data Caching
+- Commit: `TASK22_HASH_PENDING`
+- Reduced redundant per-frame visibility traversal in `paintGL` by building render buffers and voxel count in one pass.
+- Added unified helper that returns point vertices, line vertices, and visible voxel count together.
+- Replaced separate per-frame calls that previously recomputed visibility data for count and render buffers.
+- Preserved frame metrics emission and overlay behavior after data-path consolidation.
+- Kept existing scene iteration semantics (visible parts only) unchanged.
+- Avoided altering frame-to-voxels camera framing logic in this task.
+- Added viewport-surrogate performance timing path to perf baseline harness.
+- Extended perf baseline JSON with viewport-surrogate threshold.
+- Preserved conservative non-blocking multiplier strategy in this task.
+- Kept implementation dependency-free and low-risk.
+- No project schema or export behavior changes introduced.
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`115 passed`)

@@ -192,7 +192,7 @@ class GLViewportWidget(QOpenGLWidget):
         funcs.glClear(self._GL_COLOR_BUFFER_BIT | self._GL_DEPTH_BUFFER_BIT)
         if self._app_context is None:
             return
-        voxel_count = len(self._visible_voxel_points())
+        point_vertices, line_vertices, voxel_count = self._build_visible_render_data()
         if self._program is None or self._buffer is None or self._vao is None:
             if not self._logged_pipeline_missing:
                 self._logger.error(
@@ -213,7 +213,6 @@ class GLViewportWidget(QOpenGLWidget):
         self._draw_mirror_guides(funcs, mvp)
         if hasattr(funcs, "glPointSize"):
             funcs.glPointSize(8.0)
-        point_vertices, line_vertices = self._build_visible_part_vertices()
         if point_vertices:
             funcs.glDisable(self._GL_DEPTH_TEST)
             self._draw_colored_vertices(funcs, line_vertices, self._GL_LINES, mvp)
@@ -1137,6 +1136,23 @@ class GLViewportWidget(QOpenGLWidget):
                 point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
             line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
         return point_vertices, line_vertices
+
+    def _build_visible_render_data(self) -> tuple[array, array, int]:
+        point_vertices = array("f")
+        line_vertices = array("f")
+        voxel_count = 0
+        if self._app_context is None:
+            return point_vertices, line_vertices, voxel_count
+        for part in self._app_context.current_project.scene.iter_visible_parts():
+            transform = self._part_transform_matrix(part)
+            part_rows = part.voxels.to_list()
+            voxel_count += len(part_rows)
+            for x, y, z, color_index in part_rows:
+                color = self._PALETTE[color_index % len(self._PALETTE)]
+                mapped = transform.map(QVector3D(float(x), float(y), float(z)))
+                point_vertices.extend((mapped.x(), mapped.y(), mapped.z(), color[0], color[1], color[2]))
+            line_vertices.extend(self._build_voxel_line_vertices(part_rows, transform))
+        return point_vertices, line_vertices, voxel_count
 
     @staticmethod
     def _part_transform_matrix(part) -> QMatrix4x4:

@@ -922,3 +922,15 @@
   - Optional: perform repeated localized edits + solidify in app and verify stable mesh output.
 - Risks/issues:
   - Viewport per-frame data caching remains pending Task 22.
+
+### Roadmap 22 (Day-Cycle 30): Viewport Per-Frame Data Caching
+- What was done:
+  - Consolidated per-frame visible voxel traversal in viewport render path.
+  - Added unified render-data helper returning vertices + voxel count in one pass.
+  - Extended perf baseline harness with viewport-surrogate metric.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Navigate dense scene and verify no render regressions.
+  - Run: `pytest -q` (current: `115 passed`)
+- Risks/issues:
+  - Perf gate tightening thresholds are still pending Task 23.

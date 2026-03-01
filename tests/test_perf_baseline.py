@@ -18,10 +18,12 @@ def test_perf_baseline_harness_non_blocking_thresholds() -> None:
     brush_time = _measure_brush_paint()
     fill_time = _measure_fill()
     solidify_time = _measure_solidify()
+    viewport_time = _measure_viewport_surrogate()
 
     assert brush_time < float(baseline["brush_paint_seconds"]) * multiplier
     assert fill_time < float(baseline["fill_seconds"]) * multiplier
     assert solidify_time < float(baseline["solidify_seconds"]) * multiplier
+    assert viewport_time < float(baseline["viewport_surrogate_seconds"]) * multiplier
 
 
 def _measure_brush_paint() -> float:
@@ -54,4 +56,21 @@ def _measure_solidify() -> float:
                 voxels.set(x, y, z, 2)
     start = time.perf_counter()
     build_solid_mesh(voxels, greedy=True)
+    return time.perf_counter() - start
+
+
+def _measure_viewport_surrogate() -> float:
+    ctx = AppContext(current_project=Project(name="Perf Viewport Surrogate"))
+    second = ctx.current_project.scene.add_part("Part 2")
+    for x in range(20):
+        for y in range(10):
+            ctx.current_project.voxels.set(x, y, 0, 1)
+            second.voxels.set(-x, y, 1, 2)
+    start = time.perf_counter()
+    total = 0
+    for _ in range(10):
+        for part in ctx.current_project.scene.iter_visible_parts():
+            total += len(part.voxels.to_list())
+    # Prevent loop elimination assumptions in future refactors.
+    assert total > 0
     return time.perf_counter() - start
