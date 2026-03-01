@@ -3,8 +3,10 @@ from __future__ import annotations
 from app.app_context import AppContext
 from app.viewport.gl_widget import GLViewportWidget
 from app.ui.main_window import _next_brush_size, _project_io_error_detail
+from app.ui.panels.palette_panel import PalettePanel
 from core.project import Project
 from PySide6.QtCore import Qt
+from pathlib import Path
 import pytest
 
 
@@ -109,3 +111,15 @@ def test_mirror_overlay_label_lists_enabled_axes() -> None:
     label = GLViewportWidget._mirror_overlay_label(ctx)
     assert "X@-2" in label
     assert "Z@4" in label
+
+
+def test_palette_preset_filter_matches_case_insensitive_substrings() -> None:
+    paths = [
+        Path("WarmBase.json"),
+        Path("cool-shades.gpl"),
+        Path("terrain.json"),
+    ]
+    filtered = PalettePanel._filter_preset_paths(paths, "coo")
+    assert [p.name for p in filtered] == ["cool-shades.gpl"]
+    filtered_all = PalettePanel._filter_preset_paths(paths, "")
+    assert [p.name for p in filtered_all] == ["cool-shades.gpl", "terrain.json", "WarmBase.json"]

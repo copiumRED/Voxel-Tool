@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 17: Palette Browser and Quick Filter
-- Goal: Add palette preset browser with search/filter.
-- Likely files/modules touched: `src/app/ui/panels/palette_panel.py`.
-- Acceptance criteria (human-testable): Users can search presets quickly and apply one-click load.
-- Tests required: Add panel logic tests for filter/apply actions.
-- Risk/rollback note: Keep current slot editor behavior unchanged.
-
 ### Task 18: glTF UV Export
 - Goal: Emit `TEXCOORD_0` in glTF export.
 - Likely files/modules touched: `src/core/export/gltf_exporter.py`, `tests/test_gltf_exporter.py`.
@@ -451,7 +444,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`150 passed`)
 
 ### Task 16: Palette Metadata Schema v1
-- Commit: `COMMIT_PENDING`
+- Commit: `2231a82`
 - Added optional palette metadata normalization helper (`name`, `tags`, `source`) in palette IO layer.
 - Extended JSON palette preset save payload to include `metadata` object alongside color entries.
 - Added metadata-aware load API (`load_palette_preset_with_metadata`) with backward-compatible defaults.
@@ -468,3 +461,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`152 passed`)
+
+### Task 17: Palette Browser and Quick Filter
+- Commit: `COMMIT_PENDING`
+- Added palette preset browser section to palette panel with filter input and preset list.
+- Added one-click load path (`Load Selected`) and double-click load behavior for browser entries.
+- Added preset browser directory helper rooted at app temp (`palette_presets`) with auto-create behavior.
+- Updated save/load preset dialogs to default into preset browser directory for faster workflow.
+- Added preset filtering helper with case-insensitive substring matching.
+- Added deterministic preset sorting for stable list behavior across refreshes.
+- Added browser refresh path on panel refresh and after successful preset save.
+- Added shared preset load helper to avoid duplicated load/apply logic between dialog and browser actions.
+- Preserved existing palette edit/add/remove/swap/lock workflows.
+- Preserved metadata-aware preset load/save behavior introduced in Task 16.
+- Added regression test for preset quick-filter helper behavior and stable sorting output.
+- Kept implementation panel-scoped without introducing dependencies.
+- Maintained compatibility with direct file dialog load/save fallback.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`153 passed`)

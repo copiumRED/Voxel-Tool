@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Signal
@@ -11,6 +12,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
+    QListWidget,
+    QListWidgetItem,
     QLineEdit,
     QSpinBox,
     QVBoxLayout,
@@ -19,6 +22,7 @@ from PySide6.QtWidgets import (
 
 from core.io.palette_io import load_palette_preset_with_metadata, save_palette_preset
 from core.palette import add_palette_color, clamp_active_color_index, remove_palette_color, swap_palette_colors
+from util.fs import get_app_temp_dir
 
 if TYPE_CHECKING:
     from app.app_context import AppContext
@@ -71,6 +75,18 @@ class PalettePanel(QWidget):
         self.load_palette_button.clicked.connect(self._on_load_palette)
         actions_row.addWidget(self.load_palette_button)
         root_layout.addLayout(actions_row)
+        browser_row = QHBoxLayout()
+        self.preset_filter_edit = QLineEdit(self)
+        self.preset_filter_edit.setPlaceholderText("Filter presets...")
+        self.preset_filter_edit.textChanged.connect(self._refresh_preset_browser)
+        browser_row.addWidget(self.preset_filter_edit)
+        self.load_selected_preset_button = QPushButton("Load Selected", self)
+        self.load_selected_preset_button.clicked.connect(self._on_load_selected_preset)
+        browser_row.addWidget(self.load_selected_preset_button)
+        root_layout.addLayout(browser_row)
+        self.preset_list = QListWidget(self)
+        self.preset_list.itemDoubleClicked.connect(lambda _item: self._on_load_selected_preset())
+        root_layout.addWidget(self.preset_list)
         meta_row_1 = QHBoxLayout()
         self.metadata_name_edit = QLineEdit(self)
         self.metadata_name_edit.setPlaceholderText("Palette Name")
@@ -139,6 +155,7 @@ class PalettePanel(QWidget):
         self.metadata_name_edit.blockSignals(False)
         self.metadata_tags_edit.blockSignals(False)
         self.metadata_source_edit.blockSignals(False)
+        self._refresh_preset_browser()
 
     def _on_color_clicked(self, idx: int) -> None:
         if self._context is None:
@@ -153,7 +170,7 @@ class PalettePanel(QWidget):
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Save Palette Preset",
-            "",
+            str(self._preset_browser_dir()),
             "Palette Preset (*.json *.gpl);;JSON (*.json);;GIMP Palette (*.gpl);;All Files (*)",
         )
         if not path:
@@ -164,6 +181,7 @@ class PalettePanel(QWidget):
                 path,
                 metadata=getattr(self._context, "palette_metadata", None),
             )
+            self._refresh_preset_browser()
             self.palette_status_message.emit(f"Saved palette preset: {path}")
         except Exception as exc:  # pragma: no cover
             QMessageBox.warning(self, "Save Palette Preset", f"Failed to save palette preset.\n\n{exc}")
@@ -174,25 +192,21 @@ class PalettePanel(QWidget):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Palette Preset",
-            "",
+            str(self._preset_browser_dir()),
             "Palette Preset (*.json *.gpl);;JSON (*.json);;GIMP Palette (*.gpl);;All Files (*)",
         )
         if not path:
             return
-        try:
-            loaded_palette, metadata = load_palette_preset_with_metadata(path)
-        except Exception as exc:  # pragma: no cover
-            QMessageBox.warning(self, "Load Palette Preset", f"Failed to load palette preset.\n\n{exc}")
+        self._load_preset_path(path)
+
+    def _on_load_selected_preset(self) -> None:
+        item = self.preset_list.currentItem()
+        if item is None:
             return
-        self._context.palette = loaded_palette
-        self._context.palette_metadata = metadata
-        self._context.active_color_index = clamp_active_color_index(
-            self._context.active_color_index,
-            len(loaded_palette),
-        )
-        self.refresh()
-        self.active_color_changed.emit(self._context.active_color_index)
-        self.palette_status_message.emit(f"Loaded palette preset: {path}")
+        path = item.data(0x0100)
+        if not isinstance(path, str) or not path:
+            return
+        self._load_preset_path(path)
 
     def _on_rgb_changed(self, _value: int) -> None:
         if self._context is None:
@@ -292,6 +306,47 @@ class PalettePanel(QWidget):
             "source": self.metadata_source_edit.text().strip(),
         }
         self.palette_status_message.emit("Updated palette metadata")
+
+    def _load_preset_path(self, path: str) -> None:
+        if self._context is None:
+            return
+        try:
+            loaded_palette, metadata = load_palette_preset_with_metadata(path)
+        except Exception as exc:  # pragma: no cover
+            QMessageBox.warning(self, "Load Palette Preset", f"Failed to load palette preset.\n\n{exc}")
+            return
+        self._context.palette = loaded_palette
+        self._context.palette_metadata = metadata
+        self._context.active_color_index = clamp_active_color_index(
+            self._context.active_color_index,
+            len(loaded_palette),
+        )
+        self.refresh()
+        self.active_color_changed.emit(self._context.active_color_index)
+        self.palette_status_message.emit(f"Loaded palette preset: {path}")
+
+    @staticmethod
+    def _preset_browser_dir() -> Path:
+        path = get_app_temp_dir("VoxelTool") / "palette_presets"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @staticmethod
+    def _filter_preset_paths(paths: list[Path], query: str) -> list[Path]:
+        q = query.strip().lower()
+        if not q:
+            return sorted(paths, key=lambda p: p.name.lower())
+        return sorted([p for p in paths if q in p.name.lower()], key=lambda p: p.name.lower())
+
+    def _refresh_preset_browser(self) -> None:
+        directory = self._preset_browser_dir()
+        paths = [p for p in directory.iterdir() if p.is_file() and p.suffix.lower() in {".json", ".gpl"}]
+        visible_paths = self._filter_preset_paths(paths, self.preset_filter_edit.text())
+        self.preset_list.clear()
+        for path in visible_paths:
+            item = QListWidgetItem(path.name)
+            item.setData(0x0100, str(path))
+            self.preset_list.addItem(item)
 
     def _rebuild_color_buttons(self) -> None:
         while self.grid.count():

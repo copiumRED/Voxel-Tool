@@ -1312,3 +1312,18 @@
   - Run: `pytest -q` (current: `152 passed`).
 - Risks/issues:
   - Palette browser quick filter UX remains pending Task 17.
+
+### Roadmap 17 (Day-Cycle 40): Palette Browser and Quick Filter
+- What was done:
+  - Added preset browser list to Palette panel backed by a dedicated preset directory.
+  - Added quick filter input for case-insensitive preset-name search.
+  - Added one-click `Load Selected` action and double-click load behavior.
+  - Updated save/load dialogs to default into the preset-browser directory.
+  - Added regression test for preset filter logic and deterministic sorting.
+- How to test quickly:
+  - Save a few palette presets to the default preset directory.
+  - Type in `Filter presets...` and verify the list narrows immediately.
+  - Select a preset and click `Load Selected` (or double-click item) to apply it.
+  - Run: `pytest -q` (current: `153 passed`).
+- Risks/issues:
+  - glTF UV export parity remains pending Task 18.
