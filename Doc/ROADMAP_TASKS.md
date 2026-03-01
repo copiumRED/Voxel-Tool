@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 25: Solidify QA Diagnostics
-- Goal: Add mesh QA counters (degenerate quads, non-manifold risk hints).
-- Likely files/modules touched: `src/core/meshing/solidify.py`, `src/core/analysis/stats.py`, `src/app/ui/panels/stats_panel.py`.
-- Acceptance criteria (human-testable): Solidify reports QA counters in stats panel.
-- Tests required: Add diagnostic computation tests with synthetic meshes.
-- Risk/rollback note: Diagnostics should not block mesh generation.
-
 ### Task 26: Incremental Rebuild Telemetry
 - Goal: Track and display incremental fallback frequency.
 - Likely files/modules touched: `src/core/meshing/solidify.py`, `src/app/ui/panels/stats_panel.py`.
@@ -547,7 +540,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`158 passed`)
 
 ### Task 24: Qubicle QB Export Feasibility Slice
-- Commit: `COMMIT_PENDING`
+- Commit: `4c32f65`
 - Added new QB exporter module (`core/export/qb_exporter.py`) for bounded `.qb` write support.
 - Implemented QB header/matrix emission for uncompressed single-matrix export payloads.
 - Implemented voxel bounds extraction and matrix-position offset emission for negative/positive coordinates.
@@ -564,3 +557,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`160 passed`)
+
+### Task 25: Solidify QA Diagnostics
+- Commit: `COMMIT_PENDING`
+- Added mesh QA diagnostic fields to part stats (`degenerate_quads`, `non_manifold_edge_hints`).
+- Added degenerate-quad detection in stats analysis (quads with fewer than 4 unique vertices).
+- Added non-manifold edge risk hint counter (edges referenced by more than two quads).
+- Kept diagnostics non-blocking and analysis-only (no mesh generation interruption).
+- Preserved existing scene/part triangle/face/edge/vertex/material computations.
+- Updated stats panel object label to display QA counters for active part.
+- Kept diagnostics compatible with cached-mesh and rebuilt-mesh analysis paths.
+- Added regression test with synthetic mesh cache to verify degenerate-quad counter.
+- Added regression test with synthetic mesh cache to verify non-manifold edge hint detection.
+- Preserved runtime stats label format and scene summary label behavior.
+- Kept implementation scoped to diagnostics; no export/tool behavior changes.
+- Avoided introducing any new dependencies.
+- Maintained existing compute_scene_stats public API shape aside from additive fields.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`161 passed`)

@@ -21,6 +21,8 @@ class PartStats:
     bounds_size: tuple[int, int, int]
     bounds_meters: tuple[float, float, float]
     materials_used: int
+    degenerate_quads: int
+    non_manifold_edge_hints: int
 
 
 @dataclass(slots=True)
@@ -56,9 +58,17 @@ def _compute_part_stats(part: Part) -> PartStats:
     )
     unique_vertices = set(mesh.vertices)
     unique_edges: set[tuple[int, int]] = set()
+    edge_use_count: dict[tuple[int, int], int] = {}
+    degenerate_quads = 0
     for a, b, c, d in mesh.quads:
+        quad_vertices = {a, b, c, d}
+        if len(quad_vertices) < 4:
+            degenerate_quads += 1
         for start, end in ((a, b), (b, c), (c, d), (d, a)):
-            unique_edges.add((min(start, end), max(start, end)))
+            key = (min(start, end), max(start, end))
+            unique_edges.add(key)
+            edge_use_count[key] = edge_use_count.get(key, 0) + 1
+    non_manifold_edge_hints = sum(1 for count in edge_use_count.values() if count > 2)
     return PartStats(
         part_id=part.part_id,
         part_name=part.name,
@@ -69,6 +79,8 @@ def _compute_part_stats(part: Part) -> PartStats:
         bounds_size=_voxel_bounds_size(part),
         bounds_meters=_bounds_meters(_voxel_bounds_size(part)),
         materials_used=len(_part_materials(part)),
+        degenerate_quads=degenerate_quads,
+        non_manifold_edge_hints=non_manifold_edge_hints,
     )
 
 

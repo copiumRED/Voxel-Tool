@@ -1425,3 +1425,16 @@
   - Run: `pytest -q` (current: `160 passed`).
 - Risks/issues:
   - Solidify QA diagnostics remain pending Task 25.
+
+### Roadmap 25 (Day-Cycle 40): Solidify QA Diagnostics
+- What was done:
+  - Added per-part mesh QA counters: degenerate quads and non-manifold edge hints.
+  - Updated stats analysis pipeline to compute QA counters from analyzed mesh topology.
+  - Updated stats panel object line to display QA counters for active part.
+  - Added synthetic-mesh regression test validating QA counter behavior.
+- How to test quickly:
+  - Open app and run mesh rebuild on a non-trivial model.
+  - Check Stats panel object line for `deg quads` and `nm-edge hints` values.
+  - Run: `pytest -q` (current: `161 passed`).
+- Risks/issues:
+  - Incremental rebuild telemetry remains pending Task 26.
