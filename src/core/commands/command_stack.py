@@ -37,6 +37,10 @@ class CommandStack:
     def can_redo(self) -> bool:
         return bool(self.redo_stack)
 
+    @property
+    def transaction_active(self) -> bool:
+        return self._transaction_commands is not None
+
     def do(self, command: Command, ctx) -> None:
         command.do(ctx)
         if self._transaction_commands is not None:
@@ -90,6 +94,20 @@ class CommandStack:
             return
         self.undo_stack.append(_CompoundCommand(commands, label=label))
         self._trim_undo_stack()
+
+    def cancel_transaction(self, ctx=None, *, rollback: bool = True) -> None:
+        if self._transaction_commands is None:
+            raise RuntimeError("No active transaction to cancel.")
+        commands = self._transaction_commands
+        self._transaction_commands = None
+        self._transaction_label = None
+        if not commands or not rollback:
+            return
+        if ctx is None:
+            raise ValueError("Context is required to rollback a cancelled transaction.")
+        for command in reversed(commands):
+            command.undo(ctx)
+        self.redo_stack.clear()
 
     def _trim_undo_stack(self) -> None:
         overflow = len(self.undo_stack) - self.max_undo_steps

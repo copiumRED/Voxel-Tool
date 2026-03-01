@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 05: Drag Transaction Abort Hardening
-- Goal: Ensure interrupted drags always close or abort transactions cleanly.
-- Likely files/modules touched: `src/app/viewport/gl_widget.py`, `src/core/commands/command_stack.py`.
-- Acceptance criteria (human-testable): Focus loss/cancel leaves undo stack valid with no phantom entries.
-- Tests required: Add aborted transaction tests in `tests/test_command_stack.py`.
-- Risk/rollback note: Preserve existing successful transaction path.
-
 ### Task 06: Recovery Diagnostic Report
 - Goal: Add structured diagnostics when recovery load fails.
 - Likely files/modules touched: `src/core/io/recovery_io.py`, `src/app/ui/main_window.py`, `tests/test_recovery_io.py`.
@@ -315,7 +308,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`126 passed`)
 
 ### Task 04: Navigation Sensitivity Controls
-- Commit: `COMMIT_PENDING`
+- Commit: `89843ab`
 - Added camera sensitivity fields to app context for orbit, pan, and zoom controls.
 - Added validated context setter for camera sensitivity axes with bounded range checks.
 - Added view-menu actions to set orbit, pan, and zoom sensitivity at runtime.
@@ -331,3 +324,21 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`128 passed`)
+
+### Task 05: Drag Transaction Abort Hardening
+- Commit: `COMMIT_PENDING`
+- Added command-stack `transaction_active` property to expose active transaction state explicitly.
+- Added command-stack `cancel_transaction()` API with optional rollback behavior.
+- Implemented rollback path that undoes staged transaction commands in reverse order.
+- Added runtime guard for cancel attempts without active transaction.
+- Added context requirement validation for rollback-enabled transaction cancel.
+- Updated viewport leave-event flow to abort active brush stroke transactions safely.
+- Added viewport focus-out handler to abort active brush stroke transactions on focus loss.
+- Added dedicated brush-stroke abort helper in viewport that cancels transaction and emits status.
+- Preserved normal brush stroke commit path (`end_transaction`) on successful mouse release.
+- Added regression test for rollback cancellation restoring voxel state and keeping undo stack clean.
+- Added regression test for cancel-without-active-transaction error behavior.
+- Kept scope limited to transaction lifecycle hardening with no tool algorithm changes.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`130 passed`)

@@ -712,12 +712,19 @@ class GLViewportWidget(QOpenGLWidget):
         super().wheelEvent(event)
 
     def leaveEvent(self, event) -> None:
+        if self._brush_stroke_active:
+            self._abort_brush_stroke("Brush stroke cancelled.")
         if self._hover_preview_cells or self._shape_preview_cells:
             self._hover_preview_cells = set()
             self._hover_preview_source = None
             self._shape_preview_cells = set()
             self.update()
         super().leaveEvent(event)
+
+    def focusOutEvent(self, event) -> None:
+        if self._brush_stroke_active:
+            self._abort_brush_stroke("Brush stroke cancelled.")
+        super().focusOutEvent(event)
 
     @staticmethod
     def _clamp(value: float, min_value: float, max_value: float) -> float:
@@ -950,6 +957,18 @@ class GLViewportWidget(QOpenGLWidget):
         self._brush_stroke_active = False
         self._brush_stroke_last_cell = None
         self._app_context.command_stack.end_transaction()
+        self.update()
+
+    def _abort_brush_stroke(self, message: str) -> None:
+        if self._app_context is None:
+            return
+        if not self._brush_stroke_active:
+            return
+        self._brush_stroke_active = False
+        self._brush_stroke_last_cell = None
+        if self._app_context.command_stack.transaction_active:
+            self._app_context.command_stack.cancel_transaction(self._app_context, rollback=True)
+        self.voxel_edit_applied.emit(message)
         self.update()
 
     def _update_hover_preview(self, pos: QPointF, modifiers: Qt.KeyboardModifier) -> None:

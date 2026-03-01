@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from app.app_context import AppContext
 from core.commands.demo_commands import (
     BoxVoxelCommand,
@@ -224,6 +226,26 @@ def test_command_stack_transaction_groups_commands_into_one_undo_step() -> None:
 
     stack.redo(ctx)
     assert ctx.current_project.voxels.count() == 2
+
+
+def test_command_stack_cancel_transaction_rolls_back_staged_commands() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    stack = ctx.command_stack
+
+    stack.begin_transaction("Brush Stroke")
+    stack.do(PaintVoxelCommand(0, 0, 0, 2), ctx)
+    stack.do(PaintVoxelCommand(1, 0, 0, 2), ctx)
+    stack.cancel_transaction(ctx, rollback=True)
+
+    assert stack.transaction_active is False
+    assert ctx.current_project.voxels.count() == 0
+    assert len(stack.undo_stack) == 0
+
+
+def test_command_stack_cancel_transaction_without_active_raises() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    with pytest.raises(RuntimeError):
+        ctx.command_stack.cancel_transaction(ctx, rollback=True)
 
 
 def test_drag_style_commands_remain_single_undo_with_mirrors_enabled() -> None:

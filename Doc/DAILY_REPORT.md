@@ -1133,3 +1133,16 @@
   - Run: `pytest -q` (current: `128 passed`).
 - Risks/issues:
   - Drag transaction abort hardening remains pending Task 05.
+
+### Roadmap 05 (Day-Cycle 40): Drag Transaction Abort Hardening
+- What was done:
+  - Added `cancel_transaction()` and `transaction_active` support in command stack.
+  - Added rollback cancellation path that undoes staged transaction commands.
+  - Added viewport brush-stroke abort path for leave/focus-loss interruptions.
+  - Added regression tests for rollback cancellation and cancel-without-active behavior.
+- How to test quickly:
+  - Start a brush drag, move pointer out of viewport (or force focus loss), then verify no phantom undo entry remains.
+  - Confirm cancelled drag does not leave unexpected voxel edits behind.
+  - Run: `pytest -q` (current: `130 passed`).
+- Risks/issues:
+  - Recovery diagnostics remain pending Task 06.
