@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 20: VOX Import Unsupported-Chunk Diagnostics
-- Goal: Report unsupported VOX chunks (transform/hierarchy) clearly to user.
-- Likely files/modules touched: `src/core/io/vox_io.py`, `src/app/ui/main_window.py`.
-- Acceptance criteria (human-testable): Import completes with warning listing unsupported chunk types.
-- Tests required: Add parser test for warning collection on synthetic chunks.
-- Risk/rollback note: Keep import permissive; warnings must not crash flow.
-
 ### Task 21: Incremental Solidify Stress Equivalence Expansion
 - Goal: Increase confidence in incremental rebuild by randomized equivalence testing.
 - Likely files/modules touched: `tests/test_solidify_incremental.py`, `src/core/meshing/solidify.py`.
@@ -391,7 +384,7 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
   - `pytest -q` (`111 passed`)
 
 ### Task 19: OBJ Vertex Color Policy Clarification
-- Commit: `TASK19_HASH_PENDING`
+- Commit: `5dc16e8`
 - Added explicit OBJ vertex-color policy option (`first_face` / `last_face`) to exporter options.
 - Kept deterministic default policy as `first_face` for backward compatibility.
 - Added policy validation with clear error for unsupported mode values.
@@ -406,3 +399,20 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`113 passed`)
+
+### Task 20: VOX Import Unsupported-Chunk Diagnostics
+- Commit: `TASK20_HASH_PENDING`
+- Added warning-capable VOX loader path (`load_vox_models_with_warnings`) that reports unsupported chunk IDs.
+- Kept existing `load_vox_models` API backward-compatible by delegating and discarding warnings.
+- Added unsupported chunk collection logic in parser while preserving permissive import behavior.
+- Updated VOX import UI flow to consume warning-capable loader path.
+- Added user-facing warning dialog when unsupported chunks are encountered during import.
+- Preserved successful import behavior for supported model/palette chunks.
+- Added parser test using synthetic VOX payload with unknown chunk (`nTRN`) and warning assertion.
+- Added compatibility assertion that legacy loader wrapper still works on same payload.
+- Ensured unsupported chunk diagnostics do not block import success path.
+- Kept implementation dependency-free and parser/UI-scoped.
+- Fixed one indentation regression in import handler and re-ran full gate successfully.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`114 passed`)

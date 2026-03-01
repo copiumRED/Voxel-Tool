@@ -13,6 +13,11 @@ def load_vox(path: str) -> tuple[VoxelGrid, list[tuple[int, int, int]]]:
 
 
 def load_vox_models(path: str) -> tuple[list[VoxelGrid], list[tuple[int, int, int]]]:
+    models, palette, _warnings = load_vox_models_with_warnings(path)
+    return models, palette
+
+
+def load_vox_models_with_warnings(path: str) -> tuple[list[VoxelGrid], list[tuple[int, int, int]], list[str]]:
     payload = open(path, "rb").read()
     if payload[:4] != b"VOX ":
         raise ValueError("Invalid VOX header.")
@@ -21,6 +26,7 @@ def load_vox_models(path: str) -> tuple[list[VoxelGrid], list[tuple[int, int, in
 
     models: list[VoxelGrid] = []
     palette: list[tuple[int, int, int]] = []
+    unsupported_chunks: set[str] = set()
     pending_size: tuple[int, int, int] | None = None
 
     offset = 8
@@ -58,6 +64,8 @@ def load_vox_models(path: str) -> tuple[list[VoxelGrid], list[tuple[int, int, in
             for i in range(255):
                 rgba = struct.unpack("<BBBB", content[i * 4 : (i * 4) + 4])
                 palette.append((int(rgba[0]), int(rgba[1]), int(rgba[2])))
+        elif chunk_id not in {b"MAIN"}:
+            unsupported_chunks.add(chunk_id.decode("ascii", errors="replace"))
 
         offset = content_end
 
@@ -65,5 +73,5 @@ def load_vox_models(path: str) -> tuple[list[VoxelGrid], list[tuple[int, int, in
         raise ValueError("VOX file missing model data (SIZE/XYZI).")
     if not palette:
         palette = [(0, 0, 0)] * 255
-    return models, palette
+    return models, palette, sorted(unsupported_chunks)
 

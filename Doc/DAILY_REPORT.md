@@ -898,3 +898,16 @@
   - Run: `pytest -q` (current: `113 passed`)
 - Risks/issues:
   - VOX unsupported-chunk diagnostics remain pending Task 20.
+
+### Roadmap 20 (Day-Cycle 30): VOX Import Unsupported-Chunk Diagnostics
+- What was done:
+  - Added warning-capable VOX load path that reports unsupported chunk IDs.
+  - Preserved backward-compatible loader API.
+  - Surfaced unsupported-chunk warnings in import UI.
+  - Added synthetic VOX parser test for warning collection.
+- How to test quickly:
+  - Import VOX containing unsupported chunks (e.g., transform chunks).
+  - Verify import succeeds and warning dialog lists unsupported IDs.
+  - Run: `pytest -q` (current: `114 passed`)
+- Risks/issues:
+  - Incremental solidify stress-equivalence expansion remains pending Task 21.

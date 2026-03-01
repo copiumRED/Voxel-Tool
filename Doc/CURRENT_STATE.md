@@ -5,7 +5,7 @@ Branch baseline: `main`
 
 ## Phase Completion Estimates
 - Phase 0 (Foundations): **97%**
-- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **95%**
+- Phase 1 (Voxel MVP + Qubicle-competitive workflow): **96%**
 - Phase 2 (Mesh Edit MVP): **9%**
 
 Reasoning:
@@ -118,11 +118,11 @@ Not Implemented:
 - Clean-machine matrix validation record.
 
 ## Top 10 Known Issues / Bugs (Ranked)
-1. VOX import does not surface unsupported chunk diagnostics yet
-- Symptoms: unsupported VOX chunks are silently ignored without user-visible notice.
-- Suspected root cause: loader parser does not collect/report unsupported chunk IDs.
-- Exact files: `src/core/io/vox_io.py`, `src/app/ui/main_window.py`.
-- Fastest confirmation: import VOX with extra scene chunks and observe no warning output.
+1. Incremental solidify stress equivalence coverage is still limited
+- Symptoms: incremental rebuild has baseline equivalence tests but not broad randomized stress coverage.
+- Suspected root cause: test suite currently validates limited localized edit scenarios.
+- Exact files: `src/core/meshing/solidify.py`, `tests/test_solidify_incremental.py`.
+- Fastest confirmation: run randomized localized edit comparisons against full rebuild signatures.
 
 2. Pick mode only affects brush, not line/box/fill
 - Symptoms: toggling `Surface` vs `Plane Lock` changes brush behavior only.

@@ -34,7 +34,7 @@ from core.export.obj_exporter import ObjExportOptions, export_voxels_to_obj
 from core.export.gltf_exporter import export_voxels_to_gltf
 from core.export.vox_exporter import export_voxels_to_vox
 from core.io.project_io import load_project, save_project
-from core.io.vox_io import load_vox_models
+from core.io.vox_io import load_vox_models_with_warnings
 from core.io.recovery_io import (
     clear_recovery_snapshot,
     has_recovery_snapshot,
@@ -534,7 +534,7 @@ class MainWindow(QMainWindow):
         if not path:
             return
         try:
-            models, palette = load_vox_models(path)
+            models, palette, warnings = load_vox_models_with_warnings(path)
         except Exception as exc:
             QMessageBox.warning(self, "Import VOX", f"Failed to import VOX file.\n\n{exc}")
             return
@@ -558,6 +558,12 @@ class MainWindow(QMainWindow):
             min(self.context.active_color_index, len(self.context.palette) - 1),
         )
         self._show_voxel_status(f"Imported VOX: {path} ({imported_count} part(s))")
+        if warnings:
+            QMessageBox.information(
+                self,
+                "VOX Import Warnings",
+                "Imported with unsupported chunk(s): " + ", ".join(warnings),
+            )
         self._refresh_ui_state()
 
     def _on_export_gltf(self) -> None:
