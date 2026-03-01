@@ -66,6 +66,7 @@ class GLViewportWidget(QOpenGLWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setMinimumSize(400, 300)
+        self.setFocusPolicy(Qt.StrongFocus)
         self._app_context: AppContext | None = None
         self._program: QOpenGLShaderProgram | None = None
         self._buffer: QOpenGLBuffer | None = None
@@ -602,6 +603,7 @@ class GLViewportWidget(QOpenGLWidget):
         return vertices
 
     def mousePressEvent(self, event) -> None:
+        self.setFocus()
         if event.button() in (Qt.LeftButton, Qt.MiddleButton, Qt.RightButton):
             pos = event.position()
             self._last_mouse_pos = (pos.x(), pos.y())
@@ -726,6 +728,21 @@ class GLViewportWidget(QOpenGLWidget):
         self._update_hover_preview(event.position(), event.modifiers())
         super().mouseReleaseEvent(event)
 
+    def keyPressEvent(self, event) -> None:
+        if self._app_context is None:
+            super().keyPressEvent(event)
+            return
+        delta = self._selection_move_delta_from_key(event.key())
+        if delta is None:
+            super().keyPressEvent(event)
+            return
+        if not self._app_context.selected_voxels:
+            self.voxel_edit_applied.emit("No selected voxels to move")
+            event.accept()
+            return
+        self._move_selected_voxels_by(*delta)
+        event.accept()
+
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120.0
         if steps != 0:
@@ -814,6 +831,22 @@ class GLViewportWidget(QOpenGLWidget):
         if app_context is None:
             return False
         return bool(app_context.voxel_selection_mode)
+
+    @staticmethod
+    def _selection_move_delta_from_key(key: int) -> tuple[int, int, int] | None:
+        if key == Qt.Key_Left:
+            return (-1, 0, 0)
+        if key == Qt.Key_Right:
+            return (1, 0, 0)
+        if key == Qt.Key_Up:
+            return (0, 1, 0)
+        if key == Qt.Key_Down:
+            return (0, -1, 0)
+        if key == Qt.Key_PageUp:
+            return (0, 0, 1)
+        if key == Qt.Key_PageDown:
+            return (0, 0, -1)
+        return None
 
     def _camera_vectors(self) -> tuple[QVector3D, QVector3D, QVector3D, QVector3D]:
         yaw = radians(self.yaw_deg)
@@ -932,6 +965,22 @@ class GLViewportWidget(QOpenGLWidget):
         if target is None:
             return None
         return target[0], should_erase
+
+    def _move_selected_voxels_by(self, dx: int, dy: int, dz: int) -> None:
+        if self._app_context is None or self._active_part_is_locked():
+            return
+        from core.commands.demo_commands import MoveSelectedVoxelsCommand
+
+        command = MoveSelectedVoxelsCommand(set(self._app_context.selected_voxels), dx, dy, dz)
+        self._app_context.command_stack.do(command, self._app_context)
+        if command.collision_blocked:
+            self.voxel_edit_applied.emit("Move blocked: destination collision")
+            return
+        if command.moved_count <= 0:
+            self.voxel_edit_applied.emit("Move skipped: selected voxels not present")
+            return
+        self.voxel_edit_applied.emit(f"Moved selected voxels: {command.moved_count}")
+        self.update()
 
     def _begin_brush_stroke_if_applicable(
         self,

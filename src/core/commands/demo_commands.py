@@ -302,6 +302,69 @@ class FillVoxelCommand(Command):
                 voxels.set(delta.x, delta.y, delta.z, delta.previous_color)
 
 
+class MoveSelectedVoxelsCommand(Command):
+    def __init__(self, selected_cells: set[tuple[int, int, int]], dx: int, dy: int, dz: int) -> None:
+        self.selected_cells = {tuple(cell) for cell in selected_cells}
+        self.dx = int(dx)
+        self.dy = int(dy)
+        self.dz = int(dz)
+        self._source_colors: dict[tuple[int, int, int], int] = {}
+        self._target_colors: dict[tuple[int, int, int], int] = {}
+        self.moved_count = 0
+        self.collision_blocked = False
+
+    @property
+    def name(self) -> str:
+        return "Move Selected Voxels"
+
+    def do(self, ctx) -> None:
+        voxels = ctx.current_project.voxels
+        self._source_colors = {}
+        self._target_colors = {}
+        self.moved_count = 0
+        self.collision_blocked = False
+
+        for x, y, z in sorted(self.selected_cells):
+            color = voxels.get(x, y, z)
+            if color is not None:
+                self._source_colors[(x, y, z)] = color
+        if not self._source_colors:
+            return
+
+        source_cells = set(self._source_colors.keys())
+        for (x, y, z), color in self._source_colors.items():
+            target = (x + self.dx, y + self.dy, z + self.dz)
+            self._target_colors[target] = color
+
+        for target in self._target_colors:
+            if target in source_cells:
+                continue
+            if voxels.get(*target) is not None:
+                self.collision_blocked = True
+                self._source_colors = {}
+                self._target_colors = {}
+                return
+
+        _invalidate_active_mesh_cache(ctx, source_cells | set(self._target_colors.keys()))
+        for source in source_cells:
+            voxels.remove(*source)
+        for target, color in self._target_colors.items():
+            voxels.set(target[0], target[1], target[2], color)
+        ctx.set_selected_voxels(set(self._target_colors.keys()))
+        self.moved_count = len(self._target_colors)
+
+    def undo(self, ctx) -> None:
+        if not self._source_colors or not self._target_colors:
+            return
+        voxels = ctx.current_project.voxels
+        _invalidate_active_mesh_cache(ctx, set(self._source_colors.keys()) | set(self._target_colors.keys()))
+        for target in self._target_colors:
+            voxels.remove(*target)
+        for source, color in self._source_colors.items():
+            voxels.set(source[0], source[1], source[2], color)
+        ctx.set_selected_voxels(set(self._source_colors.keys()))
+
+
 def rasterize_brush_stroke_segment(
     start: tuple[int, int, int],
     end: tuple[int, int, int],

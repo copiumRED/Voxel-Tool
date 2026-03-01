@@ -9,6 +9,7 @@ from core.commands.demo_commands import (
     CreateTestVoxelsCommand,
     FillVoxelCommand,
     LineVoxelCommand,
+    MoveSelectedVoxelsCommand,
     PaintVoxelCommand,
     RemoveVoxelCommand,
     RenameProjectCommand,
@@ -407,6 +408,50 @@ def test_app_context_voxel_selection_mode_and_selection_set() -> None:
     assert len(ctx.selected_voxels) == 2
     ctx.clear_selected_voxels()
     assert len(ctx.selected_voxels) == 0
+
+
+def test_move_selected_voxels_command_moves_with_undo_redo() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 2)
+    voxels.set(1, 0, 0, 3)
+    ctx.set_selected_voxels({(0, 0, 0), (1, 0, 0)})
+
+    ctx.command_stack.do(MoveSelectedVoxelsCommand(set(ctx.selected_voxels), 0, 1, 0), ctx)
+    assert voxels.get(0, 0, 0) is None
+    assert voxels.get(1, 0, 0) is None
+    assert voxels.get(0, 1, 0) == 2
+    assert voxels.get(1, 1, 0) == 3
+    assert ctx.selected_voxels == {(0, 1, 0), (1, 1, 0)}
+
+    ctx.command_stack.undo(ctx)
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 3
+    assert voxels.get(0, 1, 0) is None
+    assert voxels.get(1, 1, 0) is None
+    assert ctx.selected_voxels == {(0, 0, 0), (1, 0, 0)}
+
+    ctx.command_stack.redo(ctx)
+    assert voxels.get(0, 1, 0) == 2
+    assert voxels.get(1, 1, 0) == 3
+    assert ctx.selected_voxels == {(0, 1, 0), (1, 1, 0)}
+
+
+def test_move_selected_voxels_command_blocks_on_destination_collision() -> None:
+    ctx = AppContext(current_project=Project(name="Untitled"))
+    voxels = ctx.current_project.voxels
+    voxels.set(0, 0, 0, 2)
+    voxels.set(1, 0, 0, 4)
+    ctx.set_selected_voxels({(0, 0, 0)})
+
+    command = MoveSelectedVoxelsCommand(set(ctx.selected_voxels), 1, 0, 0)
+    ctx.command_stack.do(command, ctx)
+
+    assert command.collision_blocked is True
+    assert command.moved_count == 0
+    assert voxels.get(0, 0, 0) == 2
+    assert voxels.get(1, 0, 0) == 4
+    assert ctx.selected_voxels == {(0, 0, 0)}
 
 
 def test_app_context_fill_connectivity_validation() -> None:

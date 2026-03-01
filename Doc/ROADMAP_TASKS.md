@@ -7,13 +7,6 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 
 ## Remaining Tasks
 
-### Task 12: Selected Voxel Move Tool
-- Goal: Add move operation for selected voxel sets.
-- Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/viewport/gl_widget.py`.
-- Acceptance criteria (human-testable): Selected voxels move by axis step with undo/redo support.
-- Tests required: Add command tests for selection move with undo/redo.
-- Risk/rollback note: Validate destination collisions deterministically.
-
 ### Task 13: Selected Voxel Duplicate Tool
 - Goal: Duplicate selected voxel sets with offset.
 - Likely files/modules touched: `src/core/commands/demo_commands.py`, `src/app/ui/panels/tools_panel.py`.
@@ -374,7 +367,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`135 passed`)
 
 ### Task 10: Multi-select Part Actions
-- Commit: `COMMIT_PENDING`
+- Commit: `d5d8b4c`
 - Enabled extended multi-selection mode for part list in inspector panel.
 - Added batch part action buttons: show selected, hide selected, lock selected, unlock selected, delete selected.
 - Added inspector helper to collect selected part IDs with current-item fallback.
@@ -392,7 +385,7 @@ Execution rule: One task per branch, strict gate before merge to `main`.
   - `pytest -q`: PASS (`138 passed`)
 
 ### Task 11: Voxel Selection Set v1
-- Commit: `COMMIT_PENDING`
+- Commit: `5552389`
 - Added voxel selection mode state in app context (`voxel_selection_mode`) with validated setter.
 - Added selected voxel set state in app context (`selected_voxels`) with explicit set/clear helpers.
 - Added tools-panel checkbox (`Voxel Selection Mode`) and signal wiring to toggle selection mode from UI.
@@ -408,3 +401,22 @@ Execution rule: One task per branch, strict gate before merge to `main`.
 - Gate results:
   - `python src/app/main.py`: PASS (launch smoke)
   - `pytest -q`: PASS (`140 passed`)
+
+### Task 12: Selected Voxel Move Tool
+- Commit: `COMMIT_PENDING`
+- Added command `MoveSelectedVoxelsCommand` to move selected voxel sets by integer axis delta.
+- Implemented deterministic source filtering so only existing selected cells participate in move.
+- Implemented collision blocking when destination contains non-selected voxels.
+- Preserved per-voxel color values during move by carrying source color map into target cells.
+- Updated command to refresh selection set to moved coordinates after successful move.
+- Added undo path that restores original voxel positions/colors and original selection set.
+- Wired viewport key input mapping for selection moves: arrows (`X/Y`) and `PageUp/PageDown` (`Z`).
+- Added viewport key handler that routes mapped move keys through command stack for undo/redo support.
+- Added focus-policy hardening so viewport receives key events after click interaction.
+- Added status messages for move success, collision block, empty selection, and missing-source no-op.
+- Added command regression test for move + undo/redo correctness and selection sync.
+- Added command regression test for destination collision-block behavior.
+- Added shortcut regression test for key-to-delta mapping coverage.
+- Gate results:
+  - `python src/app/main.py`: PASS (launch smoke)
+  - `pytest -q`: PASS (`143 passed`)

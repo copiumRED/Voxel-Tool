@@ -74,3 +74,13 @@ def test_selection_mode_flag_enables_selection_interaction_mode() -> None:
     ctx.set_voxel_selection_mode(True)
     assert GLViewportWidget._is_selection_mode_enabled(ctx) is True
     assert GLViewportWidget._resolve_left_interaction_mode(ctx) == GLViewportWidget._LEFT_INTERACTION_EDIT
+
+
+def test_selection_move_delta_map_covers_arrow_and_page_keys() -> None:
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_Left) == (-1, 0, 0)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_Right) == (1, 0, 0)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_Up) == (0, 1, 0)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_Down) == (0, -1, 0)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_PageUp) == (0, 0, 1)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_PageDown) == (0, 0, -1)
+    assert GLViewportWidget._selection_move_delta_from_key(Qt.Key_A) is None

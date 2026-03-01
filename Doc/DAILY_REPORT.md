@@ -1232,3 +1232,20 @@
   - Run: `pytest -q` (current: `140 passed`).
 - Risks/issues:
   - Move/duplicate operations for selected voxel sets are still pending Task 12/13.
+
+### Roadmap 12 (Day-Cycle 40): Selected Voxel Move Tool
+- What was done:
+  - Added `MoveSelectedVoxelsCommand` for axis-step movement of selected voxel sets with undo/redo support.
+  - Implemented deterministic collision blocking when move destination contains non-selected voxels.
+  - Preserved voxel colors across moves and synchronized selection set to moved coordinates.
+  - Added viewport move hotkeys for selection sets: arrows (`X/Y`) and `PageUp/PageDown` (`Z`).
+  - Added viewport status feedback for move success, no-selection, no-op, and collision-blocked paths.
+  - Added regression tests for move/undo/redo behavior, collision blocking, and key-to-delta mapping.
+- How to test quickly:
+  - Launch app, enable `Voxel Selection Mode`, and select one or more voxels.
+  - Press arrow keys to move selection in X/Y and `PageUp/PageDown` to move in Z.
+  - Use undo/redo and confirm voxels and selection positions revert/reapply correctly.
+  - Place a blocking voxel in destination and verify move is blocked with no data loss.
+  - Run: `pytest -q` (current: `143 passed`).
+- Risks/issues:
+  - Selected-set duplicate workflow remains pending Task 13.
