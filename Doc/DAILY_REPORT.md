@@ -727,3 +727,17 @@
   - Run: `pytest -q` (current: `94 passed`)
 - Risks/issues:
   - glTF normals/UV/material attributes are still pending Task 07+.
+
+### Roadmap 07 (Day-Cycle 30): glTF Normals Export v1
+- What was done:
+  - Added per-vertex normal generation in glTF exporter from mesh quad normals.
+  - Extended glTF buffer/accessor layout to include `NORMAL` attribute data.
+  - Updated primitive attributes to emit `POSITION` + `NORMAL`.
+  - Extended glTF tests to validate normal attribute presence and count parity.
+- How to test quickly:
+  - Launch: `python src/app/main.py`
+  - Export glTF from a voxel model and inspect primitive attributes for `NORMAL`.
+  - Import in viewer and verify stable shading response.
+  - Run: `pytest -q` (current: `94 passed`)
+- Risks/issues:
+  - glTF UV/material/color parity remains pending future tasks.

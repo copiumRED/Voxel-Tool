@@ -23,7 +23,10 @@ def test_export_gltf_smoke_non_empty_mesh_and_counts() -> None:
         assert payload["asset"]["version"] == "2.0"
         assert len(payload["meshes"]) == 1
         primitive = payload["meshes"][0]["primitives"][0]
+        assert "NORMAL" in primitive["attributes"]
+        assert primitive["attributes"]["NORMAL"] == 1
         assert primitive["mode"] == 4
+        assert payload["accessors"][1]["count"] == payload["accessors"][0]["count"]
     finally:
         path.unlink(missing_ok=True)
 

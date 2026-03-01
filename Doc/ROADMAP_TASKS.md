@@ -6,13 +6,6 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 
 ## Remaining Tasks
 
-### Task 07: glTF Normals Export v1
-- Goal: Add vertex normals to glTF primitive attributes.
-- Likely files/modules touched: `src/core/export/gltf_exporter.py`, `src/core/meshing/mesh.py`.
-- Acceptance criteria (human-testable): Imported glTF shading is consistent in external viewer.
-- Tests required: Add glTF accessor test for `NORMAL` and count parity.
-- Risk/rollback note: If normal generation is unstable, gate behind exporter option default-on after validation.
-
 ### Task 08: Project IO Forward-Compatibility Loader
 - Goal: Allow unknown JSON keys without failing project load.
 - Likely files/modules touched: `src/core/io/project_io.py`.
@@ -273,6 +266,23 @@ Execution rule: Complete in order (Task 01 -> Task 30), one task per branch, mer
 - Confirmed exporter output remains valid JSON glTF with unchanged topology/indices semantics.
 - Avoided introducing binary layout changes beyond scaled position values.
 - Maintained dependency-free implementation and roadmap-aligned scope.
+- Smoke tests passed on branch:
+  - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
+  - `pytest -q` (`94 passed`)
+
+### Task 07: glTF Normals Export v1
+- Commit: `6d120b0`
+- Added per-vertex normal generation for glTF exports by accumulating mesh quad normals and normalizing per vertex.
+- Extended glTF buffer layout to include dedicated normal data block and accessor.
+- Updated glTF primitive attributes to emit both `POSITION` and `NORMAL`.
+- Updated index accessor wiring after introducing normals buffer view.
+- Preserved triangle topology and index ordering while extending attribute payload.
+- Added default fallback normal for degenerate/zero-length accumulations to keep export valid.
+- Kept exporter output as JSON `.gltf` with embedded data URI payload (no format migration).
+- Updated glTF tests to assert normal attribute presence.
+- Added count parity assertion between position and normal accessors.
+- Preserved scale-factor support added in Task 06 without behavioral regression.
+- Kept implementation dependency-free and contained to exporter/test scope.
 - Smoke tests passed on branch:
   - `python src/app/main.py` (launch succeeded; app stayed open until timeout)
   - `pytest -q` (`94 passed`)
